@@ -4,16 +4,15 @@ rstan_options(auto_write = TRUE)
 
 source("utils.R")
 
-if (!exists("STANGLM"))
-  STANGLM=stan_model(file="betabinomial_glm.stan", save_dso=F, auto_write=F)
-if (!exists("STANGLMNULL"))
-  STANGLMNULL=stan_model(file="betabinomial_glm_null.stan", save_dso=F, auto_write=F)
+STANGLM=stan_model(file="betabinomial_glm.stan", save_dso=F, auto_write=F)
+
+STANGLMNULL=stan_model(file="betabinomial_glm_null.stan", save_dso=F, auto_write=F)
 
 # ys: numerator counts
 # ns: denominator counts
 # x: covariate vector
 # Prior on concentration parameter is Gamma(concShape,concRate)
-betaBinomialGLM=function(ys,ns,x,concShape=1.0001,concRate=1e-4,...) {
+betaBinomialGLM_uni=function(ys,ns,x,concShape=1.0001,concRate=1e-4,...) {
 
   # try to get sensible initialization
   rat=ys/ns # ratios
@@ -80,7 +79,7 @@ runAllClusters=function(numers,denom,x,minReads=20,minSampsPerGroup=8,...){
     if (length(ta)==2 & min(ta) >= minSampsPerGroup){
       if (sum(ys>0)>=5 & sum( (ys/ns)<1 )>=5 ) { # check not all 0
         tryCatch({
-            res <- evalWithTimeout( { betaBinomialGLM(ys,ns,xh,...) }, timeout=10, onTimeout="silent" ) 
+            res <- evalWithTimeout( { betaBinomialGLM_uni(ys,ns,xh,...) }, timeout=10, onTimeout="silent" ) 
             if (is.null(res)) "timeout" else res
         }, error=function(g) paste("error thrown:",g) 
                  )
@@ -95,6 +94,7 @@ runAllClusters=function(numers,denom,x,minReads=20,minSampsPerGroup=8,...){
   list( coefs=t(sapply(results,function(g) if (is.character(g)) rep(NA,3) else g$beta)), 
        overdispersionUnderNull=sapply(results,function(g) if (is.character(g))  NA else g$concUnderNull), 
        overdispersionUnderFull=sapply(results,function(g) if (is.character(g))  NA else g$concUnderFull),
+       lrtp=sapply(results,function(g) if (is.character(g))  NA else g$lrtp[1]),
        status=sapply(results,function(g) if (is.character(g)) g else "success"))
 }
 

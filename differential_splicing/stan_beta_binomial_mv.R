@@ -3,7 +3,7 @@ require(rstan)
 
 source("utils.R")
 
-STANGLM=stan_model(file="betabinomial_glm_mv.stan", save_dso=F, auto_write=F)
+STANGLM_MV=stan_model(file="betabinomial_glm_mv.stan", save_dso=F, auto_write=F)
 
 STANGLM_FIX_CONC=stan_model(file="betabinomial_glm_fix_conc.stan", save_dso=F, auto_write=F)
 
@@ -24,14 +24,14 @@ betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   
   betaInit=numeric(ncol(xNull))
   betaInit[1]=log(m/(1.0-m))
-  init=list(conc=conc, beta=as.vector(betaInit))
+  init=list(conc=conc, beta=as.array(betaInit))
   #sampling(STANGLM, data=list(N=length(ys),P=ncol(xNull),ys=ys,ns=ns,x=xNull), chains=1) -> stanresNull
   
   dat=list(N=length(ys),P=ncol(xNull),ys=ys,ns=ns,x=xNull,concShape=concShape,concRate=concRate)
   
   # TODO would like to use initialization but get error when length(beta)=1
   # Fit null model
-  stanresNull <- optimizing(STANGLM, data=dat, algorithm="BFGS", hessian=T, as_vector=F)
+  stanresNull <- optimizing(STANGLM_MV, data=dat, init=init, algorithm="BFGS", hessian=T, as_vector=F)
   
   # Initialize alternative model using null model
   betaInit=numeric(ncol(xFull))
@@ -42,7 +42,7 @@ betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   datFull=dat
   datFull$x=xFull
   datFull$P=ncol(xFull)
-  stanresFull <- optimizing(STANGLM, data=datFull, init=initFull, algorithm="BFGS", hessian=T, as_vector=F)
+  stanresFull <- optimizing(STANGLM_MV, data=datFull, init=initFull, algorithm="BFGS", hessian=T, as_vector=F)
 
   # Refit null model using concentration parameter from full fit
   # TODO: do we need this? 
@@ -55,7 +55,7 @@ betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
       dimnames(variance)=dimnames(res$hessian)
       betase=sqrt(diag(variance))[paste0("beta.",1:ncol(x))]
       beta=res$par[paste0("beta[",1:ncol(x),"]")]
-      zscore=res$par$beta
+      zscore=res$par$beta / betase
       data.frame(co=res$par$beta,se=betase,p=2.0*pnorm(-abs(zscore)))
   }
   
