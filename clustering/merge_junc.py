@@ -2,12 +2,15 @@
 
 def main(flist, outPrefix):
     
-    N = 80
 
     lsts = []
     for ln in open(flist):
         lsts.append(ln.strip())
-    print len(lsts)
+    sys.stderr.write("merging %d junction files...\n"%(len(lsts)))
+    
+    # Change 500 if max open file is < 500
+    N = min([500, max([100, int(len(lsts)**(0.5))])])
+
     tmpfiles = []
     while len(lsts) > 1:    
         clst = []
@@ -17,14 +20,14 @@ def main(flist, outPrefix):
             if len(lst) > 0:
                 clst.append(lst)
         lsts = []
-        print [len(x) for x in clst]
+    
         for lst in clst:
             if len(lst) == 0: continue
             tmpfile = tempfile.mktemp()
             os.mkdir(tmpfile)
             foutname = tmpfile+"/tmpmerge.gz"
             fout = gzip.open(foutname,'w')
-            print foutname
+            
             merge_files(lst, fout)
             lsts.append(foutname)
             tmpfiles.append(foutname)
@@ -48,7 +51,7 @@ def merge_files(fnames, fout):
     while not finished:
         N += 1
         if N % 50000 == 0: 
-            sys.stderr.write("read %d...\n"%N)
+            sys.stderr.write(".")
         buf = []
         for f in fopen:
             ln = f.readline().split()
@@ -62,12 +65,12 @@ def merge_files(fnames, fout):
             buf += data
         if len(buf) > 0:
             if buf[0] == "chrom":
-                print buf[:3], len(buf)
+                sys.stderr.write("merging %d files"%(len(buf)-1))
             fout.write(" ".join(buf)+'\n')
         else:
             break
 
-    
+    sys.stderr.write("done.\n")
     for fin in fopen:
         fin.close()
 
