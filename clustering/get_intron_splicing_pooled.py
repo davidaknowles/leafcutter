@@ -13,6 +13,7 @@ def main(outPrefix, maxIntronLen, flist, ov_cutoff = 6):
         for ln in open(lib):
             chrom, A, B, dot, counts, strand = ln.split()
             if chrom not in chromLst: continue
+            #chrom = "%s:%s"%(chrom, strand)
             A, B = int(A), int(B)+1
             if B-A > int(maxIntronLen): continue
             try: by_chrom[chrom][(A,B)] = int(counts) + by_chrom[chrom][(A,B)]
@@ -24,7 +25,7 @@ def main(outPrefix, maxIntronLen, flist, ov_cutoff = 6):
     N = 0
     sys.stderr.write("Parsing ")
     for chrom in by_chrom:
-        read_ks = by_chrom[chrom].keys()
+        read_ks = [k for k,v in by_chrom[chrom].items() if v >= 3]
         read_ks.sort()
         sys.stderr.write("%s.."%chrom)
         clu = cluster_intervals(read_ks)
@@ -95,8 +96,7 @@ def refine_linked(clusters):
             for intron in torm:
                 clusters.remove(intron)
             if len(torm) == 0: break
-            
-                
+                            
         all_clus.append(current_clu)
     return all_clus
 
