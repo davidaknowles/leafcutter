@@ -12,7 +12,6 @@ for lib in sys.argv[2:]:
         merges[libN] = []
     merges[libN].append(lib)
 
-
 fout_runlibs = file(runName+"_sortedlibs",'w')
 
 for libN in merges:
@@ -37,7 +36,13 @@ for libN in merges:
         
         for ln in open(lib):
         
-            chrom, start, end, dot, count, strand = ln.split()
+
+            lnsplit=ln.split()
+            if len(lnsplit)<6: 
+                sys.stderr.write("Error in %s \n" % lib)
+                continue
+            chrom, A, B, dot, counts, strand = lnsplit
+            
             if chrom not in chromLst: continue
             if chrom not in by_chrom:
                 by_chrom[chrom] = {}

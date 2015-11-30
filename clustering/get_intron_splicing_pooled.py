@@ -11,7 +11,13 @@ def main(outPrefix, maxIntronLen, flist, ov_cutoff = 6):
         sys.stderr.write("scanning %s...\n"%lib)
 
         for ln in open(lib):
-            chrom, A, B, dot, counts, strand = ln.split()
+            
+            lnsplit=ln.split()
+            if len(lnsplit)<6: 
+                sys.stderr.write("Error in %s \n" % lib)
+                continue
+            chrom, A, B, dot, counts, strand = lnsplit
+            
             if chrom not in chromLst: continue
             A, B = int(A), int(B)+1
             if B-A > int(maxIntronLen): continue
