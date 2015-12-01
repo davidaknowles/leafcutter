@@ -11,19 +11,17 @@ parameters {
   real<lower=0> conc; 
   vector[P] beta;
 }
-transformed parameters {
+model {
   vector[N] xb; 
-  real<lower=0> a[N];
-  real<lower=0> b[N];
-  real<lower=0,upper=1> p[N]; 
+  real a[N];
+  real b[N];
+  real p[N]; 
   xb <- x * beta;
   for (n in 1:N) {
     p[n] <- inv_logit(xb[n]); 
     a[n] <- conc*p[n];
     b[n] <- conc*(1.0-p[n]);
   }
-}
-model {
   // beta ~ normal(0,5);
   conc ~ gamma(concShape, concRate);
   ys ~ beta_binomial(ns, a, b);

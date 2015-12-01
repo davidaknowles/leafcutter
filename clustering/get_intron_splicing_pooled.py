@@ -5,9 +5,11 @@ def main(outPrefix, maxIntronLen, flist, ov_cutoff = 6):
     chromLst = [chrom.strip() for chrom in  open(outPrefix+"_chrom").readlines()]
     
     by_chrom = {}
-    for lib in flist:
+    for libl in flist:
         
-        lib = lib.strip()
+        lib = libl.strip()
+        if not os.path.isfile(lib):
+            continue
         sys.stderr.write("scanning %s...\n"%lib)
 
         for ln in open(lib):
@@ -109,5 +111,5 @@ def refine_linked(clusters):
 
 if __name__ == "__main__":
     import sys
-    
-    main(sys.argv[1], sys.argv[2], sys.argv[3:])
+    flist=[ l.rstrip() for l in open(sys.argv[3]) ]
+    main(sys.argv[1], sys.argv[2], flist)

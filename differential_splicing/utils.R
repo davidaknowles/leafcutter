@@ -26,5 +26,5 @@ multiqq=function(bfcp) {
     df
   } ) 
   df$npcs=factor(df$npcs, names(bfcp))
-  ggplot(df, aes(x,y,col=npcs)) + geom_point() + geom_abline(intercept=0,slope=1) + theme_bw(base_size=18) + xlab("Expected -log10(p)") + ylab("Observed -log10(p)")
+  ggplot(df, aes(x,y,col=npcs)) + geom_point() + geom_abline(intercept=0,slope=1) + theme_bw(base_size=18) + xlab("Expected -log10(p)") + ylab("Observed -log10(p)") 
 }

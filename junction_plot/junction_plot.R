@@ -3,15 +3,21 @@ require(ggplot2)
 require(reshape2)
 require(Hmisc)
 
-make_differential_splicing_plot=function(y, x, len=500, length_transform=function(g) log(g+1), main_title=NA, snp_pos=NA) {
+if (!exists("exons")) exons=read.table("../processed_data/gencode19_exons.txt.gz", header=T,stringsAsFactors=F)
 
-  introns=colnames(y)
+get_intron_meta=function(introns){
   intron_meta=do.call(rbind,strsplit(introns,":"))
   colnames(intron_meta)=c("chr","start","end","clu")
   intron_meta=as.data.frame(intron_meta,stringsAsFactors = F)
   intron_meta$start=as.numeric(intron_meta$start)
   intron_meta$end=as.numeric(intron_meta$end)
-  
+  intron_meta
+}
+
+make_differential_splicing_plot=function(y, x, len=500, length_transform=function(g) log(g+1), main_title=NA, snp_pos=NA) {
+
+  intron_meta=get_intron_meta(colnames(y))
+
   #jxn_names=paste0(intron_meta$chr,":",intron_meta$start,"-",intron_meta$end)
   #jxn_counts=colSums(y)
   
@@ -50,7 +56,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
   snp_coord=coords[as.character(snp_pos)]
 
   total_length=sum(trans_d) # ==max(coords)
-
+  my_xlim=c(-.05*total_length,1.05*total_length)
   first_plot=T
   
   min_height=0
@@ -63,6 +69,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
     print(intron_meta$counts)
     
     allEdges=do.call(rbind,foreach (i=1:nrow(intron_meta)) %do% {
+      if (intron_meta$counts[i]==0) return(NULL)
       start=coords[ as.character(intron_meta$start[i]) ]
       end=coords[ as.character(intron_meta$end[i]) ]
       l=end-start
@@ -80,7 +87,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
     if (is.na(main_title) | !first_plot) new_theme_empty$plot.title <- element_blank()
     first_plot=F
     
-    g=ggplot(allEdges) + geom_path(aes(x = x, y = y, group = Group, colour=log10counts, size = Sequence, alpha=.9)) + scale_size(breaks=breaks, labels=format(10^breaks,digits=0), limits=limits, range = c(.3, 10), guide = guide_legend(title = "mean count")) + scale_alpha(guide="none",range = c(0.1, 1)) + new_theme_empty + scale_color_gradient(breaks=breaks, limits=limits, labels=format(10^breaks,digits=0),low="blue",high="red", guide = guide_legend(title = "mean count")) + ylab(paste0(tis," (n=",group_sample_size,")")) + xlab("") + xlim(-.05*total_length,1.05*total_length) + geom_hline(yintercept=0,alpha=.3) #  + scale_color_discrete(guide="none")
+    g=ggplot(allEdges) + geom_path(aes(x = x, y = y, group = Group, colour=log10counts, size = Sequence, alpha=.9)) + scale_size(breaks=breaks, labels=format(10^breaks,digits=0), limits=limits, range = c(.3, 10), guide = guide_legend(title = "mean count")) + scale_alpha(guide="none",range = c(0.1, 1)) + new_theme_empty + scale_color_gradient(breaks=breaks, limits=limits, labels=format(10^breaks,digits=0),low="blue",high="red", guide = guide_legend(title = "mean count")) + ylab(paste0(tis," (n=",group_sample_size,")")) + xlab("") + xlim(my_xlim) + geom_hline(yintercept=0,alpha=.3) #  + scale_color_discrete(guide="none")
     if (!is.na(snp_coord)) {
         df=data.frame(x=snp_coord,xend=snp_coord,y=0,yend=max_height*1.1)
         print(df)
@@ -94,15 +101,23 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
   
   exons_chr=exons[exons==intron_meta$chr[1],]
   exons_here=exons_chr[ ( min(s) <= exons_chr$start & exons_chr$start <= max(s) ) | ( min(s) <= exons_chr$end & exons_chr$end <= max(s) ), ]
-
-  df=data.frame(x=total_length*(exons_here$start-min(s))/(max(s)-min(s)), xend=total_length*(exons_here$end-min(s))/(max(s)-min(s)), y=min_height, yend=min_height)
-  #invert_mapping=function(pos) if (pos %in% s) coords[as.character(pos)] else {
-  #  w=which( pos < s[2:length(s)] & pos > s[1:(length(s)-1)] )
-  #  coords[w] + (coords[w+1]-coords[w])*(pos - s[w])/(s[w+1]-s[w])
-  #}
-  cat(dim(exons_here))
-  plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)  + geom_hline(yintercept=min_height,alpha=.3)
   
+  exons_here$gene_name=factor(exons_here$gene_name)
+
+  heights=min_height - (as.numeric(exons_here$gene_name)-1.0) * min_height * .15
+  df=data.frame(x=total_length*(exons_here$start-min(s))/(max(s)-min(s)), xend=total_length*(exons_here$end-min(s))/(max(s)-min(s)), y=heights, yend=heights)
+  plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)  + geom_hline(yintercept=min_height,alpha=.3) + geom_text(data=data.frame(x=my_xlim[1], y=min_height - ((1:length(levels(exons_here$gene_name)))-1.0) * min_height * .15, label=levels(exons_here$gene_name)))
+  
+  invert_mapping=function(pos) if (pos %in% s) coords[as.character(pos)] else 
+    if (pos < min(s)) my_xlim[1] else 
+    if (pos > max(s)) my_xlim[2] else {
+    w=which( pos < s[2:length(s)] & pos > s[1:(length(s)-1)] )
+    stopifnot(length(w)==1)
+    coords[w] + (coords[w+1]-coords[w])*(pos - s[w])/(s[w+1]-s[w])
+  }
+  df=data.frame(x=sapply(exons_here$start,invert_mapping), xend=sapply(exons_here$end,invert_mapping), y=0, yend=0)
+  for (i in 1:length(plots)) plots[[i]]=plots[[i]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)  
+
   if (!is.na(main_title)) plots[[1]] = plots[[1]] + ggtitle(main_title)
   
   do.call( grid.arrange, c(plots, list(ncol=1)))

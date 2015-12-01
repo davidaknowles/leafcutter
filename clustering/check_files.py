@@ -3,7 +3,8 @@ import gzip
 
 by_chrom = {}
 libs, libChroms = {}, {}
-for lib in sys.argv[2:]:
+for libl in open(sys.argv[2]):
+    lib=libl.rstrip()
     sys.stderr.write("checking %s... "%lib)
     libs[lib] = 0
     libChroms[lib] = []
