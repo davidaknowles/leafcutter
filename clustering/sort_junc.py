@@ -1,12 +1,32 @@
 import sys
 import gzip
-
+import os
 
 runName = sys.argv[1]
 chromLst = [chrom.strip() for chrom in  open(runName+"_chrom").readlines()]
+refined_cluster = runName + "_refined"
+
+exons, cluExons = {}, {}
+cluN = 0
+
+for ln in open(refined_cluster):
+    chrom = ln.split()[0]
+    cluN += 1
+    for exon in ln.split()[1:]:
+        A, B, count = exon.split(":")
+        if chrom not in exons:
+            exons[chrom] = {}
+
+        exons[chrom][(int(A),int(B))] = cluN
+        if cluN not in cluExons:
+            cluExons[cluN] = []
+        cluExons[cluN].append((chrom, A, B))
 
 merges = {}
-for lib in sys.argv[2:]:
+for ll in open(sys.argv[2]):
+    lib=ll.rstrip()
+    if not os.path.isfile(lib):
+        continue
     libN = lib.replace("_1.",".").replace("_2.",".")
     if libN not in merges:
         merges[libN] = []
@@ -17,51 +37,65 @@ fout_runlibs = file(runName+"_sortedlibs",'w')
 for libN in merges:
 
     by_chrom = {}
-    foutName = libN+'.sorted.gz'
+    foutName = libN+'.%s.sorted.gz'%(runName.split("/")[-1])
 
     fout_runlibs.write(foutName+'\n')
 
     try: gzip.open(foutName)
     except:
-        sys.stderr.write("Sorting %s.."%libN)
+        pass
     else:
-        continue
-
+        #continue
+        pass
+    sys.stderr.write("Sorting %s..\n"%libN)
     if len(merges[libN]) > 1:
         sys.stderr.write("merging %s...\n"%(" ".join(merges[libN])))
     else:
-        sys.stderr.write("\n")
+        #sys.stderr.write("")
+        pass
+    fout = gzip.open(foutName,'w')
+
+    fout.write("chrom %s\n"%libN.split("/")[-1].split(".junc")[0])
 
     for lib in merges[libN]:
         
         for ln in open(lib):
-        
 
             lnsplit=ln.split()
             if len(lnsplit)<6: 
                 sys.stderr.write("Error in %s \n" % lib)
                 continue
             chrom, A, B, dot, counts, strand = lnsplit
-            
+
             if chrom not in chromLst: continue
             if chrom not in by_chrom:
                 by_chrom[chrom] = {}
-            intron = (int(start), int(end), strand)
+            intron = (int(start), int(end)+1)
             if intron in by_chrom[chrom]:
                 by_chrom[chrom][intron] += int(count)
             else:
                 by_chrom[chrom][intron] = int(count)
 
-    ks = by_chrom.keys()
-    ks.sort()
-    
-    fout = gzip.open(foutName,'w')
-    for k in ks:
-        sortedIntrons = by_chrom[k].keys()
-        sortedIntrons.sort()
-        for start, end, strand in sortedIntrons:
-            count = by_chrom[k][(start,end,strand)]
-            fout.write("\t".join([k, str(start), str(end), '.', str(count), strand])+'\n')
+    for clu in cluExons:
+        buf = []
+        ks = cluExons[clu]
+        ks.sort()
+        tot = 0
+        for exon in ks:
+            chrom, start, end = exon
+            start, end = int(start), int(end)
+            if (start,end) in by_chrom[chrom]:
+                tot += by_chrom[chrom][(start,end)]
+        for exon in ks:
+            
+            chrom, start, end = exon
+            start, end = int(start), int(end)
+            if (start,end) in by_chrom[chrom]:
+                #print chrom, start, end, by_chrom[chrom][(start,end)]
+                buf.append("%s:%d:%d:clu_%d %d/%d\n"%(chrom,start, end, clu, by_chrom[chrom][(start,end)], tot))
+            else:
+                buf.append("%s:%d:%d:clu_%d 0/%d\n"%(chrom,start, end,clu, tot))
+        #print chrom, " ".join(buf)
+        fout.write("".join(buf))
     fout.close()
-
 fout_runlibs.close()

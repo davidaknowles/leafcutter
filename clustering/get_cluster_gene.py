@@ -17,7 +17,7 @@ def get_feature(fname, feature = "exon"):
 ss2gene = get_feature("gencode.v19.annotation.gtf.gz", "exon")
 
 import numpy as np
-W = file("%s.clu2gene.txt"%sys.argv[1].split("perind")[0],'w')
+W = file("%s.clu2gene.txt"%sys.argv[1].split("_perind")[0],'w')
 for ln in gzip.open(sys.argv[1]):
     if "chrom" in ln: continue
     chrom, A, B, clu = ln.split()[0].split(":")

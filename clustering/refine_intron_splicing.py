@@ -27,7 +27,7 @@ def main(outPrefix, minReads=50):
                 #print clu
                 for interval, count in clu:
                     #print interval, count
-                    buf += "%d:%d" % interval + ":%d"%count+ " "
+                    buf += "%d:%d" % interval + ":%d"%(count)+ " "
                 Ncl += 1
                 W.write(buf+'\n')
     sys.stderr.write("Split into %s clusters...\n"%Ncl)
