@@ -65,8 +65,7 @@ for libN in merges:
             if len(lnsplit)<6: 
                 sys.stderr.write("Error in %s \n" % lib)
                 continue
-            chrom, A, B, dot, counts, strand = lnsplit
-
+            chrom, start, end, dot, count, strand = ln.split()
             if chrom not in chromLst: continue
             if chrom not in by_chrom:
                 by_chrom[chrom] = {}

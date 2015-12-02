@@ -1,3 +1,5 @@
+import os
+
 def main(outPrefix, maxIntronLen, flist, ov_cutoff = 6):
 
     outFile = outPrefix+"_pooled"

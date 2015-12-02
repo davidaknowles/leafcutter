@@ -3,8 +3,8 @@ juncFilesDir="~/scailscratch/splicing/processed/*.junc"
 juncFiles="junc_files.txt"
 outPrefix="~/scailscratch/splicing/gtex_final"
 
-juncFiles="../run/intron_files/*.junc"
-outPrefix="../run/GEUVADIS"
+#juncFiles="../run/intron_files/*.junc"
+#outPrefix="../run/GEUVADIS"
 
 mkdir outPrefix
 
@@ -25,9 +25,9 @@ echo "Spliting intron clusters..."
 #eval "python refine_intron_splicing.py $outPrefix $minReadsClu"
 
 echo "Getting per individuals counts..."
-eval "python get_intron_splicing_perind.py $outPrefix"
+#eval "python get_intron_splicing_perind.py $outPrefix"
 
-eval "python merge_junc.py $outPrefix"
+#eval "python merge_junc.py $outPrefix"
 
 echo "Assigning genes to clusters..."
-#eval "python get_cluster_gene.py $outPrefix\_perind.counts.gz"
+eval "python get_cluster_gene.py $outPrefix\_perind.counts.gz"
