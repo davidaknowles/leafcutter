@@ -25,8 +25,6 @@ echo "Spliting intron clusters..."
 #eval "python refine_intron_splicing.py $outPrefix $minReadsClu"
 
 echo "Getting per individuals counts..."
-#eval "python get_intron_splicing_perind.py $outPrefix"
-
 #eval "python merge_junc.py $outPrefix"
 
 echo "Assigning genes to clusters..."
