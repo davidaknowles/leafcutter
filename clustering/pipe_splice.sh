@@ -29,3 +29,10 @@ echo "Getting per individuals counts..."
 
 echo "Assigning genes to clusters..."
 eval "python get_cluster_gene.py $outPrefix\_perind.counts.gz"
+
+echo "Creating $outPrefix\_perind_numers.counts.gz"
+eval "python get_numers.py $outPrefix\_perind.counts.gz | gzip > $outPrefix\_perind_numers.counts.gz"
+
+echo "Creating $outPrefix\_perind_numers.RData"
+eval "Rscript convert_to_RData.R $outPrefix\_perind_numers.counts.gz $outPrefix\_perind_numers.RData"
+
