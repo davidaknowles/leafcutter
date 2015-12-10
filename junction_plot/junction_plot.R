@@ -2,8 +2,9 @@ require(gridExtra)
 require(ggplot2)
 require(reshape2)
 require(Hmisc)
+require(doMC)
 
-if (!exists("exons")) exons=read.table("../processed_data/gencode19_exons.txt.gz", header=T,stringsAsFactors=F)
+if (!exists("exons")) exons=read.table("~/Dropbox/splicing/processed_data/gencode19_exons.txt.gz", header=T,stringsAsFactors=F)
 
 get_intron_meta=function(introns){
   intron_meta=do.call(rbind,strsplit(introns,":"))
@@ -97,16 +98,17 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
   }
   
   df=data.frame(x=coords, xend=total_length*(s-min(s))/(max(s)-min(s)), y=0, yend=min_height)
-  plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend),alpha=.3)
+  plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend),alpha=.1)
   
   exons_chr=exons[exons==intron_meta$chr[1],]
   exons_here=exons_chr[ ( min(s) <= exons_chr$start & exons_chr$start <= max(s) ) | ( min(s) <= exons_chr$end & exons_chr$end <= max(s) ), ]
   
   exons_here$gene_name=factor(exons_here$gene_name)
 
-  heights=min_height - (as.numeric(exons_here$gene_name)-1.0) * min_height * .15
+  gene_heights=min_height - ((1:length(levels(exons_here$gene_name)))-1.0) * abs(min_height) * .05 # * .15
+  heights=gene_heights[ as.numeric(exons_here$gene_name)] # .15
   df=data.frame(x=total_length*(exons_here$start-min(s))/(max(s)-min(s)), xend=total_length*(exons_here$end-min(s))/(max(s)-min(s)), y=heights, yend=heights)
-  plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)  + geom_hline(yintercept=min_height,alpha=.3) + geom_text(data=data.frame(x=my_xlim[1], y=min_height - ((1:length(levels(exons_here$gene_name)))-1.0) * min_height * .15, label=levels(exons_here$gene_name)))
+  plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)  + geom_hline(yintercept=min_height,alpha=.3) + geom_text(data=data.frame(x=my_xlim[1], y=gene_heights, label=levels(exons_here$gene_name)),aes(x,y,label=label))
   
   invert_mapping=function(pos) if (pos %in% s) coords[as.character(pos)] else 
     if (pos < min(s)) my_xlim[1] else 
