@@ -86,7 +86,7 @@ def refine_cluster(clu, cutoff = 0.01):
     for inter, count in clu:
         totN += count
     for inter, count in clu:
-        if (count/float(totN) >= cutoff and count >= 10) or count >= 20:
+        if (count/float(totN) >= cutoff and count >= 10):
             intervals.append(inter)
             dic[inter] = count
             

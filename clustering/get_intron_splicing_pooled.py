@@ -35,7 +35,7 @@ def main(outPrefix, maxIntronLen, flist, ov_cutoff = 6):
     N = 0
     sys.stderr.write("Parsing ")
     for chrom in by_chrom:
-        read_ks = [k for k,v in by_chrom[chrom].items() if v >= 3]
+        read_ks = [k for k,v in by_chrom[chrom].items() if v >= 5]
         read_ks.sort()
         sys.stderr.write("%s.."%chrom)
         clu = cluster_intervals(read_ks)
