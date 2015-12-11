@@ -3,7 +3,9 @@ import gzip
 import os
 
 runName = sys.argv[1]
-chromLst = [chrom.strip() for chrom in  open(runName+"_chrom").readlines()]
+try: chromLst = [chrom.strip() for chrom in  open(runName+"_chrom").readlines()]
+except: chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']
+
 refined_cluster = runName + "_refined"
 
 exons, cluExons = {}, {}

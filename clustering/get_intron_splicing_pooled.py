@@ -4,8 +4,8 @@ def main(outPrefix, maxIntronLen, flist, ov_cutoff = 6):
 
     outFile = outPrefix+"_pooled"
     
-    chromLst = [chrom.strip() for chrom in  open(outPrefix+"_chrom").readlines()]
-    
+    try: chromLst = [chrom.strip() for chrom in  open(outPrefix+"_chrom").readlines()]
+    except: chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']
     by_chrom = {}
     for libl in flist:
         
