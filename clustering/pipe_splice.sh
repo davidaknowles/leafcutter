@@ -15,14 +15,14 @@ echo "Checking junction files..."
 #eval "ls $juncFilesDir > $juncFiles" 
 #eval "python check_files.py $outPrefix\_chrom $juncFiles"
 
-echo "Sorting junction files..."
-#eval "python sort_junc.py $outPrefix $juncFiles"
-
 echo "Pooling individuals to identify intron clusters..."
 #eval "python get_intron_splicing_pooled.py $outPrefix $maxIntronLen $juncFiles"
 
 echo "Spliting intron clusters..."
 #eval "python refine_intron_splicing.py $outPrefix $minReadsClu"
+
+echo "Sorting junction files..."
+#eval "python sort_junc.py $outPrefix $juncFiles"                                                                                                                                                                                                                                                     
 
 echo "Getting per individuals counts..."
 #eval "python merge_junc.py $outPrefix"
