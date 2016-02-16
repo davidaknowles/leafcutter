@@ -11,7 +11,7 @@ mkdir outPrefix
 maxIntronLen=100000
 minReadsClu=50
 
-echo "Checking junction files..."
+#echo "Checking junction files..."
 #eval "ls $juncFilesDir > $juncFiles" 
 #eval "python check_files.py $outPrefix\_chrom $juncFiles"
 
