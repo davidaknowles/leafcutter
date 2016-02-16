@@ -443,13 +443,6 @@ if __name__ == "__main__":
         libl.append(junc)
 
     main(options, libl)
-    
-
-
-
-    
-    #echo "Creating $outPrefix\_perind_numers.counts.gz"
-    #eval "python get_numers.py $outPrefix\_perind.counts.gz | gzip > $outPrefix\_perind_numers.counts.gz"
 
     #echo "Creating $outPrefix\_perind_numers.RData"
     #eval "Rscript convert_to_RData.R $outPrefix\_perind_numers.counts.gz $outPrefix\_perind_numers.RData"
