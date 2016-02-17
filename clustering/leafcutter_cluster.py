@@ -2,8 +2,8 @@
 
 def main(options,libl):
     
-    pool_junc_reads(libl, options)
-    refine_clusters(options)
+    #pool_junc_reads(libl, options)
+    #refine_clusters(options)
     sort_junctions(libl, options)
     merge_junctions(options)
     get_numers(options)
@@ -152,14 +152,17 @@ def sort_junctions(libl, options):
             for exon in ks:
                 chrom, start, end = exon
                 start, end = int(start), int(end)
-                if (start,end) in by_chrom[chrom]:
+                if chrom not in by_chrom:
+                    pass
+                elif (start,end) in by_chrom[chrom]:
                     tot += by_chrom[chrom][(start,end)]
             for exon in ks:
             
                 chrom, start, end = exon
                 start, end = int(start), int(end)
-                if (start,end) in by_chrom[chrom]:
-                
+                if chrom not in by_chrom:
+                    buf.append("%s:%d:%d:clu_%d 0/%d\n"%(chrom,start, end,clu, tot))
+                elif (start,end) in by_chrom[chrom]:                
                     buf.append("%s:%d:%d:clu_%d %d/%d\n"%(chrom,start, end, clu, by_chrom[chrom][(start,end)], tot))
                 else:
                     buf.append("%s:%d:%d:clu_%d 0/%d\n"%(chrom,start, end,clu, tot))
