@@ -12,6 +12,6 @@ for l in input_file:
     else:
         l=l.strip()
         words=l.split(" ")
-        print(words[0] + " ".join( [ g.split("/")[0] for g in words[1:] ] )  )
+        print(words[0] + " " + " ".join( [ g.split("/")[0] for g in words[1:] ] )  )
 
 input_file.close()
