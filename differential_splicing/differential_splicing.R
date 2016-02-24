@@ -1,6 +1,6 @@
 require(doMC)
 require(R.utils)
-source("~/Dropbox/splicing/leafcutter/differential_splicing/multinomial_glm_multi_conc.R",echo=T)
+source("multinomial_glm_multi_conc.R",echo=T)
 
 cluster_results_table=function(results) {
   rows=foreach(res=results) %do% 
