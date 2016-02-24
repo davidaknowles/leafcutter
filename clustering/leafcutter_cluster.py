@@ -16,8 +16,7 @@ def pool_junc_reads(flist, options):
     
     outFile = "%s/%s_pooled"%(rundir,outPrefix)
     
-    try: chromLst = [chrom.strip() for chrom in  open(outPrefix+"_chrom").readlines()]
-    except: chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']
+    chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
     by_chrom = {}
     for libl in flist:
         
@@ -66,9 +65,7 @@ def pool_junc_reads(flist, options):
 
 def sort_junctions(libl, options):
 
-    try: chromLst = [chrom.strip() for chrom in  open(runName+"_chrom").readlines()]
-    except: chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']
-    
+    chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y'] 
     outPrefix = options.outprefix
     rundir = options.rundir
     refined_cluster = "%s/%s_refined"%(rundir,outPrefix)
@@ -110,11 +107,6 @@ def sort_junctions(libl, options):
 
         fout_runlibs.write(foutName+'\n')
 
-        try: gzip.open(foutName)
-        except:
-            pass
-        else:
-            pass
         if options.verbose:   
             sys.stderr.write("Sorting %s..\n"%libN)
         if len(merges[libN]) > 1:
