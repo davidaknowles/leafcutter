@@ -1,4 +1,5 @@
 require(rstan)
+require(R.utils)
 
 DIRICHLET_MULTINOMIAL_GLM_MC=stan_model("../differential_splicing/dirichlet_multinomial_glm_multi_conc.stan", auto_write = F, save_dso = F)
 

@@ -7,7 +7,7 @@ source("../junction_plot/junction_plot.R")
 
 registerDoMC(if (parallel::detectCores()==4) 7 else parallel::detectCores())
 
-load("../example_data/brain_liver.RData")
+load("../example_data/brain_liver.RData") -> a
 
 meta=as.data.frame(meta)
 x=meta$tissue=="brain"
@@ -15,7 +15,7 @@ x=meta$tissue=="brain"
 #res_file="../processed_data/brain_vs_liver_mult.RData"
 
 #if (!file.exists(res_file)) {
-  results=differential_splicing(numers, x)
+  results=differential_splicing(numers, x, max_cluster_size = 5)
 #  save(results, file=res_file)
 #} else load(res_file)
 
@@ -35,8 +35,3 @@ for (clu in top_clus) {
   counter = counter+1
   #dev.off())
 }
-
-
-
-
-
