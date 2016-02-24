@@ -15,8 +15,9 @@ get_intron_meta=function(introns){
   intron_meta
 }
 
-make_differential_splicing_plot=function(y, x, len=500, length_transform=function(g) log(g+1), main_title=NA, snp_pos=NA) {
+make_differential_splicing_plot=function(y, x, len=500, length_transform=function(g) log(g+1), main_title=NA, snp_pos=NA, summary_func=colMeans, legend_title="Mean count") {
 
+  # convert colnames(y) into meta data
   intron_meta=get_intron_meta(colnames(y))
 
   #jxn_names=paste0(intron_meta$chr,":",intron_meta$start,"-",intron_meta$end)
@@ -37,7 +38,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
 
   groups=sort(unique(x))
   
-  max_log=.5*ceil(2*log10( 1+max( unlist( foreach (tis=groups) %do% { intron_meta$counts=colMeans(y[ tis==x,,drop=F]) } ) ) ))
+  max_log=.5*ceil(2*log10( 1+max( unlist( foreach (tis=groups) %do% { intron_meta$counts=summary_func(y[ tis==x,,drop=F]) } ) ) ))
 
   breaks=if (max_log <= 2.5) seq(0,max_log,by=0.5) else seq(0,ceil(max_log),by=1)
   limits=c(0.0,max_log)
@@ -65,7 +66,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
   
   plots=foreach (tis=groups) %do% {
     print(tis)
-    intron_meta$counts=colMeans(y[ tis==x,,drop=F])
+    intron_meta$counts=summary_func(y[ tis==x,,drop=F])
     group_sample_size=sum(tis==x)
     print(intron_meta$counts)
     
@@ -88,7 +89,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
     if (is.na(main_title) | !first_plot) new_theme_empty$plot.title <- element_blank()
     first_plot=F
     
-    g=ggplot(allEdges) + geom_path(aes(x = x, y = y, group = Group, colour=log10counts, size = Sequence, alpha=.9)) + scale_size(breaks=breaks, labels=format(10^breaks,digits=0), limits=limits, range = c(.3, 10), guide = guide_legend(title = "mean count")) + scale_alpha(guide="none",range = c(0.1, 1)) + new_theme_empty + scale_color_gradient(breaks=breaks, limits=limits, labels=format(10^breaks,digits=0),low="blue",high="red", guide = guide_legend(title = "mean count")) + ylab(paste0(tis," (n=",group_sample_size,")")) + xlab("") + xlim(my_xlim) + geom_hline(yintercept=0,alpha=.3) #  + scale_color_discrete(guide="none")
+    g=ggplot(allEdges) + geom_path(aes(x = x, y = y, group = Group, colour=log10counts, size = Sequence, alpha=.9)) + scale_size(breaks=breaks, labels=format(10^breaks,digits=0), limits=limits, range = c(.3, 10), guide = guide_legend(title = legend_title)) + scale_alpha(guide="none",range = c(0.1, 1)) + new_theme_empty + scale_color_gradient(breaks=breaks, limits=limits, labels=format(10^breaks,digits=0),low="blue",high="red", guide = guide_legend(title = legend_title)) + ylab(paste0(tis," (n=",group_sample_size,")")) + xlab("") + xlim(my_xlim) + geom_hline(yintercept=0,alpha=.3) #  + scale_color_discrete(guide="none")
     if (!is.na(snp_coord)) {
         df=data.frame(x=snp_coord,xend=snp_coord,y=0,yend=max_height*1.1)
         print(df)

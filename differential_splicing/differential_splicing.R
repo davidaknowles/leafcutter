@@ -39,7 +39,7 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
   sink(zz)
   sink(zz, type = "message")
   
-  results=foreach (cluster_name=clu_names) %dopar% {
+  results=foreach (cluster_name=clu_names, .errorhandling = "pass") %dopar% {
     
   #results=lapply(clu_names, function(cluster_name) {
     if (cluster_sizes[cluster_name] > max_cluster_size)

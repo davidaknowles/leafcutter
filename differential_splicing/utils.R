@@ -1,3 +1,5 @@
+require(ggplot2)
+
 bh=function(p) { q=p; q[!is.na(p)]=p.adjust(pmin(p[!is.na(p)],1),method="fdr"); q }
 bfc=function(p) min(p,na.rm=T)*sum(!is.na(p))
 

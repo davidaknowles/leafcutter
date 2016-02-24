@@ -1,6 +1,6 @@
 require(rstan)
 
-DIRICHLET_MULTINOMIAL_GLM_MC=stan_model("../differential_splicing/dirichlet_multinomial_glm_multi_conc.stan")
+DIRICHLET_MULTINOMIAL_GLM_MC=stan_model("../differential_splicing/dirichlet_multinomial_glm_multi_conc.stan", auto_write = F, save_dso = F)
 
 dirichlet_multinomial_glm_mc <- function(x,y,concShape=1.0001,concRate=1e-4) {
   dat=list(N=nrow(x), K=ncol(y), P=ncol(x), y=y, x=x, concShape=concShape,concRate=concRate)
@@ -12,9 +12,9 @@ dirichlet_multinomial_glm_mc <- function(x,y,concShape=1.0001,concRate=1e-4) {
 
 dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4) {
   K=ncol(y)
-  dat=list(N=nrow(xNull), K=K, P=ncol(xNull), y=y, x=xNull, concShape=concShape,concRate=concRate)
+  dat_null=list(N=nrow(xNull), K=K, P=ncol(xNull), y=y, x=xNull, concShape=concShape,concRate=concRate)
   # fit model (optimization, don't judge)
-  fit_null=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat, as_vector=F)
+  fit_null=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat_null, as_vector=F)
 
   colnames(fit_null$par$beta_raw)=colnames(y)
   rownames(fit_null$par$beta_raw)=colnames(xNull)
@@ -40,7 +40,23 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   
   loglr=fit_full$value-fit_null$value
   df=( ncol(xFull)-ncol(xNull) )*(K-1)
-  list( loglr=loglr, df=df, lrtp=pchisq( 2.0*loglr, lower.tail = F , df=df ), fit_null=fit_null, fit_full=fit_full)
+  
+  refit_null_flag=F
+  
+  lrtp=pchisq( 2.0*loglr, lower.tail = F , df=df )
+  if (lrtp < .001) {
+    init=fit_full$par
+    init$beta_raw=init$beta_raw[seq_len(dat_null$P),]
+    init$beta_scale=init$beta_scale[seq_len(dat_null$P)]
+    refit_null=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat_null, init=init, as_vector=F)
+    if (refit_null$value > fit_null$value) {
+      refit_null_flag=T
+      fit_null=refit_null
+      loglr=fit_full$value-fit_null$value
+    }
+  }
+  
+  list( loglr=loglr, df=df, lrtp=pchisq( 2.0*loglr, lower.tail = F , df=df ), fit_null=fit_null, fit_full=fit_full, refit_null_flag=refit_null_flag)
 }
 
 test_dirichlet_multinomial_glm_mc <- function() {
@@ -59,6 +75,8 @@ test_dirichlet_multinomial_glm_mc <- function() {
   y=t(do.call(cbind,y)) 
   x=do.call(rbind,x)
   dm=dirichlet_multinomial_glm_mc(x,y)
+  
+  an=dirichlet_multinomial_anova_mc(x,x[,1:2],y)
   
   # check result looks reasonable
   plot( as.numeric(beta), as.numeric(dm$beta) )
