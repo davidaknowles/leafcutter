@@ -47,7 +47,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   lrtp=pchisq( 2.0*loglr, lower.tail = F , df=df )
   if (lrtp < .001) {
     init=fit_full$par
-    init$beta_raw=init$beta_raw[seq_len(dat_null$P),]
+    init$beta_raw=init$beta_raw[seq_len(dat_null$P),,drop=F]
     init$beta_scale=init$beta_scale[seq_len(dat_null$P)]
     refit_null=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat_null, init=init, as_vector=F)
     if (refit_null$value > fit_null$value) {
