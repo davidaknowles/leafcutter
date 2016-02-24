@@ -1,26 +1,25 @@
 require(doMC)
-require(R.utils)
 source("multinomial_glm_multi_conc.R",echo=T)
 
 cluster_results_table=function(results) {
   rows=foreach(res=results) %do% 
-  { if ( !is.list(res) ) NULL else 
-    c(loglr=res$loglr, df=res$df, p=res$lrtp) }
-  names(rows)=names(results)
-  as.data.frame(do.call(rbind, rows))
+{ if ( !is.list(res) ) data.frame(status=res, loglr=NA, df=NA, p=NA) else 
+  data.frame(status="Success", loglr=res$loglr, df=res$df, p=res$lrtp) }
+names(rows)=names(results)
+as.data.frame(do.call(rbind, rows))
 }
 
 leafcutter_status=function(results) {
-  unlist( foreach(res=results) %do% { if ( !is.list(res) ) res else "Successfully tested" } )
+  foreach(res=results, .combine=c) %do% { if ( !is.list(res) ) res else "Successfully tested" } 
 }
 
 beta_real=function(r) 
   sweep(r$beta_raw - 1.0/ncol(r$beta_raw), 1, r$beta_scale, "*") 
 
 leaf_cutter_effect_sizes=function(results) {
-  unlist( foreach(res=results) %do% {
+  foreach(res=results, .combine=c) %do% {
     if (is.list(res)) beta_real( res$fit_full$par )[2,] else NULL
-  } )
+  } 
 }
 
 differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10) {
@@ -34,14 +33,14 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
   clu_names=as.character(cluster_sizes$cluster_ids)
   cluster_sizes=cluster_sizes$Freq
   names(cluster_sizes)=clu_names
-
+  
   zz <- file( "/dev/null", open = "wt")
   sink(zz)
   sink(zz, type = "message")
   
   results=foreach (cluster_name=clu_names, .errorhandling = "pass") %dopar% {
     
-  #results=lapply(clu_names, function(cluster_name) {
+    #results=lapply(clu_names, function(cluster_name) {
     if (cluster_sizes[cluster_name] > max_cluster_size)
       return("Too many introns in cluster")
     cluster_counts=t(counts[ cluster_ids==cluster_name, ])
@@ -63,12 +62,12 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
       return("Not enough valid samples") 
     xFull=cbind(1,x_subset)
     xNull=xFull[,1,drop=F]
-    #tryCatch({
+    tryCatch({
       res <- evalWithTimeout( { 
         dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts)
       }, timeout=timeout, onTimeout="silent" ) 
       if (is.null(res)) "timeout" else res
-    #}, error=function(g) g)
+    }, error=function(g) as.character(g))
   }
   
   sink(type="message")
@@ -82,6 +81,4 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
   names(results)=clu_names
   results
 }
-
-
 

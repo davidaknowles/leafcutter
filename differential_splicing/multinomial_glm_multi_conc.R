@@ -48,7 +48,10 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   if (lrtp < .001) {
     init=fit_full$par
     init$beta_raw=init$beta_raw[seq_len(dat_null$P),,drop=F]
-    init$beta_scale=init$beta_scale[seq_len(dat_null$P)]
+    init$beta_raw[init$beta_raw<1e-6]=1e-6
+    init$beta_raw[init$beta_raw>(1.0-1e-6)]=(1.0-1e-6)
+    init$beta_raw=sweep(init$beta_raw, 1, rowSums(init$beta_raw), "/") 
+    init$beta_scale=as.array(init$beta_scale[seq_len(dat_null$P)])
     refit_null=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat_null, init=init, as_vector=F)
     if (refit_null$value > fit_null$value) {
       refit_null_flag=T

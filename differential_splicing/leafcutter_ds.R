@@ -44,7 +44,8 @@ cat("Running differential splicing analysis...\n")
 results <- differential_splicing(counts, numeric_x, max_cluster_size=opt$max_cluster_size, min_samples_per_intron=opt$min_samples_per_intron, min_samples_per_group=opt$min_samples_per_group, min_coverage=opt$min_coverage, timeout=opt$timeout) 
 
 cat("Saving results...\n")
-write.table( cluster_results_table(results), paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F)
-write.table( leaf_cutter_effect_sizes(results), paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F)
+
+write.table( cluster_results_table(results), paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t")
+write.table( leaf_cutter_effect_sizes(results), paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = F, sep="\t")
 
 cat("All done, exiting\n")
