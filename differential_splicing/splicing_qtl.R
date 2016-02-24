@@ -1,3 +1,5 @@
+source("dm_glm_multi_conc.R")
+
 get_intron_meta=function(introns){
   intron_meta=do.call(rbind,strsplit(introns,":"))
   colnames(intron_meta)=c("chr","start","end","clu")
@@ -37,13 +39,15 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
     introns_to_use=colSums(cluster_counts>0)>=min_samples_per_intron
     cluster_counts=cluster_counts[,introns_to_use]
     
-    clures=foreach (cis_snp = cis_snps) %do% {
+    pcs_here=pcs[samples_to_use,,drop=F]
+    
+    cached_fit_null=NULL
+    
+    clures=foreach (cis_snp = cis_snps, .errorhandling = if (debug) "stop" else "pass") %do% {
       
       xh=as.numeric(geno[cis_snp,samples_to_use])
       
       if (length(unique(xh)) <= 1) return("Only one genotype")
-      
-      pcs_here=pcs[samples_to_use,,drop=F]
       
       if (permute) {
         possible_perms=foreach(temptemp=1:1000) %do% sample(xh)
@@ -62,12 +66,13 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
       #tryCatch({
         xFull=cbind(1,pcs_here,xh)
         xNull=cbind(1,pcs_here)
-        print(dim(pcs_here))
-        print(dim(xFull))
-        print(dim(xNull))
-        res <- evalWithTimeout( { dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts) }, timeout=timeout, onTimeout="silent" )
-        if (is.null(res)) "timeout" else res
-      #}, error=function(g) paste("error thrown:",g) )
+        if (debug & !is.null(cached_fit_null)) cat("Using cached null fit.\n")
+        res <- evalWithTimeout( { dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,fit_null=cached_fit_null) }, timeout=timeout, onTimeout="silent" )
+        if (is.null(res)) "timeout" else {
+          cached_fit_null=res$fit_null
+          res
+        }
+      #}, error=function(g) as.character(g) )
     }
     
     names(clures)=as.character(cis_snps)

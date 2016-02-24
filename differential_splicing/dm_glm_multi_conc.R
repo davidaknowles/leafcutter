@@ -1,7 +1,7 @@
 require(rstan)
 require(R.utils)
 
-DIRICHLET_MULTINOMIAL_GLM_MC=stan_model("../differential_splicing/dirichlet_multinomial_glm_multi_conc.stan", auto_write = F, save_dso = F)
+DIRICHLET_MULTINOMIAL_GLM_MC=stan_model("../differential_splicing/dm_glm_multi_conc.stan", auto_write = F, save_dso = F)
 
 dirichlet_multinomial_glm_mc <- function(x,y,concShape=1.0001,concRate=1e-4) {
   dat=list(N=nrow(x), K=ncol(y), P=ncol(x), y=y, x=x, concShape=concShape,concRate=concRate)
@@ -11,11 +11,13 @@ dirichlet_multinomial_glm_mc <- function(x,y,concShape=1.0001,concRate=1e-4) {
   list(value=o$value, conc=o$par$conc, beta=t(sweep( o$par$beta_raw - 1/dat$K , 1, o$par$beta_scale, "*")))
 }
 
-dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4) {
+dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, fit_null=NULL) {
   K=ncol(y)
+  
   dat_null=list(N=nrow(xNull), K=K, P=ncol(xNull), y=y, x=xNull, concShape=concShape,concRate=concRate)
-  # fit model (optimization, don't judge)
-  fit_null=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat_null, as_vector=F)
+  
+  # fit null model
+  if (is.null(fit_null)) fit_null=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat_null, as_vector=F)
 
   colnames(fit_null$par$beta_raw)=colnames(y)
   rownames(fit_null$par$beta_raw)=colnames(xNull)
@@ -33,7 +35,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   
   init$beta_scale[1:ncol(xNull)]=fit_null$par$beta_scale
   stopifnot(all(is.finite(unlist(init))))
-  # fit model (optimization, don't judge)
+  # fit fit model
   fit_full=optimizing(DIRICHLET_MULTINOMIAL_GLM_MC, data=dat_full, init=init, as_vector=F)
 
   colnames(fit_full$par$beta_raw)=colnames(y)

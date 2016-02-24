@@ -30,9 +30,13 @@ colnames(meta)=c("sample","group")
 
 counts=counts[,meta$sample]
 
-stopifnot(length(unique(meta$group))==2)
+meta$group=as.factor(meta$group)
+group_names=levels(meta$group)
 
-numeric_x=as.numeric(as.factor(meta$group))-1
+stopifnot(length(group_names)==2)
+
+cat("Encoding as",group_names[1],"=0,",group_names[2],"=1\n")
+numeric_x=as.numeric(meta$group)-1
 
 require(doMC)
 registerDoMC(opt$num_threads)
@@ -45,7 +49,7 @@ results <- differential_splicing(counts, numeric_x, max_cluster_size=opt$max_clu
 
 cat("Saving results...\n")
 
-write.table( cluster_results_table(results), paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t")
+write.table( cluster_results_table(results), paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t", row.names = F)
 write.table( leaf_cutter_effect_sizes(results), paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = F, sep="\t")
 
 cat("All done, exiting\n")

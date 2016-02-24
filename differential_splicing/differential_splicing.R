@@ -2,11 +2,9 @@ require(doMC)
 source("multinomial_glm_multi_conc.R",echo=T)
 
 cluster_results_table=function(results) {
-  rows=foreach(res=results) %do% 
+  as.data.frame(cbind(cluster=names(results), foreach(res=results, .combine=rbind) %do% 
 { if ( !is.list(res) ) data.frame(status=res, loglr=NA, df=NA, p=NA) else 
-  data.frame(status="Success", loglr=res$loglr, df=res$df, p=res$lrtp) }
-names(rows)=names(results)
-as.data.frame(do.call(rbind, rows))
+  data.frame(status="Success", loglr=res$loglr, df=res$df, p=res$lrtp) } ) )
 }
 
 leafcutter_status=function(results) {
