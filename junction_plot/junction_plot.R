@@ -4,7 +4,7 @@ require(reshape2)
 require(Hmisc)
 require(doMC)
 
-if (!exists("exons")) exons=read.table("~/Dropbox/splicing/processed_data/gencode19_exons.txt.gz", header=T,stringsAsFactors=F)
+if (!exists("EXONS_TABLE")) EXONS_TABLE=read.table("~/Dropbox/splicing/processed_data/gencode19_exons.txt.gz", header=T,stringsAsFactors=F)
 
 get_intron_meta=function(introns){
   intron_meta=do.call(rbind,strsplit(introns,":"))
@@ -100,7 +100,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
   df=data.frame(x=coords, xend=total_length*(s-min(s))/(max(s)-min(s)), y=0, yend=min_height)
   plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend),alpha=.1)
   
-  exons_chr=exons[exons==intron_meta$chr[1],]
+  exons_chr=EXONS_TABLE[EXONS_TABLE==intron_meta$chr[1],]
   exons_here=exons_chr[ ( min(s) <= exons_chr$start & exons_chr$start <= max(s) ) | ( min(s) <= exons_chr$end & exons_chr$end <= max(s) ), ]
   
   exons_here$gene_name=factor(exons_here$gene_name)
@@ -108,6 +108,7 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
   gene_heights=min_height - ((1:length(levels(exons_here$gene_name)))-1.0) * abs(min_height) * .05 # * .15
   heights=gene_heights[ as.numeric(exons_here$gene_name)] # .15
   df=data.frame(x=total_length*(exons_here$start-min(s))/(max(s)-min(s)), xend=total_length*(exons_here$end-min(s))/(max(s)-min(s)), y=heights, yend=heights)
+  if (nrow(exons_here)>0)
   plots[[length(plots)]]=plots[[length(plots)]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)  + geom_hline(yintercept=min_height,alpha=.3) + geom_text(data=data.frame(x=my_xlim[1], y=gene_heights, label=levels(exons_here$gene_name)),aes(x,y,label=label))
   
   invert_mapping=function(pos) if (pos %in% s) coords[as.character(pos)] else 
@@ -116,13 +117,17 @@ make_differential_splicing_plot=function(y, x, len=500, length_transform=functio
     w=which( pos < s[2:length(s)] & pos > s[1:(length(s)-1)] )
     stopifnot(length(w)==1)
     coords[w] + (coords[w+1]-coords[w])*(pos - s[w])/(s[w+1]-s[w])
+    }
+  if (nrow(exons_here)>0) {
+    df=data.frame(x=sapply(exons_here$start,invert_mapping), xend=sapply(exons_here$end,invert_mapping), y=0, yend=0)
+    for (i in 1:length(plots)) plots[[i]]=plots[[i]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)
   }
-  df=data.frame(x=sapply(exons_here$start,invert_mapping), xend=sapply(exons_here$end,invert_mapping), y=0, yend=0)
-  for (i in 1:length(plots)) plots[[i]]=plots[[i]] + geom_segment(data=df, aes(x=x,y=y,xend=xend,yend=yend), alpha=.3, size=5)  
 
   if (!is.na(main_title)) plots[[1]] = plots[[1]] + ggtitle(main_title)
   
   do.call( grid.arrange, c(plots, list(ncol=1)))
+  
+  exons_here
 }
 
 

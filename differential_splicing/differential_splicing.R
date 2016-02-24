@@ -1,6 +1,5 @@
 require(doMC)
 require(R.utils)
-registerDoMC(7)
 source("~/Dropbox/splicing/leafcutter/differential_splicing/multinomial_glm_multi_conc.R",echo=T)
 
 cluster_results_table=function(results) {
