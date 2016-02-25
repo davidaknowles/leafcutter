@@ -3,7 +3,10 @@ bh=function(p) { q=p; q[!is.na(p)]=p.adjust(pmin(p[!is.na(p)],1),method="fdr"); 
 
 bfc=function(p) min(p,na.rm=T)*sum(!is.na(p))
 
-# logistic (sigmoid) function
+#' logistic (sigmoid) function
+#' @param g The log odds
+#' @return 1/(1+e^-g)
+#' @export
 logistic=function(g) 1/(1+exp(-g))
 
 # get inverse of PSD matrix using eigendecomposition

@@ -56,3 +56,20 @@ testbbglm=function() {
   betaBinomialGLM(ys,ns,xFull,xNull)
 }
 
+compare_bb_and_dm=function() {
+  set.seed(1)
+  nsamp=100
+  ns=rpois(nsamp,lambda=10)
+  ys=rbinom(nsamp,ns,logistic(.3+.3*rnorm(nsamp)))
+  y=cbind(ys,ns-ys)
+  xNull=cbind(numeric(nsamp)+1)
+  xFull=cbind(xNull,runif(nsamp))
+  
+  dm_fit=dirichlet_multinomial_anova(xFull,xNull,y)
+  bb_fit=betaBinomialGLM(ys,ns,xFull,xNull)
+  
+  stopifnot( abs( (dm_fit$fit_full$par$conc - bb_fit$concUnderFull)/dm_fit$fit_full$par$conc ) < 1e-2 )
+  stopifnot( abs( (dm_fit$fit_null$par$conc - bb_fit$concUnderNull)/dm_fit$fit_null$par$conc ) < 1e-2 )
+  stopifnot( abs( dm_fit$loglr - bb_fit$loglr[1] ) < 1e-3 )
+}
+

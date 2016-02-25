@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Note to Windows users: This is not actually platform specific.
+mkdir -p src/include
+R --vanilla --slave --file=tools/make_cpp.R
+cat src/*.cc > src/Modules.cpp
+rm src/*.cc
+R --vanilla --slave -e 'roxygen2::roxygenize(clean = TRUE)'
+echo "useDynLib(leafcutter, .registration=TRUE)" >> NAMESPACE
+exit $?
+
+
+

@@ -28,7 +28,7 @@ betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   dat=list(N=length(ys),P=ncol(xNull),ys=ys,ns=ns,x=xNull,concShape=concShape,concRate=concRate)
   
   # Fit null model
-  stanresNull <- rstan::optimizing(stanmodels$bb_glm, data=dat, init=init, algorithm="BFGS", hessian=T, as_vecto5A5Ar=F)
+  stanresNull <- rstan::optimizing(stanmodels$bb_glm, data=dat, init=init, algorithm="BFGS", hessian=T, as_vector=F)
   
   # Initialize alternative model using null model
   betaInit=numeric(ncol(xFull))
