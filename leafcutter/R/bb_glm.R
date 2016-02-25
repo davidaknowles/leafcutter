@@ -1,17 +1,15 @@
-#require(rstan)
-# rstan_options(auto_write = TRUE)
-
-#source("utils.R")
-
-#STANGLM_MV=stan_model(file="bb_glm.stan", save_dso=F, auto_write=F)
-
-#STANGLM_FIX_CONC=stan_model(file="bb_glm_fix_conc.stan", save_dso=F, auto_write=F)
-
-# ys: numerator counts
-# ns: denominator counts
-# xFull: matrix of covariates for full model. First column must be ones. 
-# xNull: matrix of covariates for null model. First column must be ones. 
-# Prior on concentration parameter is Gamma(concShape,concRate)
+#' Beta binomial GLM likelihood ratio testing
+#'
+#' We recommend using \code{\link{dirichlet_multinomial_glm_anova}} instead, but this is here for comparison.
+#' 
+#' @param ys numerator counts
+#' @param ns denominator counts
+#' @param xFull matrix of covariates for full model. First column must be ones. 
+#' @param xNull matrix of covariates for null model. First column must be ones. 
+#' @param concShape Gamma shape parameter for concentration parameter
+#' @param concShape Gamma rate parameter for concentration parameter
+#' @importFrom rstan optimizing
+#' @export
 betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   stopifnot(all(xNull==xFull[,1:ncol(xNull)]))
   stopifnot(all(xNull[,1]==1))
@@ -29,9 +27,8 @@ betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   
   dat=list(N=length(ys),P=ncol(xNull),ys=ys,ns=ns,x=xNull,concShape=concShape,concRate=concRate)
   
-  # TODO would like to use initialization but get error when length(beta)=1
   # Fit null model
-  stanresNull <- optimizing(STANGLM_MV, data=dat, init=init, algorithm="BFGS", hessian=T, as_vector=F)
+  stanresNull <- rstan::optimizing(stanmodels$bb_glm, data=dat, init=init, algorithm="BFGS", hessian=T, as_vecto5A5Ar=F)
   
   # Initialize alternative model using null model
   betaInit=numeric(ncol(xFull))
@@ -42,12 +39,12 @@ betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   datFull=dat
   datFull$x=xFull
   datFull$P=ncol(xFull)
-  stanresFull <- optimizing(STANGLM_MV, data=datFull, init=initFull, algorithm="BFGS", hessian=T, as_vector=F)
+  stanresFull <- rstan::optimizing(stanmodels$bb_glm, data=datFull, init=initFull, algorithm="BFGS", hessian=T, as_vector=F)
 
   # Refit null model using concentration parameter from full fit
   # TODO: do we need this? 
   dat$conc=stanresFull$par$conc
-  optimizing(STANGLM_FIX_CONC, data=dat, init=list(beta=stanresNull$par$beta), algorithm="BFGS" ) -> stanresNullFixConc
+  rstan::optimizing(stanmodels$bb_glm_fix_conc, data=dat, init=list(beta=stanresNull$par$beta), algorithm="BFGS" ) -> stanresNullFixConc
   
   # Function to extract coefficients, standard errors, and Wald p-values
   getCoefs=function(res,x) {
@@ -68,11 +65,3 @@ betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   list(betaNull=getCoefs(stanresNull,xNull), betaFull=getCoefs(stanresFull,xFull), loglr=loglr, lrtp=pchisq( 2.0*loglr, lower.tail = F , df=ncol(xFull)-ncol(xNull) ), concUnderFull=stanresFull$par$conc, concUnderNull=stanresNull$par$conc )
 }
 
-testbbglm=function() {
-  nsamp=100
-  ns=rpois(nsamp,lambda=10)
-  ys=rbinom(nsamp,ns,logistic(.3+.3*rnorm(nsamp)))
-  xNull=cbind(numeric(nsamp)+1)
-  xFull=cbind(xNull,runif(nsamp))
-  betaBinomialGLM(ys,ns,xFull,xNull)
-}
