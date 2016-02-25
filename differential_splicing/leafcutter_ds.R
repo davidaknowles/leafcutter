@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-library(ptparse)
+library(optparse)
 library(leafcutter)
 
 arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups_file", description="LeafCutter differential splicing command line tool. Required inputs:\n <counts_file>: Intron usage counts file. Must be .txt or .txt.gz, output from clustering pipeline.\n <groups_file>: Two column file: 1. sample names (must match column names in counts_file), 2. groups (currently only two groups, i.e. pairwise, supported. Some samples in counts_file can be missing from this file, in which case they will not be included in the analysis.",option_list=list(
