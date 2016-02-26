@@ -4,6 +4,7 @@
 #'
 #' @param counts An [introns] x [samples] matrix of counts. The rownames must be of the form chr:start:end:cluid. If the counts file comes from the leafcutter clustering code this should be the case already.
 #' @param geno A [SNPs] x [samples] numeric matrix of the genotypes, typically encoded as 0,1,2, although in principle scaling shouldn't matter.
+#' @param geno_meta SNP metadata, as a data.frame. Rows correspond to SNPs, must have a CHROM (with values e.g. chr15) and POS (position) column. 
 #' @param pcs An optional [confounders] x [samples] matrix of technical confounders/PCs.
 #' @param permute Whether to permute the genotype.
 #' @param snps_within Window from center of cluster in which to test SNPs. 
@@ -38,7 +39,7 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
     
     cluster_introns=introns[ cluster_ids %in% clu, ]
     m=mean(cluster_introns$middle)
-    cis_snps = which( abs( geno_meta$POS - m ) < snps_within )
+    cis_snps = which( (abs( geno_meta$POS - m ) < snps_within) & (geno_meta$CHROM==cluster_introns$chr[1]) )
     
     sample_counts=sample_counts[samples_to_use]
     
