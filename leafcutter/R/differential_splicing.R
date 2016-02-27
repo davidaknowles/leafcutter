@@ -5,6 +5,7 @@
 #'
 #' @param results From \code{\link{differential_splicing}}
 #' @return Data.frame with columns status, log likelihood ratio, degrees of freedom, p-value
+#' @export
 cluster_results_table=function(results) {
   as.data.frame(cbind(cluster=names(results), foreach(res=results, .combine=rbind) %do% 
 { if ( !is.list(res) ) data.frame(status=res, loglr=NA, df=NA, p=NA) else 
@@ -17,6 +18,7 @@ cluster_results_table=function(results) {
 #'
 #' @param results From \code{\link{differential_splicing}}
 #' @return Character vector with statuses
+#' @export
 leafcutter_status=function(results) {
   foreach(res=results, .combine=c) %do% { if ( !is.list(res) ) res else "Successfully tested" } 
 }

@@ -1,13 +1,27 @@
 Package: leafcutter
 Type: Package
-Title: Alternative splicing quantification, differential splicing and splicing QTL mapping
+Title: Alternative splicing quantification, differential splicing and splicing
+    QTL mapping
 Version: 1.0
 Date: 2016-02-24
 Author: David A. Knowles, Yang Li, Jonathan Pritchard
 Maintainer: David A. Knowles <knowles84@gmail.com>
-Description: Alternative splicing quantification, differential splicing and splicing QTL mapping
+Description: Alternative splicing quantification, differential splicing and
+    splicing QTL mapping
 License: GPL (>= 3)
-Depends: R (>= 3.0.2), Rcpp (>= 0.11.0), 
-Imports: rstan (>= 2.8.1), ggplot2, R.utils, gridExtra, reshape2, Hmisc, foreach
-LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>= 0.11.0), RcppEigen
-RcppModules:  stan_fit4bb_glm_mod, stan_fit4bb_glm_fix_conc_mod, stan_fit4dm_glm_multi_conc_mod, stan_fit4dm_glm_mod 
+Depends:
+    R (>= 2.0),
+    Rcpp (>= 0.11.0),
+Imports:
+    rstan (>= 2.8.1),
+    ggplot2,
+    R.utils,
+    gridExtra,
+    reshape2,
+    Hmisc,
+    foreach
+LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
+    0.11.0), RcppEigen
+RcppModules: stan_fit4bb_glm_mod, stan_fit4bb_glm_fix_conc_mod,
+    stan_fit4dm_glm_multi_conc_mod, stan_fit4dm_glm_mod
+RoxygenNote: 5.0.1
