@@ -15,14 +15,17 @@ test_dirichlet_multinomial_glm_mc <- function() {
   y=lapply(x, function(g) rmultinom(1, depth, softmax(beta %*% g))) 
   y=t(do.call(cbind,y)) 
   x=do.call(rbind,x)
-  dm=dirichlet_multinomial_glm_mc(x,y)
   
-  an=dirichlet_multinomial_anova_mc(x,x[,1:2],y)
+  an=dirichlet_multinomial_anova_mc(x,x[,1:2],y,robust=F)
+
+  an=dirichlet_multinomial_anova_mc(x,x[,1:2],y,robust=T)
   
   # check result looks reasonable
   #plot( as.numeric(beta), as.numeric(dm$beta) )
   #abline(0,1)
 }
+
+test_dirichlet_multinomial_glm_mc()
 
 test_dirichlet_multinomial_glm <- function() {
 

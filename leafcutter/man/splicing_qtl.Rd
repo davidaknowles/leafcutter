@@ -6,12 +6,15 @@
 \usage{
 splicing_qtl(counts, geno, geno_meta, pcs = matrix(0, ncol(counts), 0),
   permute = F, snps_within = 10000, min_samples_per_intron = 5,
-  min_coverage = 20, min_samples_per_group = 8, timeout = 10, debug = F)
+  min_coverage = 20, min_samples_per_group = 8, timeout = 10, debug = F,
+  outlier_threshold = 1e-30, robust = T, ...)
 }
 \arguments{
 \item{counts}{An [introns] x [samples] matrix of counts. The rownames must be of the form chr:start:end:cluid. If the counts file comes from the leafcutter clustering code this should be the case already.}
 
 \item{geno}{A [SNPs] x [samples] numeric matrix of the genotypes, typically encoded as 0,1,2, although in principle scaling shouldn't matter.}
+
+\item{geno_meta}{SNP metadata, as a data.frame. Rows correspond to SNPs, must have a CHROM (with values e.g. chr15) and POS (position) column.}
 
 \item{pcs}{An optional [confounders] x [samples] matrix of technical confounders/PCs.}
 

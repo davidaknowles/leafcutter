@@ -18,7 +18,7 @@
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute=F,snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F) {
+splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute=F,snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F,outlier_threshold=1e-30,robust=T,...) {
   
   introns=get_intron_meta(rownames(counts))
   
@@ -41,19 +41,26 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
     m=mean(cluster_introns$middle)
     cis_snps = which( (abs( geno_meta$POS - m ) < snps_within) & (geno_meta$CHROM==cluster_introns$chr[1]) )
     
-    sample_counts=sample_counts[samples_to_use]
-    
-    cluster_counts=cluster_counts[samples_to_use,]
-    introns_to_use=colSums(cluster_counts>0)>=min_samples_per_intron
+    introns_to_use=colSums(cluster_counts[samples_to_use,]>0)>=min_samples_per_intron
     cluster_counts=cluster_counts[,introns_to_use]
-    
+
+      outlier_samples=c()
+      if (outlier_threshold > 0) {
+          usage_ratios=sweep(cluster_counts[samples_to_use,], 1, sample_counts[samples_to_use], "/")
+          outliers=mahalanobis_outlier( asinh( usage_ratios ) ) < outlier_threshold
+          outlier_samples=which(samples_to_use)[outliers]
+          samples_to_use[samples_to_use]=!outliers
+      }
+
+      sample_counts=sample_counts[samples_to_use]
+    cluster_counts=cluster_counts[samples_to_use,]
     pcs_here=pcs[samples_to_use,,drop=F]
-    
+
     cached_fit_null=NULL
     
     clures=foreach (cis_snp = cis_snps, .errorhandling = if (debug) "stop" else "pass") %do% {
       
-      xh=as.numeric(geno[cis_snp,samples_to_use])
+      xh=as.numeric(geno[cis_snp,])
       
       if (length(unique(xh)) <= 1) return("Only one genotype")
       
@@ -75,7 +82,7 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
         xFull=cbind(1,pcs_here,xh)
         xNull=cbind(1,pcs_here)
         if (debug & !is.null(cached_fit_null)) cat("Using cached null fit.\n")
-        res <- R.utils::evalWithTimeout( { dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,fit_null=cached_fit_null) }, timeout=timeout, onTimeout="silent" )
+        res <- R.utils::evalWithTimeout( { dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,fit_null=cached_fit_null,robust=robust,...) }, timeout=timeout, onTimeout="silent" )
         if (is.null(res)) "timeout" else {
           cached_fit_null=res$fit_null
           res
@@ -84,6 +91,7 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
     }
     
     names(clures)=as.character(cis_snps)
+    attr(clures, "outliers")=outlier_samples
     clures
   }
   if (!debug)

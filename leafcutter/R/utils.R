@@ -50,3 +50,10 @@ get_intron_meta=function(introns){
   intron_meta
 }
 
+mahalanobis_outlier=function(x) {
+    ei=eigen(cov(x))
+    if (any(ei$values<=0.0)) return(numeric(nrow(x))+1)
+    prec=ei$vectors %*% diag(1/ei$values) %*% t(ei$vectors)
+    mah_dist=mahalanobis( x, colMeans(x), prec, inverted=T )
+    pchisq(mah_dist, df=ncol(x), lower.tail=F) * nrow(x)
+}
