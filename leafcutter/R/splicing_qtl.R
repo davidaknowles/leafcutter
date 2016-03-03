@@ -6,7 +6,6 @@
 #' @param geno A [SNPs] x [samples] numeric matrix of the genotypes, typically encoded as 0,1,2, although in principle scaling shouldn't matter.
 #' @param geno_meta SNP metadata, as a data.frame. Rows correspond to SNPs, must have a CHROM (with values e.g. chr15) and POS (position) column. 
 #' @param pcs An optional [confounders] x [samples] matrix of technical confounders/PCs.
-#' @param permute Whether to permute the genotype.
 #' @param snps_within Window from center of cluster in which to test SNPs. 
 #' @param max_cluster_size Don't test clusters with more introns than this
 #' @param min_samples_per_intron Ignore introns used (i.e. at least one supporting read) in fewer than n samples
@@ -18,7 +17,7 @@
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute=F,snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F,outlier_threshold=1e-30,robust=T,...) {
+splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F,outlier_threshold=1e-30,robust=T,...) {
   
   introns=get_intron_meta(rownames(counts))
   
@@ -63,12 +62,6 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
       xh=as.numeric(geno[cis_snp,])
       
       if (length(unique(xh)) <= 1) return("Only one genotype")
-      
-      if (permute) {
-        possible_perms=foreach(temptemp=1:1000) %do% sample(xh)
-        perm_correlations=foreach(pp=possible_perms, .combine=c) %do% cor(xh,pp)
-        xh=possible_perms[[which.min(abs(perm_correlations))]]
-      }
       
       ta=table(xh[sample_counts>=min_coverage])
 
