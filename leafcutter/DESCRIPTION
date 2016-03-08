@@ -23,5 +23,5 @@ Imports:
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
 RcppModules: stan_fit4bb_glm_mod, stan_fit4bb_glm_fix_conc_mod,
-    stan_fit4dm_glm_multi_conc_mod, stan_fit4dm_glm_mod, stan_fit4robust_mod
+    stan_fit4dm_glm_multi_conc_mod, stan_fit4dm_glm_mod, stan_fit4dm_glm_robust_mod
 RoxygenNote: 5.0.1
