@@ -6,7 +6,6 @@
 #' @param geno A [SNPs] x [samples] numeric matrix of the genotypes, typically encoded as 0,1,2, although in principle scaling shouldn't matter.
 #' @param geno_meta SNP metadata, as a data.frame. Rows correspond to SNPs, must have a CHROM (with values e.g. chr15) and POS (position) column. 
 #' @param pcs An optional [confounders] x [samples] matrix of technical confounders/PCs.
-#' @param permute Whether to permute the genotype.
 #' @param snps_within Window from center of cluster in which to test SNPs. 
 #' @param max_cluster_size Don't test clusters with more introns than this
 #' @param min_samples_per_intron Ignore introns used (i.e. at least one supporting read) in fewer than n samples
@@ -14,11 +13,13 @@
 #' @param min_coverage Require min_samples_per_group samples in each group to have at least this many reads
 #' @param timeout Maximum time (in seconds) allowed for a single optimization run
 #' @param debug Turn on to see output from rstan.
+#' @param outlier_threshold Use mahalanobis distance based detection of outliers: remove samples with p-values < this threshold
+#' @param robust Use robust mixture model version of model
 #' @return A per cluster list of results. For each cluster this is a list over tested SNPs. SNPs that were not tested will be represented by a string saying why.
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute=F,snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F,outlier_threshold=1e-30,robust=T,...) {
+splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F,outlier_threshold=0,robust=T,...) {
   
   introns=get_intron_meta(rownames(counts))
   
@@ -27,9 +28,7 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
   
   if (!debug)
      sink(file="/dev/null")
-  res=foreach (clu=clusters_to_test, .errorhandling = if (debug) "stop" else "pass") %dopar% {
-    
-    print(clu)
+  res=foreach (clu=clusters_to_test, .errorhandling = if (debug) "stop" else "pass") %do% {
     
     cluster_counts=t(counts[ cluster_ids==clu, ])
     sample_counts=rowSums(cluster_counts)
@@ -42,15 +41,19 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
     cis_snps = which( (abs( geno_meta$POS - m ) < snps_within) & (geno_meta$CHROM==cluster_introns$chr[1]) )
     
     introns_to_use=colSums(cluster_counts[samples_to_use,]>0)>=min_samples_per_intron
+    
+    if (sum(introns_to_use) <= 1) return("No valid introns")
+    
     cluster_counts=cluster_counts[,introns_to_use]
 
-      outlier_samples=c()
-      if (outlier_threshold > 0) {
-          usage_ratios=sweep(cluster_counts[samples_to_use,], 1, sample_counts[samples_to_use], "/")
-          outliers=mahalanobis_outlier( asinh( usage_ratios ) ) < outlier_threshold
-          outlier_samples=which(samples_to_use)[outliers]
-          samples_to_use[samples_to_use]=!outliers
-      }
+    outlier_samples=c()
+    if (outlier_threshold > 0) {
+        usage_ratios=sweep(cluster_counts[samples_to_use,], 1, sample_counts[samples_to_use], "/")
+        outliers=mahalanobis_outlier( asinh( usage_ratios ) ) < outlier_threshold
+        outlier_samples=which(samples_to_use)[outliers]
+        samples_to_use[samples_to_use]=!outliers
+        if (sum(samples_to_use)<=1 | sum(sample_counts>=min_coverage)<=min_samples_per_group ) return("no samples_to_use")
+    }
 
       sample_counts=sample_counts[samples_to_use]
     cluster_counts=cluster_counts[samples_to_use,]
@@ -58,17 +61,13 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),permute
 
     cached_fit_null=NULL
     
-    clures=foreach (cis_snp = cis_snps, .errorhandling = if (debug) "stop" else "pass") %do% {
+     if (debug) cat(clu,": testing",length(cis_snps)," SNPs\n")
+    
+    clures=foreach (cis_snp = cis_snps, .errorhandling = if (debug) "stop" else "pass") %dopar% {
       
       xh=as.numeric(geno[cis_snp,])
       
       if (length(unique(xh)) <= 1) return("Only one genotype")
-      
-      if (permute) {
-        possible_perms=foreach(temptemp=1:1000) %do% sample(xh)
-        perm_correlations=foreach(pp=possible_perms, .combine=c) %do% cor(xh,pp)
-        xh=possible_perms[[which.min(abs(perm_correlations))]]
-      }
       
       ta=table(xh[sample_counts>=min_coverage])
 
