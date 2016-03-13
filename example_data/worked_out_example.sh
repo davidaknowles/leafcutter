@@ -31,4 +31,4 @@ do
     echo $lib CEU >> test_diff_intron.txt
 done
 
-../differential_splicing/leafcutter_ds.R ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt
+../scripts/leafcutter_ds.R ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt
