@@ -17,7 +17,7 @@
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F,outlier_threshold=1e-30,robust=T,...) {
+splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),snps_within=1e4,min_samples_per_intron=5,min_coverage=20,min_samples_per_group=8,timeout=10,debug=F,outlier_threshold=1e-30,robust=T,M=2,...) {
   
   introns=get_intron_meta(rownames(counts))
   
@@ -37,12 +37,15 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),snps_wi
     if (sum(samples_to_use)<=1 | sum(sample_counts>=min_coverage)<=min_samples_per_group ) return("no samples_to_use")
     
     cluster_introns=introns[ cluster_ids %in% clu, ]
-    m=mean(cluster_introns$middle)
-    cis_snps = which( (abs( geno_meta$POS - m ) < snps_within) & (geno_meta$CHROM==cluster_introns$chr[1]) )
+    #m=mean(cluster_introns$middle)
+    #cis_snps = which( (abs( geno_meta$POS - m ) < snps_within) & (geno_meta$CHROM==cluster_introns$chr[1]) )
+    cis_snps = which(  ( (min(cluster_introns$start) - snps_within) <  geno_meta$POS ) & ( geno_meta$POS < (max(cluster_introns$end) + snps_within)) & (geno_meta$CHROM==cluster_introns$chr[1]) )
     
     introns_to_use=colSums(cluster_counts[samples_to_use,]>0)>=min_samples_per_intron
     cluster_counts=cluster_counts[,introns_to_use]
 
+    if (sum(introns_to_use)<=1) return("<=1 usable introns")
+    
       outlier_samples=c()
       if (outlier_threshold > 0) {
           usage_ratios=sweep(cluster_counts[samples_to_use,], 1, sample_counts[samples_to_use], "/")
@@ -75,7 +78,8 @@ splicing_qtl=function(counts,geno,geno_meta,pcs=matrix(0,ncol(counts),0),snps_wi
         xFull=cbind(1,pcs_here,xh)
         xNull=cbind(1,pcs_here)
         if (debug & !is.null(cached_fit_null)) cat("Using cached null fit.\n")
-        res <- R.utils::evalWithTimeout( { dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,fit_null=cached_fit_null,robust=robust,...) }, timeout=timeout, onTimeout="silent" )
+        #res <- R.utils::evalWithTimeout( { dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,fit_null=cached_fit_null,robust=robust,...) }, timeout=timeout, onTimeout="silent" )
+        res <- R.utils::evalWithTimeout( { dirichlet_multinomial_anova_ht(xFull,xNull,cluster_counts,fit_null=cached_fit_null,M=M,robust=robust,...) }, timeout=timeout, onTimeout="silent" )
         if (is.null(res)) "timeout" else {
           cached_fit_null=res$fit_null
           res
