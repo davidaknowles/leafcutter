@@ -52,11 +52,6 @@ cat("Saving",length(top_clus),"plots to",opt$output,"\n")
 introns=leafcutter:::get_intron_meta(rownames(counts))
 cluster_ids=paste(introns$chr,introns$clu,sep = ":")
 
-require(ggplot2)
-require(gridExtra)
-require(foreach)
-source("~/Dropbox/splicing/leafcutter/leafcutter/R/junction_plot.R")
-
 pdf(opt$output, width=8, height=8)
 for (clu in top_clus) {
   print(clu)
