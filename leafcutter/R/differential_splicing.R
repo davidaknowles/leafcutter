@@ -60,9 +60,7 @@ leaf_cutter_effect_sizes=function(results) {
 #' @export
 differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10) {
   
-  intron_names=rownames(counts)
-  introns=as.data.frame(do.call(rbind,strsplit(intron_names,":")))
-  colnames(introns)=c("chr","start","end","clu")
+  introns=leafcutter:::get_intron_meta(rownames(counts))
   cluster_ids=paste(introns$chr,introns$clu,sep = ":")
   
   cluster_sizes=as.data.frame(table(cluster_ids))
@@ -96,12 +94,10 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
       return("Not enough valid samples") 
     xFull=cbind(1,x_subset)
     xNull=xFull[,1,drop=F]
-    tryCatch({
-      res <- R.utils::evalWithTimeout( { 
-        dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts)
-      }, timeout=timeout, onTimeout="silent" ) 
-      if (is.null(res)) "timeout" else res
-    }, error=function(g) as.character(g))
+    res <- R.utils::evalWithTimeout( { 
+      dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts)
+    }, timeout=timeout, onTimeout="silent" ) 
+    if (is.null(res)) "timeout" else res
   }
   
   sink(type="message")

@@ -31,4 +31,6 @@ do
     echo $lib CEU >> test_diff_intron.txt
 done
 
-../scripts/leafcutter_ds.R ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt
+../scripts/leafcutter_ds.R --num_threads 4 ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt
+
+../scripts/ds_plots.R ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt leafcutter_ds_cluster_significance.txt

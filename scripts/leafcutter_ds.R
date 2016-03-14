@@ -10,7 +10,7 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
   make_option(c("-g","--min_samples_per_group"), default=3, help="Require this many samples in each group to have at least min_coverage reads [default %default]"), 
   make_option(c("-c","--min_coverage"), default=20, help="Require min_samples_per_group samples in each group to have at least this many reads [default %default]"), 
   make_option(c("-t","--timeout"), default=30, help="Maximum time (in seconds) allowed for a single optimization run [default %default]"),
-  make_option(c("-p","--num_threads"), default=1, help="Number of threads to use [default %default]"))), 
+  make_option(c("-p","--num_threads"), default=1, help="Number of threads to use [default %default]"))),
   positional_arguments = 2)
 
 opt=arguments$opt
@@ -47,7 +47,8 @@ results <- differential_splicing(counts, numeric_x, max_cluster_size=opt$max_clu
 
 cat("Saving results...\n")
 
-write.table( cluster_results_table(results), paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t", row.names = F)
+cluster_table=cluster_results_table(results)
+write.table( cluster_table, paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t", row.names = F)
 write.table( leaf_cutter_effect_sizes(results), paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = F, sep="\t")
 
 cat("All done, exiting\n")
