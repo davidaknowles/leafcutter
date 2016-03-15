@@ -167,8 +167,8 @@ def refine_clusters(options):
     
     outPrefix = options.outprefix
     rundir = options.rundir
-    minratio = options.mincluratio
-    minreads = options.minclureads
+    minratio = float(options.mincluratio)
+    minreads = int(options.minclureads)
 
     inFile = "%s/%s_pooled"%(rundir,outPrefix)
     outFile = "%s/%s_refined"%(rundir,outPrefix)
