@@ -1379,6 +1379,598 @@ throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
 
 #include <stan/model/model_header.hpp>
 
+namespace model_dm_glm_robust_namespace {
+
+using std::istream;
+using std::string;
+using std::stringstream;
+using std::vector;
+using stan::io::dump;
+using stan::math::lgamma;
+using stan::model::prob_grad;
+using namespace stan::math;
+
+typedef Eigen::Matrix<double,Eigen::Dynamic,1> vector_d;
+typedef Eigen::Matrix<double,1,Eigen::Dynamic> row_vector_d;
+typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matrix_d;
+
+static int current_statement_begin__;
+class model_dm_glm_robust : public prob_grad {
+private:
+    int N;
+    int P;
+    int K;
+    vector<vector_d> x;
+    vector<vector_d> y;
+    double concShape;
+    double concRate;
+    double outlier_prior_a;
+    double outlier_prior_b;
+public:
+    model_dm_glm_robust(stan::io::var_context& context__,
+        std::ostream* pstream__ = 0)
+        : prob_grad(0) {
+        current_statement_begin__ = -1;
+
+        static const char* function__ = "model_dm_glm_robust_namespace::model_dm_glm_robust";
+        (void) function__; // dummy call to supress warning
+        size_t pos__;
+        (void) pos__; // dummy call to supress warning
+        std::vector<int> vals_i__;
+        std::vector<double> vals_r__;
+        context__.validate_dims("data initialization", "N", "int", context__.to_vec());
+        N = int(0);
+        vals_i__ = context__.vals_i("N");
+        pos__ = 0;
+        N = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "P", "int", context__.to_vec());
+        P = int(0);
+        vals_i__ = context__.vals_i("P");
+        pos__ = 0;
+        P = vals_i__[pos__++];
+        context__.validate_dims("data initialization", "K", "int", context__.to_vec());
+        K = int(0);
+        vals_i__ = context__.vals_i("K");
+        pos__ = 0;
+        K = vals_i__[pos__++];
+        validate_non_negative_index("x", "N", N);
+        validate_non_negative_index("x", "P", P);
+        x = std::vector<vector_d>(N,vector_d(P));
+        context__.validate_dims("data initialization", "x", "vector_d", context__.to_vec(N,P));
+        vals_r__ = context__.vals_r("x");
+        pos__ = 0;
+        size_t x_i_vec_lim__ = P;
+        for (size_t i_vec__ = 0; i_vec__ < x_i_vec_lim__; ++i_vec__) {
+            size_t x_limit_0__ = N;
+            for (size_t i_0__ = 0; i_0__ < x_limit_0__; ++i_0__) {
+                x[i_0__][i_vec__] = vals_r__[pos__++];
+            }
+        }
+        validate_non_negative_index("y", "N", N);
+        validate_non_negative_index("y", "K", K);
+        y = std::vector<vector_d>(N,vector_d(K));
+        context__.validate_dims("data initialization", "y", "vector_d", context__.to_vec(N,K));
+        vals_r__ = context__.vals_r("y");
+        pos__ = 0;
+        size_t y_i_vec_lim__ = K;
+        for (size_t i_vec__ = 0; i_vec__ < y_i_vec_lim__; ++i_vec__) {
+            size_t y_limit_0__ = N;
+            for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
+                y[i_0__][i_vec__] = vals_r__[pos__++];
+            }
+        }
+        context__.validate_dims("data initialization", "concShape", "double", context__.to_vec());
+        concShape = double(0);
+        vals_r__ = context__.vals_r("concShape");
+        pos__ = 0;
+        concShape = vals_r__[pos__++];
+        context__.validate_dims("data initialization", "concRate", "double", context__.to_vec());
+        concRate = double(0);
+        vals_r__ = context__.vals_r("concRate");
+        pos__ = 0;
+        concRate = vals_r__[pos__++];
+        context__.validate_dims("data initialization", "outlier_prior_a", "double", context__.to_vec());
+        outlier_prior_a = double(0);
+        vals_r__ = context__.vals_r("outlier_prior_a");
+        pos__ = 0;
+        outlier_prior_a = vals_r__[pos__++];
+        context__.validate_dims("data initialization", "outlier_prior_b", "double", context__.to_vec());
+        outlier_prior_b = double(0);
+        vals_r__ = context__.vals_r("outlier_prior_b");
+        pos__ = 0;
+        outlier_prior_b = vals_r__[pos__++];
+
+        // validate data
+        check_greater_or_equal(function__,"N",N,0);
+        check_greater_or_equal(function__,"P",P,0);
+        check_greater_or_equal(function__,"K",K,0);
+        check_greater_or_equal(function__,"concShape",concShape,0);
+        check_greater_or_equal(function__,"concRate",concRate,0);
+        check_greater_or_equal(function__,"outlier_prior_a",outlier_prior_a,0);
+        check_greater_or_equal(function__,"outlier_prior_b",outlier_prior_b,0);
+
+        double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+
+
+        // initialize transformed variables to avoid seg fault on val access
+
+        try {
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(e,current_statement_begin__);
+            // Next line prevents compiler griping about no return
+throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+        }
+
+        // validate transformed data
+
+        // set parameter ranges
+        num_params_r__ = 0U;
+        param_ranges_i__.clear();
+        num_params_r__ += (K - 1) * P;
+        num_params_r__ += P;
+        num_params_r__ += K;
+        ++num_params_r__;
+    }
+
+    ~model_dm_glm_robust() { }
+
+
+    void transform_inits(const stan::io::var_context& context__,
+                         std::vector<int>& params_i__,
+                         std::vector<double>& params_r__,
+                         std::ostream* pstream__) const {
+        stan::io::writer<double> writer__(params_r__,params_i__);
+        size_t pos__;
+        (void) pos__; // dummy call to supress warning
+        std::vector<double> vals_r__;
+        std::vector<int> vals_i__;
+
+        if (!(context__.contains_r("beta_raw")))
+            throw std::runtime_error("variable beta_raw missing");
+        vals_r__ = context__.vals_r("beta_raw");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "beta_raw", "vector_d", context__.to_vec(P,K));
+        std::vector<vector_d> beta_raw(P,vector_d(K));
+        for (int j1__ = 0U; j1__ < K; ++j1__)
+            for (int i0__ = 0U; i0__ < P; ++i0__)
+                beta_raw[i0__](j1__) = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < P; ++i0__)
+            try {
+            writer__.simplex_unconstrain(beta_raw[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable beta_raw: ") + e.what());
+        }
+
+        if (!(context__.contains_r("beta_scale")))
+            throw std::runtime_error("variable beta_scale missing");
+        vals_r__ = context__.vals_r("beta_scale");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "beta_scale", "double", context__.to_vec(P));
+        std::vector<double> beta_scale(P,double(0));
+        for (int i0__ = 0U; i0__ < P; ++i0__)
+            beta_scale[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < P; ++i0__)
+            try {
+            writer__.scalar_unconstrain(beta_scale[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable beta_scale: ") + e.what());
+        }
+
+        if (!(context__.contains_r("conc")))
+            throw std::runtime_error("variable conc missing");
+        vals_r__ = context__.vals_r("conc");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "conc", "double", context__.to_vec(K));
+        std::vector<double> conc(K,double(0));
+        for (int i0__ = 0U; i0__ < K; ++i0__)
+            conc[i0__] = vals_r__[pos__++];
+        for (int i0__ = 0U; i0__ < K; ++i0__)
+            try {
+            writer__.scalar_lb_unconstrain(0,conc[i0__]);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable conc: ") + e.what());
+        }
+
+        if (!(context__.contains_r("outlier_prob")))
+            throw std::runtime_error("variable outlier_prob missing");
+        vals_r__ = context__.vals_r("outlier_prob");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "outlier_prob", "double", context__.to_vec());
+        double outlier_prob(0);
+        outlier_prob = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(0,1,outlier_prob);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable outlier_prob: ") + e.what());
+        }
+
+        params_r__ = writer__.data_r();
+        params_i__ = writer__.data_i();
+    }
+
+    void transform_inits(const stan::io::var_context& context,
+                         Eigen::Matrix<double,Eigen::Dynamic,1>& params_r,
+                         std::ostream* pstream__) const {
+      std::vector<double> params_r_vec;
+      std::vector<int> params_i_vec;
+      transform_inits(context, params_i_vec, params_r_vec, pstream__);
+      params_r.resize(params_r_vec.size());
+      for (int i = 0; i < params_r.size(); ++i)
+        params_r(i) = params_r_vec[i];
+    }
+
+
+    template <bool propto__, bool jacobian__, typename T__>
+    T__ log_prob(vector<T__>& params_r__,
+                 vector<int>& params_i__,
+                 std::ostream* pstream__ = 0) const {
+
+        T__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+
+        T__ lp__(0.0);
+        stan::math::accumulator<T__> lp_accum__;
+
+        // model parameters
+        stan::io::reader<T__> in__(params_r__,params_i__);
+
+        vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > beta_raw;
+        size_t dim_beta_raw_0__ = P;
+        beta_raw.reserve(dim_beta_raw_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_beta_raw_0__; ++k_0__) {
+            if (jacobian__)
+                beta_raw.push_back(in__.simplex_constrain(K,lp__));
+            else
+                beta_raw.push_back(in__.simplex_constrain(K));
+        }
+
+        vector<T__> beta_scale;
+        size_t dim_beta_scale_0__ = P;
+        beta_scale.reserve(dim_beta_scale_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_beta_scale_0__; ++k_0__) {
+            if (jacobian__)
+                beta_scale.push_back(in__.scalar_constrain(lp__));
+            else
+                beta_scale.push_back(in__.scalar_constrain());
+        }
+
+        vector<T__> conc;
+        size_t dim_conc_0__ = K;
+        conc.reserve(dim_conc_0__);
+        for (size_t k_0__ = 0; k_0__ < dim_conc_0__; ++k_0__) {
+            if (jacobian__)
+                conc.push_back(in__.scalar_lb_constrain(0,lp__));
+            else
+                conc.push_back(in__.scalar_lb_constrain(0));
+        }
+
+        T__ outlier_prob;
+        (void) outlier_prob;   // dummy to suppress unused var warning
+        if (jacobian__)
+            outlier_prob = in__.scalar_lub_constrain(0,1,lp__);
+        else
+            outlier_prob = in__.scalar_lub_constrain(0,1);
+
+
+        // transformed parameters
+
+        // initialize transformed variables to avoid seg fault on val access
+
+        try {
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(e,current_statement_begin__);
+            // Next line prevents compiler griping about no return
+throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+        }
+
+        // validate transformed parameters
+
+        const char* function__ = "validate transformed params";
+        (void) function__; // dummy to suppress unused var warning
+
+        // model body
+        try {
+            {
+                Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  beta(K,P);
+                (void) beta;  // dummy to suppress unused var warning
+                stan::math::fill(beta,DUMMY_VAR__);
+                stan::math::initialize(beta, DUMMY_VAR__);
+                current_statement_begin__ = 22;
+                for (int k = 1; k <= K; ++k) {
+                    current_statement_begin__ = 23;
+                    for (int p = 1; p <= P; ++p) {
+                        current_statement_begin__ = 24;
+                        stan::math::assign(get_base1_lhs(beta,k,p,"beta",1), (get_base1(beta_scale,p,"beta_scale",1) * (get_base1(get_base1(beta_raw,p,"beta_raw",1),k,"beta_raw",2) - (1.0 / K))));
+                    }
+                }
+                current_statement_begin__ = 26;
+                lp_accum__.add(beta_log<propto__>(outlier_prob, outlier_prior_a, outlier_prior_b));
+                current_statement_begin__ = 28;
+                lp_accum__.add(gamma_log<propto__>(conc, concShape, concRate));
+                current_statement_begin__ = 29;
+                for (int n = 1; n <= N; ++n) {
+                    {
+                        Eigen::Matrix<T__,Eigen::Dynamic,1>  a(K);
+                        (void) a;  // dummy to suppress unused var warning
+                        stan::math::fill(a,DUMMY_VAR__);
+                        T__ suma;
+                        (void) suma;  // dummy to suppress unused var warning
+                        T__ sumy;
+                        (void) sumy;  // dummy to suppress unused var warning
+                        Eigen::Matrix<T__,Eigen::Dynamic,1>  aPlusY(K);
+                        (void) aPlusY;  // dummy to suppress unused var warning
+                        stan::math::fill(aPlusY,DUMMY_VAR__);
+                        Eigen::Matrix<T__,Eigen::Dynamic,1>  lGaPlusY(K);
+                        (void) lGaPlusY;  // dummy to suppress unused var warning
+                        stan::math::fill(lGaPlusY,DUMMY_VAR__);
+                        Eigen::Matrix<T__,Eigen::Dynamic,1>  lG1PlusY(K);
+                        (void) lG1PlusY;  // dummy to suppress unused var warning
+                        stan::math::fill(lG1PlusY,DUMMY_VAR__);
+                        Eigen::Matrix<T__,Eigen::Dynamic,1>  lGaA(K);
+                        (void) lGaA;  // dummy to suppress unused var warning
+                        stan::math::fill(lGaA,DUMMY_VAR__);
+                        Eigen::Matrix<T__,Eigen::Dynamic,1>  s(K);
+                        (void) s;  // dummy to suppress unused var warning
+                        stan::math::fill(s,DUMMY_VAR__);
+                        stan::math::initialize(a, DUMMY_VAR__);
+                        stan::math::initialize(suma, DUMMY_VAR__);
+                        stan::math::initialize(sumy, DUMMY_VAR__);
+                        stan::math::initialize(aPlusY, DUMMY_VAR__);
+                        stan::math::initialize(lGaPlusY, DUMMY_VAR__);
+                        stan::math::initialize(lG1PlusY, DUMMY_VAR__);
+                        stan::math::initialize(lGaA, DUMMY_VAR__);
+                        stan::math::initialize(s, DUMMY_VAR__);
+                        current_statement_begin__ = 38;
+                        stan::math::assign(s, softmax(multiply(beta,get_base1(x,n,"x",1))));
+                        current_statement_begin__ = 39;
+                        for (int k = 1; k <= K; ++k) {
+                            current_statement_begin__ = 40;
+                            stan::math::assign(get_base1_lhs(a,k,"a",1), (get_base1(conc,k,"conc",1) * get_base1(s,k,"s",1)));
+                        }
+                        current_statement_begin__ = 43;
+                        stan::math::assign(suma, sum(a));
+                        current_statement_begin__ = 44;
+                        stan::math::assign(sumy, sum(get_base1(y,n,"y",1)));
+                        current_statement_begin__ = 45;
+                        for (int k = 1; k <= K; ++k) {
+                            current_statement_begin__ = 46;
+                            stan::math::assign(get_base1_lhs(lGaPlusY,k,"lGaPlusY",1), lgamma((get_base1(a,k,"a",1) + get_base1(get_base1(y,n,"y",1),k,"y",2))));
+                            current_statement_begin__ = 47;
+                            stan::math::assign(get_base1_lhs(lGaA,k,"lGaA",1), lgamma(get_base1(a,k,"a",1)));
+                            current_statement_begin__ = 48;
+                            stan::math::assign(get_base1_lhs(lG1PlusY,k,"lG1PlusY",1), lgamma((1.0 + get_base1(get_base1(y,n,"y",1),k,"y",2))));
+                        }
+                        current_statement_begin__ = 50;
+                        lp_accum__.add(log_sum_exp(((((log((1.0 - outlier_prob)) + lgamma(suma)) + sum(lGaPlusY)) - lgamma((suma + sumy))) - sum(lGaA)),(((log(outlier_prob) + lgamma(K)) + sum(lG1PlusY)) - lgamma((K + sumy)))));
+                    }
+                }
+            }
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(e,current_statement_begin__);
+            // Next line prevents compiler griping about no return
+throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+        }
+
+        lp_accum__.add(lp__);
+        return lp_accum__.sum();
+
+    } // log_prob()
+
+    template <bool propto, bool jacobian, typename T_>
+    T_ log_prob(Eigen::Matrix<T_,Eigen::Dynamic,1>& params_r,
+               std::ostream* pstream = 0) const {
+      std::vector<T_> vec_params_r;
+      vec_params_r.reserve(params_r.size());
+      for (int i = 0; i < params_r.size(); ++i)
+        vec_params_r.push_back(params_r(i));
+      std::vector<int> vec_params_i;
+      return log_prob<propto,jacobian,T_>(vec_params_r, vec_params_i, pstream);
+    }
+
+
+    void get_param_names(std::vector<std::string>& names__) const {
+        names__.resize(0);
+        names__.push_back("beta_raw");
+        names__.push_back("beta_scale");
+        names__.push_back("conc");
+        names__.push_back("outlier_prob");
+    }
+
+
+    void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
+        dimss__.resize(0);
+        std::vector<size_t> dims__;
+        dims__.resize(0);
+        dims__.push_back(P);
+        dims__.push_back(K);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(P);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dims__.push_back(K);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+    }
+
+    template <typename RNG>
+    void write_array(RNG& base_rng__,
+                     std::vector<double>& params_r__,
+                     std::vector<int>& params_i__,
+                     std::vector<double>& vars__,
+                     bool include_tparams__ = true,
+                     bool include_gqs__ = true,
+                     std::ostream* pstream__ = 0) const {
+        vars__.resize(0);
+        stan::io::reader<double> in__(params_r__,params_i__);
+        static const char* function__ = "model_dm_glm_robust_namespace::write_array";
+        (void) function__; // dummy call to supress warning
+        // read-transform, write parameters
+        vector<vector_d> beta_raw;
+        size_t dim_beta_raw_0__ = P;
+        for (size_t k_0__ = 0; k_0__ < dim_beta_raw_0__; ++k_0__) {
+            beta_raw.push_back(in__.simplex_constrain(K));
+        }
+        vector<double> beta_scale;
+        size_t dim_beta_scale_0__ = P;
+        for (size_t k_0__ = 0; k_0__ < dim_beta_scale_0__; ++k_0__) {
+            beta_scale.push_back(in__.scalar_constrain());
+        }
+        vector<double> conc;
+        size_t dim_conc_0__ = K;
+        for (size_t k_0__ = 0; k_0__ < dim_conc_0__; ++k_0__) {
+            conc.push_back(in__.scalar_lb_constrain(0));
+        }
+        double outlier_prob = in__.scalar_lub_constrain(0,1);
+        for (int k_1__ = 0; k_1__ < K; ++k_1__) {
+            for (int k_0__ = 0; k_0__ < P; ++k_0__) {
+                vars__.push_back(beta_raw[k_0__][k_1__]);
+            }
+        }
+        for (int k_0__ = 0; k_0__ < P; ++k_0__) {
+            vars__.push_back(beta_scale[k_0__]);
+        }
+        for (int k_0__ = 0; k_0__ < K; ++k_0__) {
+            vars__.push_back(conc[k_0__]);
+        }
+        vars__.push_back(outlier_prob);
+
+        if (!include_tparams__) return;
+        // declare and define transformed parameters
+        double lp__ = 0.0;
+        (void) lp__; // dummy call to supress warning
+        stan::math::accumulator<double> lp_accum__;
+
+
+        try {
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(e,current_statement_begin__);
+            // Next line prevents compiler griping about no return
+throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+        }
+
+        // validate transformed parameters
+
+        // write transformed parameters
+
+        if (!include_gqs__) return;
+        // declare and define generated quantities
+
+        double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
+        (void) DUMMY_VAR__;  // suppress unused var warning
+
+
+        // initialize transformed variables to avoid seg fault on val access
+
+        try {
+        } catch (const std::exception& e) {
+            stan::lang::rethrow_located(e,current_statement_begin__);
+            // Next line prevents compiler griping about no return
+throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
+        }
+
+        // validate generated quantities
+
+        // write generated quantities
+    }
+
+    template <typename RNG>
+    void write_array(RNG& base_rng,
+                     Eigen::Matrix<double,Eigen::Dynamic,1>& params_r,
+                     Eigen::Matrix<double,Eigen::Dynamic,1>& vars,
+                     bool include_tparams = true,
+                     bool include_gqs = true,
+                     std::ostream* pstream = 0) const {
+      std::vector<double> params_r_vec(params_r.size());
+      for (int i = 0; i < params_r.size(); ++i)
+        params_r_vec[i] = params_r(i);
+      std::vector<double> vars_vec;
+      std::vector<int> params_i_vec;
+      write_array(base_rng,params_r_vec,params_i_vec,vars_vec,include_tparams,include_gqs,pstream);
+      vars.resize(vars_vec.size());
+      for (int i = 0; i < vars.size(); ++i)
+        vars(i) = vars_vec[i];
+    }
+
+    static std::string model_name() {
+        return "model_dm_glm_robust";
+    }
+
+
+    void constrained_param_names(std::vector<std::string>& param_names__,
+                                 bool include_tparams__ = true,
+                                 bool include_gqs__ = true) const {
+        std::stringstream param_name_stream__;
+        for (int k_1__ = 1; k_1__ <= K; ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "beta_raw" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "beta_scale" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= K; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "conc" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "outlier_prob";
+        param_names__.push_back(param_name_stream__.str());
+
+        if (!include_gqs__ && !include_tparams__) return;
+
+        if (!include_gqs__) return;
+    }
+
+
+    void unconstrained_param_names(std::vector<std::string>& param_names__,
+                                   bool include_tparams__ = true,
+                                   bool include_gqs__ = true) const {
+        std::stringstream param_name_stream__;
+        for (int k_1__ = 1; k_1__ <= (K - 1); ++k_1__) {
+            for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
+                param_name_stream__.str(std::string());
+                param_name_stream__ << "beta_raw" << '.' << k_0__ << '.' << k_1__;
+                param_names__.push_back(param_name_stream__.str());
+            }
+        }
+        for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "beta_scale" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        for (int k_0__ = 1; k_0__ <= K; ++k_0__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "conc" << '.' << k_0__;
+            param_names__.push_back(param_name_stream__.str());
+        }
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "outlier_prob";
+        param_names__.push_back(param_name_stream__.str());
+
+        if (!include_gqs__ && !include_tparams__) return;
+
+        if (!include_gqs__) return;
+    }
+
+}; // model
+
+} // namespace
+
+
+
+
+// Code generated by Stan version 2.9
+
+#include <stan/model/model_header.hpp>
+
 namespace model_dm_glm_namespace {
 
 using std::istream;
@@ -1871,598 +2463,6 @@ throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
         }
         param_name_stream__.str(std::string());
         param_name_stream__ << "conc";
-        param_names__.push_back(param_name_stream__.str());
-
-        if (!include_gqs__ && !include_tparams__) return;
-
-        if (!include_gqs__) return;
-    }
-
-}; // model
-
-} // namespace
-
-
-
-
-// Code generated by Stan version 2.9
-
-#include <stan/model/model_header.hpp>
-
-namespace model_robust_namespace {
-
-using std::istream;
-using std::string;
-using std::stringstream;
-using std::vector;
-using stan::io::dump;
-using stan::math::lgamma;
-using stan::model::prob_grad;
-using namespace stan::math;
-
-typedef Eigen::Matrix<double,Eigen::Dynamic,1> vector_d;
-typedef Eigen::Matrix<double,1,Eigen::Dynamic> row_vector_d;
-typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> matrix_d;
-
-static int current_statement_begin__;
-class model_robust : public prob_grad {
-private:
-    int N;
-    int P;
-    int K;
-    vector<vector_d> x;
-    vector<vector_d> y;
-    double concShape;
-    double concRate;
-    double outlier_prior_a;
-    double outlier_prior_b;
-public:
-    model_robust(stan::io::var_context& context__,
-        std::ostream* pstream__ = 0)
-        : prob_grad(0) {
-        current_statement_begin__ = -1;
-
-        static const char* function__ = "model_robust_namespace::model_robust";
-        (void) function__; // dummy call to supress warning
-        size_t pos__;
-        (void) pos__; // dummy call to supress warning
-        std::vector<int> vals_i__;
-        std::vector<double> vals_r__;
-        context__.validate_dims("data initialization", "N", "int", context__.to_vec());
-        N = int(0);
-        vals_i__ = context__.vals_i("N");
-        pos__ = 0;
-        N = vals_i__[pos__++];
-        context__.validate_dims("data initialization", "P", "int", context__.to_vec());
-        P = int(0);
-        vals_i__ = context__.vals_i("P");
-        pos__ = 0;
-        P = vals_i__[pos__++];
-        context__.validate_dims("data initialization", "K", "int", context__.to_vec());
-        K = int(0);
-        vals_i__ = context__.vals_i("K");
-        pos__ = 0;
-        K = vals_i__[pos__++];
-        validate_non_negative_index("x", "N", N);
-        validate_non_negative_index("x", "P", P);
-        x = std::vector<vector_d>(N,vector_d(P));
-        context__.validate_dims("data initialization", "x", "vector_d", context__.to_vec(N,P));
-        vals_r__ = context__.vals_r("x");
-        pos__ = 0;
-        size_t x_i_vec_lim__ = P;
-        for (size_t i_vec__ = 0; i_vec__ < x_i_vec_lim__; ++i_vec__) {
-            size_t x_limit_0__ = N;
-            for (size_t i_0__ = 0; i_0__ < x_limit_0__; ++i_0__) {
-                x[i_0__][i_vec__] = vals_r__[pos__++];
-            }
-        }
-        validate_non_negative_index("y", "N", N);
-        validate_non_negative_index("y", "K", K);
-        y = std::vector<vector_d>(N,vector_d(K));
-        context__.validate_dims("data initialization", "y", "vector_d", context__.to_vec(N,K));
-        vals_r__ = context__.vals_r("y");
-        pos__ = 0;
-        size_t y_i_vec_lim__ = K;
-        for (size_t i_vec__ = 0; i_vec__ < y_i_vec_lim__; ++i_vec__) {
-            size_t y_limit_0__ = N;
-            for (size_t i_0__ = 0; i_0__ < y_limit_0__; ++i_0__) {
-                y[i_0__][i_vec__] = vals_r__[pos__++];
-            }
-        }
-        context__.validate_dims("data initialization", "concShape", "double", context__.to_vec());
-        concShape = double(0);
-        vals_r__ = context__.vals_r("concShape");
-        pos__ = 0;
-        concShape = vals_r__[pos__++];
-        context__.validate_dims("data initialization", "concRate", "double", context__.to_vec());
-        concRate = double(0);
-        vals_r__ = context__.vals_r("concRate");
-        pos__ = 0;
-        concRate = vals_r__[pos__++];
-        context__.validate_dims("data initialization", "outlier_prior_a", "double", context__.to_vec());
-        outlier_prior_a = double(0);
-        vals_r__ = context__.vals_r("outlier_prior_a");
-        pos__ = 0;
-        outlier_prior_a = vals_r__[pos__++];
-        context__.validate_dims("data initialization", "outlier_prior_b", "double", context__.to_vec());
-        outlier_prior_b = double(0);
-        vals_r__ = context__.vals_r("outlier_prior_b");
-        pos__ = 0;
-        outlier_prior_b = vals_r__[pos__++];
-
-        // validate data
-        check_greater_or_equal(function__,"N",N,0);
-        check_greater_or_equal(function__,"P",P,0);
-        check_greater_or_equal(function__,"K",K,0);
-        check_greater_or_equal(function__,"concShape",concShape,0);
-        check_greater_or_equal(function__,"concRate",concRate,0);
-        check_greater_or_equal(function__,"outlier_prior_a",outlier_prior_a,0);
-        check_greater_or_equal(function__,"outlier_prior_b",outlier_prior_b,0);
-
-        double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
-        (void) DUMMY_VAR__;  // suppress unused var warning
-
-
-        // initialize transformed variables to avoid seg fault on val access
-
-        try {
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate transformed data
-
-        // set parameter ranges
-        num_params_r__ = 0U;
-        param_ranges_i__.clear();
-        num_params_r__ += (K - 1) * P;
-        num_params_r__ += P;
-        num_params_r__ += K;
-        ++num_params_r__;
-    }
-
-    ~model_robust() { }
-
-
-    void transform_inits(const stan::io::var_context& context__,
-                         std::vector<int>& params_i__,
-                         std::vector<double>& params_r__,
-                         std::ostream* pstream__) const {
-        stan::io::writer<double> writer__(params_r__,params_i__);
-        size_t pos__;
-        (void) pos__; // dummy call to supress warning
-        std::vector<double> vals_r__;
-        std::vector<int> vals_i__;
-
-        if (!(context__.contains_r("beta_raw")))
-            throw std::runtime_error("variable beta_raw missing");
-        vals_r__ = context__.vals_r("beta_raw");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "beta_raw", "vector_d", context__.to_vec(P,K));
-        std::vector<vector_d> beta_raw(P,vector_d(K));
-        for (int j1__ = 0U; j1__ < K; ++j1__)
-            for (int i0__ = 0U; i0__ < P; ++i0__)
-                beta_raw[i0__](j1__) = vals_r__[pos__++];
-        for (int i0__ = 0U; i0__ < P; ++i0__)
-            try {
-            writer__.simplex_unconstrain(beta_raw[i0__]);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable beta_raw: ") + e.what());
-        }
-
-        if (!(context__.contains_r("beta_scale")))
-            throw std::runtime_error("variable beta_scale missing");
-        vals_r__ = context__.vals_r("beta_scale");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "beta_scale", "double", context__.to_vec(P));
-        std::vector<double> beta_scale(P,double(0));
-        for (int i0__ = 0U; i0__ < P; ++i0__)
-            beta_scale[i0__] = vals_r__[pos__++];
-        for (int i0__ = 0U; i0__ < P; ++i0__)
-            try {
-            writer__.scalar_unconstrain(beta_scale[i0__]);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable beta_scale: ") + e.what());
-        }
-
-        if (!(context__.contains_r("conc")))
-            throw std::runtime_error("variable conc missing");
-        vals_r__ = context__.vals_r("conc");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "conc", "double", context__.to_vec(K));
-        std::vector<double> conc(K,double(0));
-        for (int i0__ = 0U; i0__ < K; ++i0__)
-            conc[i0__] = vals_r__[pos__++];
-        for (int i0__ = 0U; i0__ < K; ++i0__)
-            try {
-            writer__.scalar_lb_unconstrain(0,conc[i0__]);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable conc: ") + e.what());
-        }
-
-        if (!(context__.contains_r("outlier_prob")))
-            throw std::runtime_error("variable outlier_prob missing");
-        vals_r__ = context__.vals_r("outlier_prob");
-        pos__ = 0U;
-        context__.validate_dims("initialization", "outlier_prob", "double", context__.to_vec());
-        double outlier_prob(0);
-        outlier_prob = vals_r__[pos__++];
-        try {
-            writer__.scalar_lub_unconstrain(0,1,outlier_prob);
-        } catch (const std::exception& e) { 
-            throw std::runtime_error(std::string("Error transforming variable outlier_prob: ") + e.what());
-        }
-
-        params_r__ = writer__.data_r();
-        params_i__ = writer__.data_i();
-    }
-
-    void transform_inits(const stan::io::var_context& context,
-                         Eigen::Matrix<double,Eigen::Dynamic,1>& params_r,
-                         std::ostream* pstream__) const {
-      std::vector<double> params_r_vec;
-      std::vector<int> params_i_vec;
-      transform_inits(context, params_i_vec, params_r_vec, pstream__);
-      params_r.resize(params_r_vec.size());
-      for (int i = 0; i < params_r.size(); ++i)
-        params_r(i) = params_r_vec[i];
-    }
-
-
-    template <bool propto__, bool jacobian__, typename T__>
-    T__ log_prob(vector<T__>& params_r__,
-                 vector<int>& params_i__,
-                 std::ostream* pstream__ = 0) const {
-
-        T__ DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
-        (void) DUMMY_VAR__;  // suppress unused var warning
-
-        T__ lp__(0.0);
-        stan::math::accumulator<T__> lp_accum__;
-
-        // model parameters
-        stan::io::reader<T__> in__(params_r__,params_i__);
-
-        vector<Eigen::Matrix<T__,Eigen::Dynamic,1> > beta_raw;
-        size_t dim_beta_raw_0__ = P;
-        beta_raw.reserve(dim_beta_raw_0__);
-        for (size_t k_0__ = 0; k_0__ < dim_beta_raw_0__; ++k_0__) {
-            if (jacobian__)
-                beta_raw.push_back(in__.simplex_constrain(K,lp__));
-            else
-                beta_raw.push_back(in__.simplex_constrain(K));
-        }
-
-        vector<T__> beta_scale;
-        size_t dim_beta_scale_0__ = P;
-        beta_scale.reserve(dim_beta_scale_0__);
-        for (size_t k_0__ = 0; k_0__ < dim_beta_scale_0__; ++k_0__) {
-            if (jacobian__)
-                beta_scale.push_back(in__.scalar_constrain(lp__));
-            else
-                beta_scale.push_back(in__.scalar_constrain());
-        }
-
-        vector<T__> conc;
-        size_t dim_conc_0__ = K;
-        conc.reserve(dim_conc_0__);
-        for (size_t k_0__ = 0; k_0__ < dim_conc_0__; ++k_0__) {
-            if (jacobian__)
-                conc.push_back(in__.scalar_lb_constrain(0,lp__));
-            else
-                conc.push_back(in__.scalar_lb_constrain(0));
-        }
-
-        T__ outlier_prob;
-        (void) outlier_prob;   // dummy to suppress unused var warning
-        if (jacobian__)
-            outlier_prob = in__.scalar_lub_constrain(0,1,lp__);
-        else
-            outlier_prob = in__.scalar_lub_constrain(0,1);
-
-
-        // transformed parameters
-
-        // initialize transformed variables to avoid seg fault on val access
-
-        try {
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate transformed parameters
-
-        const char* function__ = "validate transformed params";
-        (void) function__; // dummy to suppress unused var warning
-
-        // model body
-        try {
-            {
-                Eigen::Matrix<T__,Eigen::Dynamic,Eigen::Dynamic>  beta(K,P);
-                (void) beta;  // dummy to suppress unused var warning
-                stan::math::fill(beta,DUMMY_VAR__);
-                stan::math::initialize(beta, DUMMY_VAR__);
-                current_statement_begin__ = 22;
-                for (int k = 1; k <= K; ++k) {
-                    current_statement_begin__ = 23;
-                    for (int p = 1; p <= P; ++p) {
-                        current_statement_begin__ = 24;
-                        stan::math::assign(get_base1_lhs(beta,k,p,"beta",1), (get_base1(beta_scale,p,"beta_scale",1) * (get_base1(get_base1(beta_raw,p,"beta_raw",1),k,"beta_raw",2) - (1.0 / K))));
-                    }
-                }
-                current_statement_begin__ = 26;
-                lp_accum__.add(beta_log<propto__>(outlier_prob, outlier_prior_a, outlier_prior_b));
-                current_statement_begin__ = 28;
-                lp_accum__.add(gamma_log<propto__>(conc, concShape, concRate));
-                current_statement_begin__ = 29;
-                for (int n = 1; n <= N; ++n) {
-                    {
-                        Eigen::Matrix<T__,Eigen::Dynamic,1>  a(K);
-                        (void) a;  // dummy to suppress unused var warning
-                        stan::math::fill(a,DUMMY_VAR__);
-                        T__ suma;
-                        (void) suma;  // dummy to suppress unused var warning
-                        T__ sumy;
-                        (void) sumy;  // dummy to suppress unused var warning
-                        Eigen::Matrix<T__,Eigen::Dynamic,1>  aPlusY(K);
-                        (void) aPlusY;  // dummy to suppress unused var warning
-                        stan::math::fill(aPlusY,DUMMY_VAR__);
-                        Eigen::Matrix<T__,Eigen::Dynamic,1>  lGaPlusY(K);
-                        (void) lGaPlusY;  // dummy to suppress unused var warning
-                        stan::math::fill(lGaPlusY,DUMMY_VAR__);
-                        Eigen::Matrix<T__,Eigen::Dynamic,1>  lG1PlusY(K);
-                        (void) lG1PlusY;  // dummy to suppress unused var warning
-                        stan::math::fill(lG1PlusY,DUMMY_VAR__);
-                        Eigen::Matrix<T__,Eigen::Dynamic,1>  lGaA(K);
-                        (void) lGaA;  // dummy to suppress unused var warning
-                        stan::math::fill(lGaA,DUMMY_VAR__);
-                        Eigen::Matrix<T__,Eigen::Dynamic,1>  s(K);
-                        (void) s;  // dummy to suppress unused var warning
-                        stan::math::fill(s,DUMMY_VAR__);
-                        stan::math::initialize(a, DUMMY_VAR__);
-                        stan::math::initialize(suma, DUMMY_VAR__);
-                        stan::math::initialize(sumy, DUMMY_VAR__);
-                        stan::math::initialize(aPlusY, DUMMY_VAR__);
-                        stan::math::initialize(lGaPlusY, DUMMY_VAR__);
-                        stan::math::initialize(lG1PlusY, DUMMY_VAR__);
-                        stan::math::initialize(lGaA, DUMMY_VAR__);
-                        stan::math::initialize(s, DUMMY_VAR__);
-                        current_statement_begin__ = 38;
-                        stan::math::assign(s, softmax(multiply(beta,get_base1(x,n,"x",1))));
-                        current_statement_begin__ = 39;
-                        for (int k = 1; k <= K; ++k) {
-                            current_statement_begin__ = 40;
-                            stan::math::assign(get_base1_lhs(a,k,"a",1), (get_base1(conc,k,"conc",1) * get_base1(s,k,"s",1)));
-                        }
-                        current_statement_begin__ = 43;
-                        stan::math::assign(suma, sum(a));
-                        current_statement_begin__ = 44;
-                        stan::math::assign(sumy, sum(get_base1(y,n,"y",1)));
-                        current_statement_begin__ = 45;
-                        for (int k = 1; k <= K; ++k) {
-                            current_statement_begin__ = 46;
-                            stan::math::assign(get_base1_lhs(lGaPlusY,k,"lGaPlusY",1), lgamma((get_base1(a,k,"a",1) + get_base1(get_base1(y,n,"y",1),k,"y",2))));
-                            current_statement_begin__ = 47;
-                            stan::math::assign(get_base1_lhs(lGaA,k,"lGaA",1), lgamma(get_base1(a,k,"a",1)));
-                            current_statement_begin__ = 48;
-                            stan::math::assign(get_base1_lhs(lG1PlusY,k,"lG1PlusY",1), lgamma((1.0 + get_base1(get_base1(y,n,"y",1),k,"y",2))));
-                        }
-                        current_statement_begin__ = 50;
-                        lp_accum__.add(log_sum_exp(((((log((1.0 - outlier_prob)) + lgamma(suma)) + sum(lGaPlusY)) - lgamma((suma + sumy))) - sum(lGaA)),(((log(outlier_prob) + lgamma(K)) + sum(lG1PlusY)) - lgamma((K + sumy)))));
-                    }
-                }
-            }
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        lp_accum__.add(lp__);
-        return lp_accum__.sum();
-
-    } // log_prob()
-
-    template <bool propto, bool jacobian, typename T_>
-    T_ log_prob(Eigen::Matrix<T_,Eigen::Dynamic,1>& params_r,
-               std::ostream* pstream = 0) const {
-      std::vector<T_> vec_params_r;
-      vec_params_r.reserve(params_r.size());
-      for (int i = 0; i < params_r.size(); ++i)
-        vec_params_r.push_back(params_r(i));
-      std::vector<int> vec_params_i;
-      return log_prob<propto,jacobian,T_>(vec_params_r, vec_params_i, pstream);
-    }
-
-
-    void get_param_names(std::vector<std::string>& names__) const {
-        names__.resize(0);
-        names__.push_back("beta_raw");
-        names__.push_back("beta_scale");
-        names__.push_back("conc");
-        names__.push_back("outlier_prob");
-    }
-
-
-    void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
-        dimss__.resize(0);
-        std::vector<size_t> dims__;
-        dims__.resize(0);
-        dims__.push_back(P);
-        dims__.push_back(K);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back(P);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dims__.push_back(K);
-        dimss__.push_back(dims__);
-        dims__.resize(0);
-        dimss__.push_back(dims__);
-    }
-
-    template <typename RNG>
-    void write_array(RNG& base_rng__,
-                     std::vector<double>& params_r__,
-                     std::vector<int>& params_i__,
-                     std::vector<double>& vars__,
-                     bool include_tparams__ = true,
-                     bool include_gqs__ = true,
-                     std::ostream* pstream__ = 0) const {
-        vars__.resize(0);
-        stan::io::reader<double> in__(params_r__,params_i__);
-        static const char* function__ = "model_robust_namespace::write_array";
-        (void) function__; // dummy call to supress warning
-        // read-transform, write parameters
-        vector<vector_d> beta_raw;
-        size_t dim_beta_raw_0__ = P;
-        for (size_t k_0__ = 0; k_0__ < dim_beta_raw_0__; ++k_0__) {
-            beta_raw.push_back(in__.simplex_constrain(K));
-        }
-        vector<double> beta_scale;
-        size_t dim_beta_scale_0__ = P;
-        for (size_t k_0__ = 0; k_0__ < dim_beta_scale_0__; ++k_0__) {
-            beta_scale.push_back(in__.scalar_constrain());
-        }
-        vector<double> conc;
-        size_t dim_conc_0__ = K;
-        for (size_t k_0__ = 0; k_0__ < dim_conc_0__; ++k_0__) {
-            conc.push_back(in__.scalar_lb_constrain(0));
-        }
-        double outlier_prob = in__.scalar_lub_constrain(0,1);
-        for (int k_1__ = 0; k_1__ < K; ++k_1__) {
-            for (int k_0__ = 0; k_0__ < P; ++k_0__) {
-                vars__.push_back(beta_raw[k_0__][k_1__]);
-            }
-        }
-        for (int k_0__ = 0; k_0__ < P; ++k_0__) {
-            vars__.push_back(beta_scale[k_0__]);
-        }
-        for (int k_0__ = 0; k_0__ < K; ++k_0__) {
-            vars__.push_back(conc[k_0__]);
-        }
-        vars__.push_back(outlier_prob);
-
-        if (!include_tparams__) return;
-        // declare and define transformed parameters
-        double lp__ = 0.0;
-        (void) lp__; // dummy call to supress warning
-        stan::math::accumulator<double> lp_accum__;
-
-
-        try {
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate transformed parameters
-
-        // write transformed parameters
-
-        if (!include_gqs__) return;
-        // declare and define generated quantities
-
-        double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
-        (void) DUMMY_VAR__;  // suppress unused var warning
-
-
-        // initialize transformed variables to avoid seg fault on val access
-
-        try {
-        } catch (const std::exception& e) {
-            stan::lang::rethrow_located(e,current_statement_begin__);
-            // Next line prevents compiler griping about no return
-throw std::runtime_error("*** IF YOU SEE THIS, PLEASE REPORT A BUG ***");
-        }
-
-        // validate generated quantities
-
-        // write generated quantities
-    }
-
-    template <typename RNG>
-    void write_array(RNG& base_rng,
-                     Eigen::Matrix<double,Eigen::Dynamic,1>& params_r,
-                     Eigen::Matrix<double,Eigen::Dynamic,1>& vars,
-                     bool include_tparams = true,
-                     bool include_gqs = true,
-                     std::ostream* pstream = 0) const {
-      std::vector<double> params_r_vec(params_r.size());
-      for (int i = 0; i < params_r.size(); ++i)
-        params_r_vec[i] = params_r(i);
-      std::vector<double> vars_vec;
-      std::vector<int> params_i_vec;
-      write_array(base_rng,params_r_vec,params_i_vec,vars_vec,include_tparams,include_gqs,pstream);
-      vars.resize(vars_vec.size());
-      for (int i = 0; i < vars.size(); ++i)
-        vars(i) = vars_vec[i];
-    }
-
-    static std::string model_name() {
-        return "model_robust";
-    }
-
-
-    void constrained_param_names(std::vector<std::string>& param_names__,
-                                 bool include_tparams__ = true,
-                                 bool include_gqs__ = true) const {
-        std::stringstream param_name_stream__;
-        for (int k_1__ = 1; k_1__ <= K; ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "beta_raw" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-        for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "beta_scale" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        for (int k_0__ = 1; k_0__ <= K; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "conc" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "outlier_prob";
-        param_names__.push_back(param_name_stream__.str());
-
-        if (!include_gqs__ && !include_tparams__) return;
-
-        if (!include_gqs__) return;
-    }
-
-
-    void unconstrained_param_names(std::vector<std::string>& param_names__,
-                                   bool include_tparams__ = true,
-                                   bool include_gqs__ = true) const {
-        std::stringstream param_name_stream__;
-        for (int k_1__ = 1; k_1__ <= (K - 1); ++k_1__) {
-            for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
-                param_name_stream__.str(std::string());
-                param_name_stream__ << "beta_raw" << '.' << k_0__ << '.' << k_1__;
-                param_names__.push_back(param_name_stream__.str());
-            }
-        }
-        for (int k_0__ = 1; k_0__ <= P; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "beta_scale" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        for (int k_0__ = 1; k_0__ <= K; ++k_0__) {
-            param_name_stream__.str(std::string());
-            param_name_stream__ << "conc" << '.' << k_0__;
-            param_names__.push_back(param_name_stream__.str());
-        }
-        param_name_stream__.str(std::string());
-        param_name_stream__ << "outlier_prob";
         param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__ && !include_tparams__) return;

@@ -1,4 +1,8 @@
 
+#' Benjamini-Hochberg FDR correction
+#' @param p P-values
+#' @return Adjusted p-values (q-values)
+#' @export
 bh=function(p) { q=p; q[!is.na(p)]=p.adjust(pmin(p[!is.na(p)],1),method="fdr"); q }
 
 bfc=function(p) min(p,na.rm=T)*sum(!is.na(p))
@@ -26,7 +30,7 @@ pqplot=function(p, ...) { pqplotHelper(p); abline(0,1) }
 #' Plot multiple qq plot for p-values
 #'
 #' @param pvales A list of numeric vectors of p-values.
-#' @return ggplot
+#' @return a ggplot
 #' @import ggplot2
 #' @export
 multiqq=function(pvalues) {
@@ -40,13 +44,17 @@ multiqq=function(pvalues) {
   ggplot(df, aes(x,y,col=group)) + geom_point() + geom_abline(intercept=0,slope=1) + theme_bw(base_size=18) + xlab("Expected -log10(p)") + ylab("Observed -log10(p)") 
 }
 
+#' Make a data.frame of meta data about the introns
+#' @param introns Names of the introns
+#' @return Data.frame with chr, start, end, cluster id and "middle" 
+#' @export
 get_intron_meta=function(introns){
   intron_meta=do.call(rbind,strsplit(introns,":"))
   colnames(intron_meta)=c("chr","start","end","clu")
   intron_meta=as.data.frame(intron_meta,stringsAsFactors = F)
   intron_meta$start=as.numeric(intron_meta$start)
   intron_meta$end=as.numeric(intron_meta$end)
-  intron_meta$middle=.5*(intron_meta$start+intron_meta$end)
+  intron_meta$middle=.5*(intron_meta$start+intron_meta$end) # TODO: can remove this now? 
   intron_meta
 }
 
@@ -56,4 +64,10 @@ mahalanobis_outlier=function(x) {
     prec=ei$vectors %*% diag(1/ei$values) %*% t(ei$vectors)
     mah_dist=mahalanobis( x, colMeans(x), prec, inverted=T )
     pchisq(mah_dist, df=ncol(x), lower.tail=F) * nrow(x)
+}
+
+sanitize_simplex=function(x, eps=1e-6) {
+  x[x<eps]=eps
+  x[x>(1.0-eps)]=(1.0-eps)
+  x/sum(x)
 }

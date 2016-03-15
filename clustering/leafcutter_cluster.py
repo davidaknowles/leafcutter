@@ -93,7 +93,7 @@ def sort_junctions(libl, options):
         lib=ll.rstrip()
         if not os.path.isfile(lib):
             continue
-        libN = lib.replace("_1.",".").replace("_2.",".")
+        libN = lib
         if libN not in merges:
             merges[libN] = []
         merges[libN].append(lib)
@@ -393,8 +393,6 @@ if __name__ == "__main__":
 
 
     from optparse import OptionParser
-
-    juncFilesDir="../../data/brain_gtex/*SRR6124*.junc"
 
     parser = OptionParser()
 

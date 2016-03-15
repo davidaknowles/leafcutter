@@ -13,7 +13,7 @@
 #' @param fit_null Optionally the fitted null model (used in \code{\link{splicing_qtl}} to save repeatedly fitting the null for each cis-SNP)
 #' @importFrom rstan optimizing
 #' @export
-dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1, outlier_prior_b=101, fit_null=NULL, ...) {
+dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1.01, outlier_prior_b=100, fit_null=NULL, ...) {
   K=ncol(y)
   
   model_to_use=if (robust) stanmodels$dm_glm_robust else stanmodels$dm_glm_multi_conc
@@ -31,7 +31,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   dat_full$x=xFull
 
   # beta_raw is PxK
-  init=list(beta_raw=matrix(1e-4,ncol(xFull),K), beta_scale=rep(1,ncol(xFull)), conc=fit_null$par$conc, outlier_prob=outlier_prior_a/(outlier_prior_a+outlier_prior_b))
+  init=list(beta_raw=matrix(1e-4,ncol(xFull),K), beta_scale=rep(1,ncol(xFull)), conc=fit_null$par$conc, outlier_prob=fit_null$par$outlier_prob)
 
   # beta_raw must live _in_ the simplex
   beta_raw_sanitized=fit_null$par$beta_raw
