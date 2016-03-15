@@ -2,11 +2,11 @@
 
 def main(options,libl):
     
-    pool_junc_reads(libl, options)
+    #pool_junc_reads(libl, options)
     refine_clusters(options)
-    sort_junctions(libl, options)
-    merge_junctions(options)
-    get_numers(options)
+    #sort_junctions(libl, options)
+    #merge_junctions(options)
+    #get_numers(options)
 
 def pool_junc_reads(flist, options):
 
@@ -184,14 +184,18 @@ def refine_clusters(options):
             clu.append(((int(A),int(B)), int(N)))
             totN += int(N)
         if totN < minreads: continue
-        rc = refine_cluster(clu,minratio)
-        if len(rc) > 0:
-            for clu in rc:
-                buf = '%s ' % chrom
-                for interval, count in clu:
-                    buf += "%d:%d" % interval + ":%d"%(count)+ " "
-                Ncl += 1
-                fout.write(buf+'\n')
+        #print "CLU",clu
+        #print "linked",refine_linked(clu)
+        #print '\n\n'
+        for cl in refine_linked(clu):
+            rc = refine_cluster(cl,minratio)
+            if len(rc) > 0:
+                for clu in rc:
+                    buf = '%s ' % chrom
+                    for interval, count in clu:
+                        buf += "%d:%d" % interval + ":%d"%(count)+ " "
+                    Ncl += 1
+                    fout.write(buf+'\n')
     sys.stderr.write("Split into %s clusters...\n"%Ncl)
     fout.close()
 
@@ -308,25 +312,35 @@ def overlaps(A,B):
     else: return True
 
 def refine_linked(clusters):
-    all_clus = []
-    while len(clusters) > 0:
-        start = clusters[0]
-        clusters = clusters[1:]
-        current_pos = [start[0],start[1]]
-        current_clu = [start]
-        while True:
+
+    unassigned = [x for x in clusters[1:]]
+    current = [clusters[0]]
+    splicesites = set([current[0][0][0],current[0][0][1]])
+    newClusters = []
+    while len(unassigned) > 0:
+        finished = False
+    
+        while not finished:
+            finished = True
             torm = []
-            for intron in clusters:
-                if intron[0] in current_pos or intron[1] in current_pos:
-                    current_clu.append(intron)
-                    current_pos += [intron[0],intron[1]]
+            for intron in unassigned:
+                inter, count = intron
+                start, end = inter
+                if start in splicesites or end in splicesites:
+                    current.append(intron)
+                    splicesites.add(start)
+                    splicesites.add(end)
+                    finished = False
                     torm.append(intron)
             for intron in torm:
-                clusters.remove(intron)
-            if len(torm) == 0: break
-                            
-        all_clus.append(current_clu)
-    return all_clus
+                unassigned.remove(intron)
+        newClusters.append(current)
+        current = []
+        if len(unassigned) > 0:
+            current = [unassigned[0]]
+            splicesites = set([current[0][0][0],current[0][0][1]])
+            unassigned = unassigned[1:]
+    return newClusters
 
 
 def refine_cluster(clu, cutoff):
@@ -432,7 +446,7 @@ if __name__ == "__main__":
             open(junc)
         except: 
             sys.stderr.write("%s does not exist... check your junction files.\n"%junc)
-            exit(0)
+            #exit(0)
         libl.append(junc)
 
     main(options, libl)
