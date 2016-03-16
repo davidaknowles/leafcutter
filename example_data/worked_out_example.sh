@@ -4,9 +4,11 @@ then
     rm test_juncfiles.txt
 fi
 
-# wget bam files
+# wget bam files (4Gb!)
+wget https://www.dropbox.com/s/pni1zq5y6cr4tx5/example_geuvadis.tar.gz?dl=0 -O example_geuvadis.tar.gz
+tar -xvf example_geuvadis.tar.gz
 
-for bamfile in `ls ../../run/geuvadis/*chr1.bam`
+for bamfile in `ls run/geuvadis/*chr1.bam`
 do
     echo Converting $bamfile to $bamfile.junc
     sh ../scripts/bam2junc.sh $bamfile $bamfile.junc
