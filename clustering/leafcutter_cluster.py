@@ -446,11 +446,7 @@ if __name__ == "__main__":
             open(junc)
         except: 
             sys.stderr.write("%s does not exist... check your junction files.\n"%junc)
-            #exit(0)
+            exit(0)
         libl.append(junc)
 
     main(options, libl)
-
-    #echo "Creating $outPrefix\_perind_numers.RData"
-    #eval "Rscript convert_to_RData.R $outPrefix\_perind_numers.counts.gz $outPrefix\_perind_numers.RData"
-
