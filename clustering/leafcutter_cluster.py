@@ -2,11 +2,11 @@
 
 def main(options,libl):
     
-    #pool_junc_reads(libl, options)
+    pool_junc_reads(libl, options)
     refine_clusters(options)
-    #sort_junctions(libl, options)
-    #merge_junctions(options)
-    #get_numers(options)
+    sort_junctions(libl, options)
+    merge_junctions(options)
+    get_numers(options)
 
 def pool_junc_reads(flist, options):
 
