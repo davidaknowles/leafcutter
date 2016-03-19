@@ -23,12 +23,12 @@ then
 fi
 
 
-for lib in `cut -f 5 -d'/' ../example_data/test_juncfiles.txt | cut -f 1-4 -d'.' | grep YRI`
+for lib in `cut -f 3 -d'/' ../example_data/test_juncfiles.txt | cut -f 1-4 -d'.' | grep YRI`
 do
     echo $lib YRI >> test_diff_intron.txt
 done
 
-for lib in `cut -f 5 -d'/' ../example_data/test_juncfiles.txt | cut -f 1-4 -d'.' | grep CEU`
+for lib in `cut -f 3 -d'/' ../example_data/test_juncfiles.txt | cut -f 1-4 -d'.' | grep CEU`
 do
     echo $lib CEU >> test_diff_intron.txt
 done
