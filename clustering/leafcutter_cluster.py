@@ -1,4 +1,8 @@
-
+import sys
+import tempfile
+import os
+import gzip
+import shutil
 
 def main(options,libl):
     
@@ -234,14 +238,14 @@ def merge_junctions(options):
             foutname = tmpfile+"/tmpmerge.gz"
             fout = gzip.open(foutname,'w')
             
-            merge_files(lst, fout)
+            merge_files(lst, fout, options)
             lsts.append(foutname)
             tmpfiles.append(foutname)
             fout.close()
     
     shutil.move(lsts[0], fnameout+"_perind.counts.gz")
 
-def merge_files(fnames, fout):
+def merge_files(fnames, fout, options):
 
     fopen = []
     for fname in fnames:
@@ -399,12 +403,6 @@ def get_numers(options):
     fout.close()
 
 if __name__ == "__main__":
-    import sys
-    import tempfile
-    import os
-    import gzip
-    import shutil
-
 
     from optparse import OptionParser
 
