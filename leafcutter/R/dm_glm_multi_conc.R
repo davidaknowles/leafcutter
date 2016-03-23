@@ -13,7 +13,7 @@
 #' @param fit_null Optionally the fitted null model (used in \code{\link{splicing_qtl}} to save repeatedly fitting the null for each cis-SNP)
 #' @importFrom rstan optimizing
 #' @export
-dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1.01, outlier_prior_b=100, fit_null=NULL, ...) {
+dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1.01, outlier_prior_b=100, fit_null=NULL, debug=F, ...) {
   K=ncol(y)
   
   model_to_use=if (robust) stanmodels$dm_glm_robust else stanmodels$dm_glm_multi_conc
@@ -21,7 +21,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   dat_null=list(N=nrow(xNull), K=K, P=ncol(xNull), y=y, x=xNull, concShape=concShape,concRate=concRate, outlier_prior_a=outlier_prior_a, outlier_prior_b=outlier_prior_b)
   
   # fit null model
-  if (is.null(fit_null)) fit_null=rstan::optimizing(model_to_use, data=dat_null, as_vector=F, ...)
+  if (is.null(fit_null)) fit_null=rstan::optimizing(model_to_use, data=dat_null, as_vector=F, verbose=debug, ...)
 
   colnames(fit_null$par$beta_raw)=colnames(y)
   rownames(fit_null$par$beta_raw)=colnames(xNull)
@@ -43,7 +43,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   init$beta_scale[1:ncol(xNull)]=fit_null$par$beta_scale
   stopifnot(all(is.finite(unlist(init))))
   # fit fit model
-  fit_full=rstan::optimizing(model_to_use, data=dat_full, init=init, as_vector=F, ...)
+  fit_full=rstan::optimizing(model_to_use, data=dat_full, init=init, as_vector=F, verbose=debug, ...)
 
   colnames(fit_full$par$beta_raw)=colnames(y)
   rownames(fit_full$par$beta_raw)=colnames(xFull)
@@ -61,7 +61,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
     init$beta_raw[init$beta_raw>(1.0-1e-6)]=(1.0-1e-6)
     init$beta_raw=sweep(init$beta_raw, 1, rowSums(init$beta_raw), "/") 
     init$beta_scale=as.array(init$beta_scale[seq_len(dat_null$P)])
-    refit_null=rstan::optimizing(model_to_use, data=dat_null, init=init, as_vector=F, ...)
+    refit_null=rstan::optimizing(model_to_use, data=dat_null, init=init, as_vector=F, verbose=debug, ...)
     if (refit_null$value > fit_null$value) {
       refit_null_flag=T
       fit_null=refit_null

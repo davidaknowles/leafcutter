@@ -66,7 +66,7 @@ splicing_qtl_bnb=function(counts,geno,geno_meta,snps_within=1e4,min_samples_per_
         return("almost all ys/sample_counts is 0 or 1")
 
         if (debug & !is.null(cached_fit_null)) cat("Using cached null fit.\n")
-        res <- R.utils::evalWithTimeout( { bnb_glm(xh,cluster_counts,fit_null=cached_fit_null,...) }, timeout=timeout, onTimeout="silent" )
+        res <- R.utils::evalWithTimeout( { bnb_glm(xh,cluster_counts,fit_null=NULL,...) }, timeout=timeout, onTimeout="silent" )
         if (is.null(res)) "timeout" else {
           cached_fit_null=res$fit_null
           res

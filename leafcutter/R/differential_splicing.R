@@ -53,12 +53,15 @@ leaf_cutter_effect_sizes=function(results) {
 #' @param min_samples_per_group Require this many samples in each group to have at least min_coverage reads
 #' @param min_coverage Require min_samples_per_group samples in each group to have at least this many reads
 #' @param timeout Maximum time (in seconds) allowed for a single optimization run
-#'
+#' @param robust Whether to use the robust model (explicitly models outliers). Generally not required/recommended for differential splicing.
+#' @param debug If true writes more output
 #' @return A per cluster list of results. Clusters that were not tested will be represented by a string saying why.
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10) {
+differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10, robust=F, debug=F) {
+  
+  stopifnot(ncol(counts)==length(x))
   
   introns=leafcutter:::get_intron_meta(rownames(counts))
   cluster_ids=paste(introns$chr,introns$clu,sep = ":")
@@ -68,9 +71,11 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
   cluster_sizes=cluster_sizes$Freq
   names(cluster_sizes)=clu_names
   
-  zz <- file( "/dev/null", open = "wt")
-  sink(zz)
-  sink(zz, type = "message")
+  if (!debug) {
+    zz <- file( "/dev/null", open = "wt")
+    sink(zz)
+    sink(zz, type = "message")
+  }
   
   results=foreach (cluster_name=clu_names, .errorhandling = "pass") %dopar% {
     if (cluster_sizes[cluster_name] > max_cluster_size)
@@ -95,13 +100,15 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
     xFull=cbind(1,x_subset)
     xNull=xFull[,1,drop=F]
     res <- R.utils::evalWithTimeout( { 
-      dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts)
+      dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,robust=robust, debug=debug)
     }, timeout=timeout, onTimeout="silent" ) 
     if (is.null(res)) "timeout" else res
   }
   
-  sink(type="message")
-  sink()
+  if (!debug) {
+    sink(type="message")
+    sink()
+  }
   
   statuses=leafcutter_status(results)
   

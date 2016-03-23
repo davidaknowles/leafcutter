@@ -1,3 +1,4 @@
+#model_to_use=stan_model("~/Dropbox/splicing/leafcutter/leafcutter/exec/bnb_glm_reparam.stan")
 
 #' Beta negative binomial GLM likelihood ratio test for a single cluster
 #'
@@ -11,7 +12,7 @@
 #' @export
 bnb_glm <- function(x,cluster_counts,concShape=1.001,concRate=1e-3, fit_null=NULL, ...) {
   
-  model_to_use=stanmodels$bnb_glm
+  model_to_use=leafcutter:::stanmodels$bnb_glm
   
   melted_counts=reshape2::melt(data.frame(cluster_counts, sample=rownames(cluster_counts), x=x), id.vars=c("sample","x"), value.name = "count")
   colnames(melted_counts)[3]="intron"
@@ -19,8 +20,9 @@ bnb_glm <- function(x,cluster_counts,concShape=1.001,concRate=1e-3, fit_null=NUL
   xNull=model.matrix( ~ sample + intron - 1, data=melted_counts)
   #det( t(xNull) %*% xNull )
   
-  dat_null=list(N=nrow(xNull), P=ncol(xNull), y=melted_counts$count, x=xNull, concShape=concShape,concRate=concRate)
-  if (is.null(fit_null)) fit_null=rstan::optimizing(model_to_use, data=dat_null, as_vector=F)
+  #dat_null=list(N=nrow(xNull), P=ncol(xNull), y=melted_counts$count, x=xNull, concShape=concShape,concRate=concRate)
+  dat_null=list(N=nrow(xNull), P=ncol(xNull), y=melted_counts$count, x=xNull, sqrtrbShape=1.01,sqrtrbRate=0.001, sqrtrOverBShape=3, sqrtrOverBRate=3 )
+  if (is.null(fit_null)) fit_null=rstan::optimizing(model_to_use, data=dat_null, as_vector=F, ...)
   
   intron_mm=model.matrix( ~ intron , data=melted_counts )
   intron_mm=intron_mm[,2:ncol(intron_mm),drop=F] # remove intercept
@@ -39,7 +41,7 @@ bnb_glm <- function(x,cluster_counts,concShape=1.001,concRate=1e-3, fit_null=NUL
   init=fit_null$par
   init$beta=c(init$beta, numeric(df))
 
-  fit_full=rstan::optimizing(model_to_use, data=dat_full, init=init, as_vector=F)
+  fit_full=rstan::optimizing(model_to_use, data=dat_full, init=init, as_vector=F, ...)
   
   loglr=fit_full$value-fit_null$value
   
