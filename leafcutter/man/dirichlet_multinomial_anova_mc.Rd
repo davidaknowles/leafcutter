@@ -6,7 +6,7 @@
 \usage{
 dirichlet_multinomial_anova_mc(xFull, xNull, y, concShape = 1.0001,
   concRate = 1e-04, robust = T, outlier_prior_a = 1.01,
-  outlier_prior_b = 100, fit_null = NULL, ...)
+  outlier_prior_b = 100, fit_null = NULL, debug = F, ...)
 }
 \arguments{
 \item{xFull}{[samples] x [covariates] matrix for the alternative model}
