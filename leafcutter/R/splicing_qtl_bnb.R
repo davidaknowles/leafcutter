@@ -1,3 +1,13 @@
+fit_bnb_hypers <- function(cluster_counts,concShape=1.001,concRate=1e-3,  ...) { 
+  model_to_use=leafcutter:::stanmodels$bnb_glm
+  N=nrow(cluster_counts)
+  as.data.frame(foreach(i=1:ncol(cluster_counts), .combine = rbind) %do% {
+    dat=list(N=N, P=1, y=cluster_counts[,i], x=matrix(1,N,1), concShape=concShape, concRate=concRate )
+    pars=rstan::optimizing(model_to_use, data=dat, as_vector=F, ...)$par
+    c(r=pars$r, b=pars$b)
+  })
+}
+
 #' Perform splicing QTL analysis
 #'
 #' Parallelization across tested clusters is achieved using foreach/doMC, so the number of threads that will be used is determined by the cores argument passed to registerDoMC.
@@ -51,6 +61,8 @@ splicing_qtl_bnb=function(counts,geno,geno_meta,snps_within=1e4,min_samples_per_
 
     cached_fit_null=NULL
     
+    bnb_hypers=fit_bnb_hypers(cluster_counts)
+
     clures=foreach (cis_snp = cis_snps, .errorhandling = if (debug) "stop" else "pass") %do% {
       
       xh=as.numeric(geno[cis_snp,])
@@ -66,7 +78,7 @@ splicing_qtl_bnb=function(counts,geno,geno_meta,snps_within=1e4,min_samples_per_
         return("almost all ys/sample_counts is 0 or 1")
 
         if (debug & !is.null(cached_fit_null)) cat("Using cached null fit.\n")
-        res <- R.utils::evalWithTimeout( { bnb_glm(xh,cluster_counts,fit_null=NULL,...) }, timeout=timeout, onTimeout="silent" )
+        res <- R.utils::evalWithTimeout( { bnb_glm_fixed_hypers(xh,cluster_counts,bnb_hypers,fit_null=NULL,...) }, timeout=timeout, onTimeout="silent" )
         if (is.null(res)) "timeout" else {
           cached_fit_null=res$fit_null
           res

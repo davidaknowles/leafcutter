@@ -71,3 +71,45 @@ sanitize_simplex=function(x, eps=1e-6) {
   x[x>(1.0-eps)]=(1.0-eps)
   x/sum(x)
 }
+
+#' Work out which gene each cluster belongs to. Note the chromosome names used in the two inputs must match. 
+#' @param intron_meta Data frame describing the introns, usually from get_intron_meta
+#' @param exons_table Table of exons, see e.g. /data/gencode19_exons.txt.gz
+#' @return Data.frame with cluster ids and genes separated by commas
+#' @importFrom dplyr inner_join 
+#' @export
+map_clusters_to_genes=function(intron_meta, exons_table) {
+    gene_df=foreach (chr=sort(unique(intron_meta$chr)), .combine=rbind) %dopar% {
+    
+        intron_chr=intron_meta[ intron_meta$chr==chr, ]
+        exons_chr=exons_table[exons_table$chr==chr, ]
+
+        exons_chr$temp=exons_chr$start
+        intron_chr$temp=intron_chr$end
+        three_prime_matches=inner_join( intron_chr, exons_chr, by="temp")
+
+        exons_chr$temp=exons_chr$end
+        intron_chr$temp=intron_chr$start
+        five_prime_matches=inner_join( intron_chr, exons_chr, by="temp")
+
+        all_matches=rbind(three_prime_matches, five_prime_matches)[ , c("clu", "gene_name")]
+
+        all_matches=all_matches[!duplicated(all_matches),]
+
+        all_matches$clu=paste(chr,all_matches$clu,sep=':')
+        all_matches
+    }
+
+    clu_df=gene_df %>% group_by(clu) %>% summarize(genes=paste(gene, collapse = ","))
+    
+    class(clu_df)="data.frame"
+
+    clu_df
+}
+
+#' Adding "chr" if it's not present
+#' @param chrs Chromosome or cluster names
+#' @return Data.frame with cluster ids and genes separated by commas
+#' @export
+add_chr=function(chrs)
+    if (!grepl("chr",chrs[1])) paste0("chr",chrs) else chrs
