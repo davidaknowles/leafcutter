@@ -10,7 +10,8 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
   make_option(c("-g","--min_samples_per_group"), default=3, help="Require this many samples in each group to have at least min_coverage reads [default %default]"), 
   make_option(c("-c","--min_coverage"), default=20, help="Require min_samples_per_group samples in each group to have at least this many reads [default %default]"), 
   make_option(c("-t","--timeout"), default=30, help="Maximum time (in seconds) allowed for a single optimization run [default %default]"),
-  make_option(c("-p","--num_threads"), default=1, help="Number of threads to use [default %default]"))),
+  make_option(c("-p","--num_threads"), default=1, help="Number of threads to use [default %default]"),
+    make_option(c("-e","--exon_file"), default=NULL, help="File defining known exons, example in data/gencode19_exons.txt.gz. Columns should be chr, start, end, strand, gene_name. Optional, only just to label the clusters."))),
   positional_arguments = 2)
 
 opt=arguments$opt
@@ -48,6 +49,23 @@ results <- differential_splicing(counts, numeric_x, max_cluster_size=opt$max_clu
 cat("Saving results...\n")
 
 cluster_table=cluster_results_table(results)
+cluster_table$cluster=add_chr(cluster_table$cluster)
+
+if (!is.null(opt$exon_file)) {
+  cat("Loading exons from",opt$exon_file,"\n")
+  if (file.exists(opt$exon_file)) {
+      try( {
+          exons_table=read.table(opt$exon_file, header=T, stringsAsFactors = F)
+          intron_meta=get_intron_meta(rownames(counts))
+          exons_table$chr=add_chr(exons_table$chr)
+          intron_meta$chr=add_chr(intron_meta$chr)
+          clu_gene_map=map_clusters_to_genes(intron_meta, exons_table)
+          rownames(clu_gene_map)=clu_gene_map$clu
+          cluster_table$genes=clu_gene_map[ cluster_table, "genes" ]
+      }, error=function(err) warning(as.character(err)) ) # ignore errors here
+  else warning("File ",opt$exon_file," does not exist")
+} else cat("No exon_file provided.\n")
+
 write.table( cluster_table, paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t", row.names = F)
 write.table( leaf_cutter_effect_sizes(results), paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = F, sep="\t")
 

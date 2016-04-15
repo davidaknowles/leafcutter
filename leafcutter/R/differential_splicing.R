@@ -1,4 +1,3 @@
-
 #' Parse output of differential_splicing
 #'
 #' Parse output of \code{\link{differential_splicing}} and make a per cluster results table
@@ -8,19 +7,8 @@
 #' @export
 cluster_results_table=function(results) {
   as.data.frame(cbind(cluster=names(results), foreach(res=results, .combine=rbind) %do% 
-{ if ( !is.list(res) ) data.frame(status=res, loglr=NA, df=NA, p=NA) else 
+{ if ( is.character(res) | ("error" %in% class(res)) ) data.frame(status=as.character(res), loglr=NA, df=NA, p=NA) else 
   data.frame(status="Success", loglr=res$loglr, df=res$df, p=res$lrtp) } ) )
-}
-
-#' Differential splicing statuses
-#'
-#' Get a character vector saying what happened for each tested cluster.
-#'
-#' @param results From \code{\link{differential_splicing}}
-#' @return Character vector with statuses
-#' @export
-leafcutter_status=function(results) {
-  foreach(res=results, .combine=c) %do% { if ( !is.list(res) ) res else "Successfully tested" } 
 }
 
 #' Convert K-1 representation of parameters to real
@@ -38,9 +26,11 @@ beta_real=function(r)
 #' @export
 leaf_cutter_effect_sizes=function(results) {
   foreach(res=results, .combine=c) %do% {
-    if (is.list(res)) beta_real( res$fit_full$par )[2,] else NULL
+    if ( is.character(res) | ("error" %in% class(res)) ) NULL else 
+      beta_real( res$fit_full$par )[2,]
   } 
 }
+
 
 #' Perform pairwise differential splicing analysis.
 #'
@@ -110,7 +100,7 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
     sink()
   }
   
-  statuses=leafcutter_status(results)
+    statuses=cluster_results_table(results)$status
   
   cat("Differential splicing summary:\n")
   print(as.data.frame(table(statuses)))
