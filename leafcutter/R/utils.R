@@ -77,7 +77,7 @@ sanitize_simplex=function(x, eps=1e-6) {
 #' @param intron_meta Data frame describing the introns, usually from get_intron_meta
 #' @param exons_table Table of exons, see e.g. /data/gencode19_exons.txt.gz
 #' @return Data.frame with cluster ids and genes separated by commas
-#' @importFrom dplyr inner_join 
+#' @import dplyr
 #' @export
 map_clusters_to_genes=function(intron_meta, exons_table) {
     gene_df=foreach (chr=sort(unique(intron_meta$chr)), .combine=rbind) %dopar% {
