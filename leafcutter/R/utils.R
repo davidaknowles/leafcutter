@@ -101,7 +101,7 @@ map_clusters_to_genes=function(intron_meta, exons_table) {
         all_matches
     }
 
-    clu_df=gene_df %>% group_by(clu) %>% summarize(genes=paste(gene, collapse = ","))
+    clu_df=gene_df %>% group_by(clu) %>% summarize(genes=paste(gene_name, collapse = ","))
     
     class(clu_df)="data.frame"
 
