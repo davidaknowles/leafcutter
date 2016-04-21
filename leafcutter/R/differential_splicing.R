@@ -100,12 +100,13 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
     sink()
   }
   
+    names(results)=clu_names
+
     statuses=cluster_results_table(results)$status
   
   cat("Differential splicing summary:\n")
   print(as.data.frame(table(statuses)))
   
-  names(results)=clu_names
   results
 }
 
