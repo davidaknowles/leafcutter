@@ -192,7 +192,7 @@ def refine_clusters(options):
         #print "linked",refine_linked(clu)
         #print '\n\n'
         for cl in refine_linked(clu):
-            rc = refine_cluster(cl,minratio)
+            rc = refine_cluster(cl,minratio, minreads)
             if len(rc) > 0:
                 for clu in rc:
                     buf = '%s ' % chrom
@@ -304,6 +304,7 @@ def cluster_intervals(E):
     if len(cluster) > 0:
         Eclusters.append(cluster)
 
+    Eclusters = refine_linked(Eclusters)
     return Eclusters, E
 
 def overlaps(A,B):
@@ -347,7 +348,7 @@ def refine_linked(clusters):
     return newClusters
 
 
-def refine_cluster(clu, cutoff):
+def refine_cluster(clu, cutoff, readcutoff):
     ''' for each exon in the cluster compute the ratio of reads, if smaller than cutoff,
     remove and recluster '''
     
@@ -359,7 +360,7 @@ def refine_cluster(clu, cutoff):
     for inter, count in clu:
         totN += count
     for inter, count in clu:
-        if (count/float(totN) >= cutoff and count >= 10):
+        if (count/float(totN) >= cutoff and count >= readcutoff):
             intervals.append(inter)
             dic[inter] = count
             
