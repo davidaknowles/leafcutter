@@ -191,6 +191,7 @@ def refine_clusters(options):
         #print "CLU",clu
         #print "linked",refine_linked(clu)
         #print '\n\n'
+    
         for cl in refine_linked(clu):
             rc = refine_cluster(cl,minratio, minreads)
             if len(rc) > 0:
@@ -302,9 +303,10 @@ def cluster_intervals(E):
         i += 1
 
     if len(cluster) > 0:
+        
         Eclusters.append(cluster)
 
-    Eclusters = refine_linked(Eclusters)
+    
     return Eclusters, E
 
 def overlaps(A,B):
@@ -356,27 +358,40 @@ def refine_cluster(clu, cutoff, readcutoff):
     dic = {}
     intervals = []
 
+    reCLU = False
     totN = 0
+
     for inter, count in clu:
         totN += count
     for inter, count in clu:
         if (count/float(totN) >= cutoff and count >= readcutoff):
             intervals.append(inter)
             dic[inter] = count
-            
+        else:
+            reCLU = True
     if len(intervals) == 0: return []
-    A, B = cluster_intervals(intervals)
+    
+    # This makes sure that after trimming, the clusters are still good
+    Atmp, B = cluster_intervals(intervals)
+    A = []
+    for cl in Atmp:
+        for c in refine_linked([(x,0) for x in cl]):
+            if len(c) > 0:
+                A.append([x[0] for x in c])
     
     if len(A) == 1:
         rc = [(x, dic[x]) for x in A[0]]
         if len(rc) > 1:
-            return [[(x, dic[x]) for x in A[0]]]
+            if reCLU:
+                return refine_cluster([(x, dic[x]) for x in A[0]], cutoff, readcutoff)
+            else:
+                return [[(x, dic[x]) for x in A[0]]]
         else:
             return []
     NCs = []
     for c in A:
         if len(c) > 1:
-            NC = refine_cluster([(x, dic[x]) for x in c], cutoff)
+            NC = refine_cluster([(x, dic[x]) for x in c], cutoff, readcutoff)
             NCs += NC
     return NCs
 
