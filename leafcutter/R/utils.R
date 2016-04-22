@@ -96,7 +96,8 @@ map_clusters_to_genes=function(intron_meta, exons_table) {
         all_matches=rbind(three_prime_matches, five_prime_matches)[ , c("clu", "gene_name")]
 
         all_matches=all_matches[!duplicated(all_matches),]
-
+        
+        if (nrow(all_matches)==0) return(NULL)
         all_matches$clu=paste(chr,all_matches$clu,sep=':')
         all_matches
     }
