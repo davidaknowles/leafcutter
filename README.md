@@ -12,7 +12,7 @@ cd leafcutter
 R CMD INSTALL --build .
 ```
 
-Note you'll need the following R packages: `rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc`. 
+Note you'll need the following R packages: `rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr`. 
 
 For a (hopefully) complete example of the complete pipeline, take a look at
 ```
