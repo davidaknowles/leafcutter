@@ -63,7 +63,7 @@ if (!is.null(opt$exon_file)) {
           rownames(clu_gene_map)=clu_gene_map$clu
           cluster_table$genes=clu_gene_map[ cluster_table, "genes" ]
       }, error=function(err) warning(as.character(err)) ) # ignore errors here
-  else warning("File ",opt$exon_file," does not exist")
+  } else warning("File ",opt$exon_file," does not exist")
 } else cat("No exon_file provided.\n")
 
 write.table( cluster_table, paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t", row.names = F)
