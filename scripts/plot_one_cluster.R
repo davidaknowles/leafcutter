@@ -35,12 +35,12 @@ counts=counts[,meta$sample]
 meta$group=as.factor(meta$group)
 group_names=levels(meta$group)
 
-cat("Saving",cluster_name,"plots to",opt$output,"\n")
+cat("Saving",cluster_to_plot,"plots to",opt$output,"\n")
 introns=leafcutter:::get_intron_meta(rownames(counts))
 cluster_ids=paste(introns$chr,introns$clu,sep = ":")
 
 pdf(opt$output, width=8, height=8)
-y=t(counts[ cluster_ids==cluster_name, ])
+y=t(counts[ cluster_ids==cluster_to_plot, ])
 make_differential_splicing_plot(y, meta$group, exons_table=exon_table)
 dev.off()
 
