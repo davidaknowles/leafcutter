@@ -37,6 +37,12 @@ stopifnot(length(group_names)==2)
 cat("Encoding as",group_names[1],"=0,",group_names[2],"=1\n")
 numeric_x=as.numeric(meta$group)-1
 
+minimum_group_size=min(sum(numeric_x==0),sum(numeric_x==1))
+if (minimum_group_size < opt$min_samples_per_intron)
+  stop("The number of samples in the smallest group is less than min_samples_per_intron, which means no clusters are testable. You can reduce min_samples_per_intron using the -i option, but note that we have only carefully checked the calibration of leafcutter p-values down to n=4 samples per group.")
+if (minimum_group_size < opt$min_samples_per_group)
+  stop("The number of samples in the smallest group is less than min_samples_per_group, which means no clusters are testable. You can reduce min_samples_per_intron using the -g option, but note that we have only carefully checked the calibration of leafcutter p-values down to n=4 samples per group.")
+
 require(doMC)
 registerDoMC(opt$num_threads)
 
