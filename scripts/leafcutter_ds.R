@@ -21,6 +21,8 @@ groups_file=arguments$args[2]
 cat("Loading counts from",counts_file,"\n")
 if (!file.exists(counts_file)) stop("File ",counts_file," does not exist")
 counts=read.table(counts_file, header=T)
+# Bypass default R behavior, so we do not modify the original column names.
+colnames(counts) <- strsplit(readLines(counts_file, n = 1), " ")[[1]]
 
 cat("Loading metadata from",groups_file,"\n")
 if (!file.exists(groups_file)) stop("File ",groups_file," does not exist")
