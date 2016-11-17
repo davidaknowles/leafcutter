@@ -1,3 +1,5 @@
+#!/bin/bash 
+
 # Convert bam to junction files
 if [ -e test_juncfiles.txt ]
 then
