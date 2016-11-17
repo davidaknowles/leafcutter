@@ -31,6 +31,7 @@ For a (hopefully) complete example of the complete pipeline, take a look at
 ```
 example_data/worked_out_example.sh
 ```
+:warning: the test data download is 4Gb! 
 
 LeafCutter has two main components: 
 
