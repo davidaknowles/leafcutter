@@ -1,4 +1,4 @@
-# leafcutter
+# :ant: leafcutter
 LeafCutter: Annotation-free quantification of RNA splicing. 
 
 Yang I Li, David A Knowles, Jonathan K Pritchard. 
@@ -31,7 +31,7 @@ For a (hopefully) complete example of the complete pipeline, take a look at
 ```
 example_data/worked_out_example.sh
 ```
-:warning: The test data download is 4Gb! g
+:warning: The test data download is 4Gb!
 
 LeafCutter has two main components: 
 
