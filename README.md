@@ -31,7 +31,7 @@ For a (hopefully) complete example of the complete pipeline, take a look at
 ```
 example_data/worked_out_example.sh
 ```
-:warning: the test data download is 4Gb! 
+:warning: The test data download is 4Gb! g
 
 LeafCutter has two main components: 
 
@@ -42,7 +42,7 @@ LeafCutter has two main components:
    * perform differential splicing (here, differential intron excision) analysis
    * plot (differentially spliced) clusters
    
-:bug: we don't currently have scripts for splicing QTL calling in the git repo, please let us know if this would be useful for you! 
+:bug: We don't currently have scripts for splicing QTL calling in the git repo, please let us know if this would be useful for you! 
 
 ### Step 1. Converting `bam`s to `junc`s
 
@@ -50,44 +50,60 @@ I'm skipping Step 0 which would be mapping `fastq` files, e.g. using STAR, to ob
 
 We provide a helper script `scripts/bam2junc.sh` to (you guessed it) convert `bam` files to `junc` files. This step uses the CIGAR strings in the `bam` to quantify the usage of each intron. 
 
-`example_data/worked_out_example.sh` gives you an example of how to do this in batch:
+`example_data/worked_out_example.sh` gives you an example of how to do this in batch, assuming your data is in `run/geuvadis/`
 ```
-for bamfile in `ls my_awesome_data/*.bam`
+for bamfile in `ls run/geuvadis/*.bam`
 do
     echo Converting $bamfile to $bamfile.junc
     sh ../scripts/bam2junc.sh $bamfile $bamfile.junc
-    echo $bamfile.junc >> awesome_juncfiles.txt
+    echo $bamfile.junc >> test_juncfiles.txt
 done
 ```
 
-This step is pretty fast but if you have samples numbering in the 100s you might want to do this on a cluster. Note that we also make a list of the generated `junc` files in `awesome_juncfiles.txt`. 
+This step is pretty fast (e.g. a couple of minutes per bam) but if you have samples numbering in the 100s you might want to do this on a cluster. Note that we also make a list of the generated `junc` files in `test_juncfiles.txt`. 
 
 ### Step 2. Intron clustering
 
 Next we need to define intron clusters using the `leafcutter_cluster.py` script. For example: 
 
 ```
-python ../clustering/leafcutter_cluster.py -j awesome_juncfiles.txt -m 50 -o awesome -l 500000
+python ../clustering/leafcutter_cluster.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000
 ```
 
-This will cluster together the introns fond in the `junc` files listed in `awesome_juncfiles.txt`, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The predix `awesome` means the output will be called `awesome_perind_numers.counts.gz` (perind meaning these are the *per individual* counts). 
+This will cluster together the introns fond in the `junc` files listed in `test_juncfiles.txt`, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The predix `testYRIvsEU` means the output will be called `testYRIvsEU_perind_numers.counts.gz` (perind meaning these are the *per individual* counts). 
 
 You can quickly check what's in that file with 
 ```
-zcat awesome_perind_numers.counts.gz | more 
+zcat testYRIvsEU_perind_numers.counts.gz | more 
 ```
 which should look something like this: 
 ```
-TODO
+RNA.NA06986_CEU.chr1.bam RNA.NA06994_CEU.chr1.bam RNA.NA18486_YRI.chr1.bam RNA.NA06985_CEU.chr1.bam RNA.NA18487_YRI.chr1.bam RNA.NA06989_CEU.chr1.bam RNA.NA06984_CEU.chr1.bam RNA.NA18488_YRI.chr1.bam RNA.NA18489_YRI.chr1.bam RNA.NA18498_YRI.chr1.bam
+chr1:17055:17233:clu_1 21 13 18 20 17 12 11 8 15 25
+chr1:17055:17606:clu_1 4 11 12 7 2 0 5 2 4 4
+chr1:17368:17606:clu_1 127 132 128 55 93 90 68 43 112 137
+chr1:668593:668687:clu_2 3 11 1 3 4 4 8 1 5 16
+chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31
 ```
+
+Each column corresponds to a different sample (original bam file) and each row to an intron, which are identified as chromosome:intron_start:intron_end:cluster_id. 
 
 ### Step 3. Differential intron excision analysis
 
-We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need to make a file to specify which samples go in each group. In `worked_out_example.sh` there's some code to generate this file, but you can just make it yourself: it's just a two column tab-separated file where the first column is the sample name (i.e. the filename of the 'bam' without the extension) and the second is the column (what you call these is arbitrary, but note :bug: the command line interface currently only supports two groups). 
+We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need to make a file to specify which samples go in each group. In `worked_out_example.sh` there's some code to generate this file, but you can just make it yourself: it's just a two column tab-separated file where the first column is the sample name (i.e. the filename of the 'bam') and the second is the column (what you call these is arbitrary, but note :bug: the command line interface currently only supports two groups). 
 
 For the worked example this file, named `test_diff_introns.txt` looks like this: 
 ```
-TODO
+RNA.NA18486_YRI.chr1.bam YRI
+RNA.NA18487_YRI.chr1.bam YRI
+RNA.NA18488_YRI.chr1.bam YRI
+RNA.NA18489_YRI.chr1.bam YRI
+RNA.NA18498_YRI.chr1.bam YRI
+RNA.NA06984_CEU.chr1.bam CEU
+RNA.NA06985_CEU.chr1.bam CEU
+RNA.NA06986_CEU.chr1.bam CEU
+RNA.NA06989_CEU.chr1.bam CEU
+RNA.NA06994_CEU.chr1.bam CEU
 ```
 
 Having made that file we can run DS (this assumes you have successfully installed the `leafcutter` R package as described under Installation above) 
@@ -114,5 +130,5 @@ Two tab-separated text files are output:
 
 This will make a pdf with plots of the differentially spliced clusters detected at an FDR of 5%. 
 ```
-../scripts/ds_plots.R -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/awesome_perind_numers.counts.gz ../example_data/test_diff_intron.txt leafcutter_ds_cluster_significance.txt -f 0.05
+../scripts/ds_plots.R -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt leafcutter_ds_cluster_significance.txt -f 0.05
 ```
