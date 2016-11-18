@@ -91,7 +91,7 @@ differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10,
     xNull=xFull[,1,drop=F]
     if (!is.null(confounders)) {
         ch=confounders[samples_to_use,,drop=F]
-        ch=ch[ , apply(ch,1,sd)>0.0 ]
+        ch=ch[ , apply(ch,2,sd)>0.0, drop=F ]
         xFull=cbind(xFull,ch)
         xNull=cbind(xNull,ch)
     }
