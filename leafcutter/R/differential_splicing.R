@@ -49,7 +49,7 @@ leaf_cutter_effect_sizes=function(results) {
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10, robust=F, debug=F) {
+differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10, robust=F, debug=F) {
   
   stopifnot(ncol(counts)==length(x))
   
@@ -89,6 +89,12 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
       return("Not enough valid samples") 
     xFull=cbind(1,x_subset)
     xNull=xFull[,1,drop=F]
+    if (!is.null(confounders)) {
+        ch=confounders[samples_to_use,,drop=F]
+        ch=ch[ , apply(ch,1,sd)>0.0 ]
+        xFull=cbind(xFull,ch)
+        xNull=cbind(xNull,ch)
+    }
     res <- R.utils::evalWithTimeout( { 
       dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,robust=robust, debug=debug)
     }, timeout=timeout, onTimeout="silent" ) 
