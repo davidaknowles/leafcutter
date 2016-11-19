@@ -21,7 +21,7 @@ model {
   matrix[K,P] beta;
   for (k in 1:K)
     for (p in 1:P)
-      beta[k,p] <- beta_scale[p] * (beta_raw[p][k] - 1.0 / K);
+      beta[k,p] = beta_scale[p] * (beta_raw[p][k] - 1.0 / K);
 
   outlier_prob ~ beta(outlier_prior_a, outlier_prior_b);
 
@@ -35,18 +35,18 @@ model {
     vector[K] lG1PlusY; 
     vector[K] lGaA ;
     vector[K] s; 
-    s <- softmax(beta * x[n]); 
+    s = softmax(beta * x[n]); 
     for (k in 1:K)
-      a[k] <- conc[k] * s[k]; 
+      a[k] = conc[k] * s[k]; 
     // explicit construction of multinomial dirichlet
     // y ~ multinomial_dirichlet( conc * softmax(beta * x[n]) )
-    suma <- sum(a);
-    sumy <- sum(y[n]);
+    suma = sum(a);
+    sumy = sum(y[n]);
     for (k in 1:K) {
-      lGaPlusY[k] <- lgamma(a[k]+y[n][k]);
-      lGaA[k] <- lgamma(a[k]);
-      lG1PlusY[k] <- lgamma(1.0+y[n][k]);
+      lGaPlusY[k] = lgamma(a[k]+y[n][k]);
+      lGaA[k] = lgamma(a[k]);
+      lG1PlusY[k] = lgamma(1.0+y[n][k]);
     }
-    increment_log_prob(log_sum_exp(log(1.0-outlier_prob)+lgamma(suma)+sum(lGaPlusY)-lgamma(suma+sumy)-sum(lGaA), log(outlier_prob) + lgamma(K)+sum(lG1PlusY)-lgamma(K+sumy))); 
+    target += log_sum_exp(log(1.0-outlier_prob)+lgamma(suma)+sum(lGaPlusY)-lgamma(suma+sumy)-sum(lGaA), log(outlier_prob) + lgamma(K)+sum(lG1PlusY)-lgamma(K+sumy));g
   }
 }
