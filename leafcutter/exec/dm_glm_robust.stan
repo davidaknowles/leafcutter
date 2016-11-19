@@ -47,6 +47,6 @@ model {
       lGaA[k] = lgamma(a[k]);
       lG1PlusY[k] = lgamma(1.0+y[n][k]);
     }
-    target += log_sum_exp(log(1.0-outlier_prob)+lgamma(suma)+sum(lGaPlusY)-lgamma(suma+sumy)-sum(lGaA), log(outlier_prob) + lgamma(K)+sum(lG1PlusY)-lgamma(K+sumy));g
+    target += log_sum_exp(log(1.0-outlier_prob)+lgamma(suma)+sum(lGaPlusY)-lgamma(suma+sumy)-sum(lGaA), log(outlier_prob) + lgamma(K)+sum(lG1PlusY)-lgamma(K+sumy));
   }
 }
