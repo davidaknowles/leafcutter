@@ -132,6 +132,10 @@ Two tab-separated text files are output:
  1. intron: this has the form chromosome:intron_start:intron_end:cluster_id
  2. effect size. 
 
+#### Including confounders
+
+To control for confounders/covariates (e.g. batch, RIN) in the DS you can include them as additional columns in the test_diff_introns.txt file, after the sample names and two-group factor to be tested. Numeric values will be treated as such, so use non-numeric values if you want a categorical variable/factor, e.g. batch1, batch2 etc.  
+
 ### Step 4. Plotting splice junctions
 
 This will make a pdf with plots of the differentially spliced clusters detected at an FDR of 5%. 
