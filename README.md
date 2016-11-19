@@ -16,6 +16,11 @@ If you're annoyed by the RStan warnings try the `newstansyntax` branch. If you w
 
 ## Installation
 
+To download the code:
+```
+git clone https://github.com/davidaknowles/leafcutter
+```
+
 To compile the R package to perform differential splicing analysis and make junction plots you can either...
 
 ### Option 1. Install from source
