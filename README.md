@@ -12,6 +12,8 @@ Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The 
 For details please see
 http://biorxiv.org/content/early/2016/03/16/044107
 
+If you're annoyed by the RStan warnings try the `newstansyntax` branch. If you want to include covariates in your differential splicing analysis you can checkout the `covariates` branch. 
+
 ## Installation
 
 To compile the R package to perform differential splicing analysis and make junction plots you can either...
