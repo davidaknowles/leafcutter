@@ -6,11 +6,13 @@
 #' @param xNull [samples] x [covariates] matrix for the null model
 #' @param y [samples] x [introns] matrix of intron usage counts
 #' @param concShape Gamma shape parameter for concentration parameter
-#' @param concShape Gamma rate parameter for concentration parameter
+#' @param concRate Gamma rate parameter for concentration parameter
 #' @param robust Whether to include an outlier model (i.e. use dm_glm_multi_conc_robust rather than dm_glm_multi_conc)
 #' @param outlier_prior_a Only used for robust model. The outlier probability outlier_prob ~ Beta(outlier_prior_a,outlier_prior_b)
 #' @param outlier_prior_b Only used for robust model. The outlier probability outlier_prob ~ Beta(outlier_prior_a,outlier_prior_b)
-#' @param fit_null Optionally the fitted null model (used in \code{\link{splicing_qtl}} to save repeatedly fitting the null for each cis-SNP)
+#' @param fit_null Optionally cache the fitted null model to save repeatedly fitting the null for each cis-SNP when sQTL mapping)
+#' @param debug Whether to give verbose output from rstan.
+#' @param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS).
 #' @importFrom rstan optimizing
 #' @export
 dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1.01, outlier_prior_b=100, fit_null=NULL, debug=F, ...) {

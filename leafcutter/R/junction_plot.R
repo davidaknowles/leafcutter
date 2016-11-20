@@ -5,12 +5,13 @@
 #'
 #' @param y [samples] x [introns] matrix of counts
 #' @param x [samples] vector of group membership. Can be numeric, factor or character.
+#' @param exons_table An optional data frame specifying exons, with columns: chr start end strand gene_name. For hg19 see data/gencode19_exons.txt.gz
 #' @param len Number of segments each curve is constructed from, controls smoothness.
 #' @param length_transform Function controlling how true genomic space is mapped to the plot for improved visability. Use the identity function (i.e. function(g) g
 #' @param main_title Title
 #' @param snp_pos An optional list of SNP positions to mark
 #' @param summary_func Function to summarize counts within groups: usually colMeans or colSums
-#' @param Legend title Match this to summary_func
+#' @param legend_title Match this to summary_func
 #' @import ggplot2
 #' @import foreach
 #' @importFrom gridExtra grid.arrange
