@@ -53,7 +53,7 @@ differential_splicing=function(counts, x, max_cluster_size=10, min_samples_per_i
   
   stopifnot(ncol(counts)==length(x))
   
-  introns=leafcutter:::get_intron_meta(rownames(counts))
+  introns=get_intron_meta(rownames(counts))
   cluster_ids=paste(introns$chr,introns$clu,sep = ":")
   
   cluster_sizes=as.data.frame(table(cluster_ids))

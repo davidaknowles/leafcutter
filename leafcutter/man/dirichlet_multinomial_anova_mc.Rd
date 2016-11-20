@@ -17,15 +17,19 @@ dirichlet_multinomial_anova_mc(xFull, xNull, y, concShape = 1.0001,
 
 \item{concShape}{Gamma shape parameter for concentration parameter}
 
+\item{concRate}{Gamma rate parameter for concentration parameter}
+
 \item{robust}{Whether to include an outlier model (i.e. use dm_glm_multi_conc_robust rather than dm_glm_multi_conc)}
 
 \item{outlier_prior_a}{Only used for robust model. The outlier probability outlier_prob ~ Beta(outlier_prior_a,outlier_prior_b)}
 
 \item{outlier_prior_b}{Only used for robust model. The outlier probability outlier_prob ~ Beta(outlier_prior_a,outlier_prior_b)}
 
-\item{fit_null}{Optionally the fitted null model (used in \code{\link{splicing_qtl}} to save repeatedly fitting the null for each cis-SNP)}
+\item{fit_null}{Optionally cache the fitted null model to save repeatedly fitting the null for each cis-SNP when sQTL mapping)}
 
-\item{concShape}{Gamma rate parameter for concentration parameter}
+\item{debug}{Whether to give verbose output from rstan.}
+
+\item{...}{will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS).}
 }
 \description{
 Dirichlet multinomial GLM likelihood ratio test for a single cluster
