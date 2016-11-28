@@ -1,6 +1,22 @@
+import sys
+import gzip
+import numpy as np
+import scipy as sc
+import pickle
+
+from optparse import OptionParser
+    
 from sklearn.decomposition import PCA
 from sklearn import preprocessing
 from sklearn import linear_model
+
+from scipy.stats import rankdata
+from scipy.stats import norm
+
+def qqnorm(x):
+    n=len(x)
+    a=3.0/8.0 if n<=10 else 0.5
+    return(norm.ppf( (rankdata(x)-a)/(n+1.0-2.0*a) ))
 
 def stream_table(f, ss = ''):
     fc = '#'
@@ -97,12 +113,14 @@ def main(ratio_file, pcs=50):
     # qqnorms on the columns
     matrix = np.array(valRows)
     for i in xrange(len(matrix[0,:])):
-        matrix[:,i] = np.array(qqnorm(robjects.FloatVector(matrix[:,i]))[0])
+        matrix[:,i] = qqnorm(matrix[:,i])
         
     # write the corrected tables
     fout = {}
     for i in range(1,23):
-        fout[i] = file("%s.qqnorm_chr%d"%(ratio_file,i),'w')
+        fn="%s.qqnorm_chr%d"%(ratio_file,i)
+        print("Outputting: " + fn)
+        fout[i] = file(fn,'w')
         fout[i].write("\t".join(['#Chr','start','end','ID'] + header)+'\n')
     lst = []
     for i in xrange(len(matrix)):
@@ -122,41 +140,28 @@ def main(ratio_file, pcs=50):
         fout_run.write("tabix -p bed %s.qqnorm_chr%d.gz\n"%(ratio_file, i))
     fout_run.close()
 
-    sys.stdout.write("Use `sh %s_prepare.sh' to create index for fastQTL...\n"%ratio_file)
+    sys.stdout.write("Use `sh %s_prepare.sh' to create index for fastQTL (requires tabix and bgzip).\n"%ratio_file)
 
-    pca = PCA(n_components=pcs)                                                                                                                                                                            
-    pca.fit(matrix)  
+    if pcs>0:
+        pca = PCA(n_components=pcs)                                                                                                                                                                            
+        pca.fit(matrix)  
+        pca_fn=ratio_file+".PCs"
+        print("Outputting PCs: " + pca_fn)
+        pcafile = file(pca_fn,'w')  
+        pcafile.write("\t".join(['id']+header)+'\n')
+        pcacomp = list(pca.components_)
+        for i in range(len(pcacomp)):
+            pcafile.write("\t".join([str(i+1)]+[str(x) for x in pcacomp[i]])+'\n')
 
-    pcafile = file(ratio_file+".PCs",'w')  
-    pcafile.write("\t".join(['id']+header)+'\n')
-    pcacomp = list(pca.components_)
-    for i in range(len(pcacomp)):
-        pcafile.write("\t".join([str(i+1)]+[str(x) for x in pcacomp[i]])+'\n')
-
-    pcafile.close()
+        pcafile.close()
 
 if __name__ == "__main__":
-    import sys
-    import gzip
-    import numpy as np
-    import scipy as sc
-    import pickle
-    import rpy2.robjects as robjects
-    from sklearn.decomposition import PCA
-    from sklearn import preprocessing
-    from optparse import OptionParser
-    
-    qqnorm = robjects.r['qqnorm']
-    parser = OptionParser()
 
-    parser.add_option("-r", "--ratios", dest="ratio_file",
-                  help="file with all ratios (*_perind.counts.gz)")
-
-    parser.add_option("-p", "--pcs", dest="npcs", default = 50,
-                  help="number of PCs output")
+    parser = OptionParser(usage="usage: %prog [-p num_PCs] input_perind.counts.gz")
+    parser.add_option("-p", "--pcs", dest="npcs", default = 50, help="number of PCs output")
     (options, args) = parser.parse_args()
-    if options.ratio_file == None:
-        sys.stderr.write("Error: no ratio file provided... (e.g. python leafcutter/scripts/prepare_phenotype_table.py -r *_perind.counts.gz\n")
+    if len(args)==0:
+        sys.stderr.write("Error: no ratio file provided... (e.g. python leafcutter/scripts/prepare_phenotype_table.py input_perind.counts.gz\n")
         exit(0)
-    main(options.ratio_file, options.npcs)
+    main(args[0], int(options.npcs) )
     
