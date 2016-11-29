@@ -55,8 +55,6 @@ LeafCutter has two main components:
    * perform differential splicing (here, differential intron excision) analysis
    * plot (differentially spliced) clusters
    
-:bug: We don't currently have scripts for splicing QTL calling in the git repo, please let us know if this would be useful for you! 
-
 ### Step 1. Converting `bam`s to `junc`s
 
 I'm skipping Step 0 which would be mapping `fastq` files, e.g. using STAR, to obtain `.bam` files. 
@@ -165,3 +163,4 @@ where `-p 10` specifies you want to calculate 10 PCs for FastQTL to use as covar
 FastQTL needs `tabix` indices. To generate these you'll need `tabix` and `bgzip` which you may have as part of `samtools`, if not they're now part of `htslib`, see https://github.com/samtools/htslib for installation instructions (alternatively `apt-get install tabix` worked for me in Ubuntu 14.04). With these dependencies installed you can run the script created by and pointed to by the output of `prepare_phenotype_table.py`, e.g. `example_data/testYRIvsEU_perind.counts.gz_prepare.sh`. 
 
 We assume you'll run FastQTL separately for each chromosome: the files you'll need will have names like `testYRIvsEU_perind.counts.gz.qqnorm_chr21.gz`. The PC file will be e.g. testYRIvsEU_perind.counts.gz.PCs. 
+
