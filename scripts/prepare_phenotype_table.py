@@ -40,72 +40,72 @@ def main(ratio_file, pcs=50):
     except: 
         sys.stderr.write("Can't find %s..exiting\n"%(ratio_file))
         return
-    else:
-        sys.stderr.write("Starting...\n")
-        for i in range(1,23):
-            fout[i] = file(ratio_file+".phen_chr%d"%i,'w')
-            fout_ave = file(ratio_file+".ave",'w')
-        valRows, valRowsnn, geneRows = [], [], []
-        finished = False
-        header = gzip.open(ratio_file).readline().split()[1:]
 
-        
-        for i in fout:
-            fout[i].write("\t".join(["#Chr","start", "end", "ID"]+header)+'\n')
-        
-        for dic in stream_table(gzip.open(ratio_file),' '):
-            
-            chrom = dic['chrom'].replace("chr",'')
-            chr_ = chrom.split(":")[0]
-            if chr_ in 'XY': continue
-            NA_indices, valRow, aveReads = [], [], []
-            tmpvalRow = []
-
-            i = 0
-            for sample in header:
-                
-                try: count = dic[sample]
-                except: print chrom, len(dic)
-                num, denom = count.split('/')
-                if float(denom) < 1:
-                    count = "NA"
-                    tmpvalRow.append("NA")
-                    NA_indices.append(i)
-                else:
-                    # add a 0.5 pseudocount
-                    count = (float(num)+0.5)/((float(denom))+0.5)
-                    tmpvalRow.append(count) 
-                    aveReads.append(count)
+    sys.stderr.write("Starting...\n")
+    for i in range(1,23):
+        fout[i] = file(ratio_file+".phen_chr%d"%i,'w')
+        fout_ave = file(ratio_file+".ave",'w')
+    valRows, valRowsnn, geneRows = [], [], []
+    finished = False
+    header = gzip.open(ratio_file).readline().split()[1:]
 
 
-            # If ratio is missing for over 40% of the samples, skip
-            if tmpvalRow.count("NA") > len(tmpvalRow)*0.4:
-                continue
+    for i in fout:
+        fout[i].write("\t".join(["#Chr","start", "end", "ID"]+header)+'\n')
 
-            ave = np.mean(aveReads)
-            
-            # Set missing values as the mean of all values
-            for c in tmpvalRow:
-                if c == "NA": valRow.append(ave)
-                else: valRow.append(c)
+    for dic in stream_table(gzip.open(ratio_file),' '):
 
-            # If there is too little variation, skip (there is a bug in fastqtl which doesn't handle cases with no variation)
-            if np.std(valRow) < 0.005: continue
+        chrom = dic['chrom'].replace("chr",'')
+        chr_ = chrom.split(":")[0]
+        if chr_ in 'XY': continue
+        NA_indices, valRow, aveReads = [], [], []
+        tmpvalRow = []
 
-            chr_, s, e, clu = chrom.split(":")
-            if len(valRow) > 0:                
-                chrom_int = int(chr_)
-                fout[chrom_int].write("\t".join([chr_,s,e,chrom]+[str(x) for x in valRow])+'\n')
-                fout_ave.write(" ".join(["%s"%chrom]+[str(min(aveReads)), str(max(aveReads)), str(np.mean(aveReads))])+'\n')
+        i = 0
+        for sample in header:
 
-                # scale normalize
-                valRowsnn.append(valRow)                
-                valRow = preprocessing.scale(valRow)
-                
-                valRows.append(valRow)
-                geneRows.append("\t".join([chr_,s,e,chrom]))
-                if len(geneRows) % 1000 == 0:
-                    sys.stderr.write("Parsed %s introns...\n"%len(geneRows))
+            try: count = dic[sample]
+            except: print chrom, len(dic)
+            num, denom = count.split('/')
+            if float(denom) < 1:
+                count = "NA"
+                tmpvalRow.append("NA")
+                NA_indices.append(i)
+            else:
+                # add a 0.5 pseudocount
+                count = (float(num)+0.5)/((float(denom))+0.5)
+                tmpvalRow.append(count) 
+                aveReads.append(count)
+
+
+        # If ratio is missing for over 40% of the samples, skip
+        if tmpvalRow.count("NA") > len(tmpvalRow)*0.4:
+            continue
+
+        ave = np.mean(aveReads)
+
+        # Set missing values as the mean of all values
+        for c in tmpvalRow:
+            if c == "NA": valRow.append(ave)
+            else: valRow.append(c)
+
+        # If there is too little variation, skip (there is a bug in fastqtl which doesn't handle cases with no variation)
+        if np.std(valRow) < 0.005: continue
+
+        chr_, s, e, clu = chrom.split(":")
+        if len(valRow) > 0:                
+            chrom_int = int(chr_)
+            fout[chrom_int].write("\t".join([chr_,s,e,chrom]+[str(x) for x in valRow])+'\n')
+            fout_ave.write(" ".join(["%s"%chrom]+[str(min(aveReads)), str(max(aveReads)), str(np.mean(aveReads))])+'\n')
+
+            # scale normalize
+            valRowsnn.append(valRow)                
+            valRow = preprocessing.scale(valRow)
+
+            valRows.append(valRow)
+            geneRows.append("\t".join([chr_,s,e,chrom]))
+            if len(geneRows) % 1000 == 0:
+                sys.stderr.write("Parsed %s introns...\n"%len(geneRows))
 
     for i in fout:
         fout[i].close()
