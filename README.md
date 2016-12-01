@@ -1,6 +1,6 @@
 # :ant: leafcutter
 
-![logo](logo.svg)
+![logo](logo.png)
 LeafCutter: Annotation-free quantification of RNA splicing. 
 
 Yang I Li, David A Knowles, Jonathan K Pritchard. 
