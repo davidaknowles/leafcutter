@@ -1,8 +1,8 @@
-# :ant: leafcutter
+# leafcutter
 
-<img src="./logo.png" width="200"> Annotation-free quantification of RNA splicing. 
+<img src="./logo.png" width="200"> **Annotation-free quantification of RNA splicing.**
 
-Yang I Li, David A Knowles, Jonathan K Pritchard. 
+*Yang I Li, David A Knowles, Jonathan K Pritchard.*
 
 Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The core idea is to leverage spliced reads (reads that span an intron) to quantify (differential) intron usage across samples. The advantages of this approach include
 * easy detection of novel introns
@@ -132,7 +132,7 @@ Two tab-separated text files are output:
  2. Status: whether this cluster was a) successfully tested b) not tested for some reason (e.g. too many introns) c) there was an error during testing - this should be rare. 
  3. loglr: log likelihood ratio between the null model (no difference between the groups) and alternative (there is a difference) 
  4. df: degrees of freedom, equal to the number of introns in the cluster minus one (assuming two groups)
- 5. p: the resulting p-value under the asymptotic Chi-squared distribution
+ 5. p: the resulting (unadjusted!) p-value under the asymptotic Chi-squared distribution. We just use `p.adjust( ..., method="fdr")` in R to control FDR based on these. 
 
 2. `leafcutter_ds_effect_sizes.txt`. This shows per intron effect sizes between the groups, with columns:
  1. intron: this has the form chromosome:intron_start:intron_end:cluster_id
