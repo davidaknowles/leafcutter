@@ -137,7 +137,8 @@ Two tab-separated text files are output:
 2. `leafcutter_ds_effect_sizes.txt`. This shows per intron effect sizes between the groups, with columns:
  1. intron: this has the form chromosome:intron_start:intron_end:cluster_id
  2. log effect size (as fitted by LeafCutter).
- 3/4. Fitted usage proportion in conditions 1/2. 
+ 3. Fitted usage proportion in condition 1. 
+ 4. Fitted usage proportion in condition 2. 
  5. DeltaPSI: the difference in usage proprotion (condition 2 - condition 1). Note that in general this will have the same sign as the log effect size but in some cases the sign may change as a result of larger changes for other introns in the cluster. 
 
 ### Step 4. Plotting splice junctions
