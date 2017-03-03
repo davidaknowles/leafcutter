@@ -73,6 +73,9 @@ if (!is.null(opt$exon_file)) {
 } else cat("No exon_file provided.\n")
 
 write.table( cluster_table, paste0(opt$output_prefix,"_cluster_significance.txt"), quote=F, sep="\t", row.names = F)
-write.table( leaf_cutter_effect_sizes(results), paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = F, sep="\t")
+
+effect_size_table=leaf_cutter_effect_sizes(results)
+colnames(effect_size_table)[3:4]=group_names
+write.table( effect_size_table, paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = T, row.names = F, sep="\t")
 
 cat("All done, exiting\n")
