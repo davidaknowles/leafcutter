@@ -15,4 +15,3 @@ logistic(g)
 \description{
 logistic (sigmoid) function
 }
-

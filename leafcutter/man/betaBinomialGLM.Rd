@@ -25,4 +25,3 @@ betaBinomialGLM(ys, ns, xFull, xNull, concShape = 1.0001, concRate = 1e-04,
 \description{
 We recommend using \code{\link{dirichlet_multinomial_glm_anova}} instead, but this is here for comparison.
 }
-

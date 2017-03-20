@@ -10,9 +10,8 @@ leaf_cutter_effect_sizes(results)
 \item{results}{From \code{\link{differential_splicing}}}
 }
 \value{
-Numeric vector of effect sizes for every tested intron.
+data.frame with a row for every tested intron and columns: intron, log effect size, baseline proportions, proportions in the second condition, and resulting deltaPSI
 }
 \description{
 Per intron effect sizes
 }
-

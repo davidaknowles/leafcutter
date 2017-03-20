@@ -33,4 +33,3 @@ A per cluster list of results. Clusters that were not tested will be represented
 \description{
 Parallelization across tested clusters is achieved using foreach/doMC, so the number of threads that will be used is determined by the cores argument passed to registerDoMC.
 }
-

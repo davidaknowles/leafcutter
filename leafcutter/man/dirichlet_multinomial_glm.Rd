@@ -18,4 +18,3 @@ dirichlet_multinomial_glm(x, y, concShape = 1.0001, concRate = 1e-04)
 \description{
 We recommend using \code{\link{dirichlet_multinomial_anova_mc}} instead.
 }
-

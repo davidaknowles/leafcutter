@@ -34,4 +34,3 @@ dirichlet_multinomial_anova_mc(xFull, xNull, y, concShape = 1.0001,
 \description{
 Dirichlet multinomial GLM likelihood ratio test for a single cluster
 }
-

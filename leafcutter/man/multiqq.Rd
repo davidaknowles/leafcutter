@@ -15,4 +15,3 @@ a ggplot
 \description{
 Plot multiple qq plot for p-values
 }
-

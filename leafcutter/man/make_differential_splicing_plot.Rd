@@ -31,4 +31,3 @@ make_differential_splicing_plot(y, x = numeric(nrow(y)) + 1,
 \description{
 Shows only junction reads and can optionally show splicing variation across groups.
 }
-

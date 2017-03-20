@@ -15,4 +15,3 @@ Data.frame with cluster ids and genes separated by commas
 \description{
 Adding "chr" if it's not present
 }
-

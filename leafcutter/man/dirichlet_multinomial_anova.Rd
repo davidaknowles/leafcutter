@@ -21,4 +21,3 @@ dirichlet_multinomial_anova(xFull, xNull, y, concShape = 1.0001,
 \description{
 We recommend using \code{\link{dirichlet_multinomial_glm_anova_mc}} instead.
 }
-
