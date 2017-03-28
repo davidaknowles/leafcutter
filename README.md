@@ -160,7 +160,7 @@ for the PCA calculation.
 
 Usage is e.g.
 ```
-python scripts/prepare_phenotype_table.py example_data/testYRIvsEU_perind_numers.counts.gz -p 10
+python scripts/prepare_phenotype_table.py example_data/testYRIvsEU_perind.counts.gz -p 10
 ```
 where `-p 10` specifies you want to calculate 10 PCs for FastQTL to use as covariates. 
 
