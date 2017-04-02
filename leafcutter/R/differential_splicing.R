@@ -22,13 +22,18 @@ beta_real=function(r)
 #' Per intron effect sizes
 #'
 #' @param results From \code{\link{differential_splicing}}
-#' @return Numeric vector of effect sizes for every tested intron.
+#' @return data.frame with a row for every tested intron and columns: intron, log effect size, baseline proportions, proportions in the second condition, and resulting deltaPSI
+#' @importFrom dplyr bind_rows
 #' @export
 leaf_cutter_effect_sizes=function(results) {
-  foreach(res=results, .combine=c) %do% {
+  softmax=function(g) exp(g)/sum(exp(g))
+  all_introns=bind_rows( foreach(res=results) %do% {
     if ( is.character(res) | ("error" %in% class(res)) ) NULL else 
-      beta_real( res$fit_full$par )[2,]
-  } 
+      beta=beta_real( res$fit_full$par )
+    data.frame( intron=colnames(beta), logef=beta[2,], baseline=softmax(beta[1,]), perturbed=softmax(beta[1,]+beta[2,]) )
+  } )
+  all_introns$deltapsi=with(all_introns, perturbed-baseline)
+  all_introns
 }
 
 
@@ -53,7 +58,7 @@ differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10,
   
   stopifnot(ncol(counts)==length(x))
   
-  introns=leafcutter:::get_intron_meta(rownames(counts))
+  introns=get_intron_meta(rownames(counts))
   cluster_ids=paste(introns$chr,introns$clu,sep = ":")
   
   cluster_sizes=as.data.frame(table(cluster_ids))

@@ -17,4 +17,3 @@ Data.frame with cluster ids and genes separated by commas
 \description{
 Work out which gene each cluster belongs to. Note the chromosome names used in the two inputs must match.
 }
-

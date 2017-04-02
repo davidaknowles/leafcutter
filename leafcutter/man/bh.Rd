@@ -15,4 +15,3 @@ Adjusted p-values (q-values)
 \description{
 Benjamini-Hochberg FDR correction
 }
-

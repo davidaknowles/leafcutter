@@ -3,14 +3,13 @@ Type: Package
 Title: Alternative splicing quantification, differential splicing and splicing
     QTL mapping
 Version: 1.0
-Date: 2016-02-24
+Date: 2016-11-19
 Author: David A. Knowles, Yang Li, Jonathan Pritchard
 Maintainer: David A. Knowles <knowles84@gmail.com>
-Description: Alternative splicing quantification, differential splicing and
-    splicing QTL mapping
+Description: Alternative Splicing Quantification, Differential Splicing and Splicing QTL Mapping
 License: GPL (>= 3)
 Depends:
-    R (>= 2.0),
+    R (>= 3.0.2),
     Rcpp (>= 0.11.0),
 Imports:
     rstan (>= 2.8.1),
@@ -20,9 +19,9 @@ Imports:
     reshape2,
     Hmisc,
     foreach,
-    dplyr
+    dplyr,
+    doMC,
+    optparse
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
-RcppModules: stan_fit4bb_glm_mod, stan_fit4bb_glm_fix_conc_mod,
-    stan_fit4dm_glm_multi_conc_mod, stan_fit4dm_glm_mod, stan_fit4dm_glm_robust_mod
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

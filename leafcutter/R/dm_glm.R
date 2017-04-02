@@ -1,12 +1,12 @@
 
 #'Dirichlet multinomial GLM (single overdispersion parameter)
 #'
-#'We recommend using \code{\link{dirichlet_multinomial_glm_mc}} instead. 
+#'We recommend using \code{\link{dirichlet_multinomial_anova_mc}} instead. 
 #' 
 #' @param x [samples] x [covariates] matrix
 #' @param y [samples] x [introns] matrix of intron usage counts
 #' @param concShape Gamma shape parameter for concentration parameter
-#' @param concShape Gamma rate parameter for concentration parameter
+#' @param concRate Gamma rate parameter for concentration parameter
 #' @importFrom rstan optimizing
 #' @export
 dirichlet_multinomial_glm <- function(x,y,concShape=1.0001,concRate=1e-4) {
@@ -25,7 +25,7 @@ dirichlet_multinomial_glm <- function(x,y,concShape=1.0001,concRate=1e-4) {
 #' @param xNull [samples] x [covariates] matrix for the null model
 #' @param y [samples] x [introns] matrix of intron usage counts
 #' @param concShape Gamma shape parameter for concentration parameter
-#' @param concShape Gamma rate parameter for concentration parameter
+#' @param concRate Gamma rate parameter for concentration parameter
 #' @importFrom rstan optimizing
 #' @export
 dirichlet_multinomial_anova <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4) {

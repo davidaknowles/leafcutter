@@ -15,4 +15,3 @@ Data.frame with chr, start, end, cluster id and "middle"
 \description{
 Make a data.frame of meta data about the introns
 }
-

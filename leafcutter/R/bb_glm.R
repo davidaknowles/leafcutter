@@ -7,9 +7,11 @@
 #' @param xFull matrix of covariates for full model. First column must be ones. 
 #' @param xNull matrix of covariates for null model. First column must be ones. 
 #' @param concShape Gamma shape parameter for concentration parameter
-#' @param concShape Gamma rate parameter for concentration parameter
+#' @param concRate Gamma rate parameter for concentration parameter
+#' @param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS).
 #' @importFrom rstan optimizing
 #' @export
+#' @import stats
 betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   stopifnot(all(xNull==xFull[,1:ncol(xNull)]))
   stopifnot(all(xNull[,1]==1))

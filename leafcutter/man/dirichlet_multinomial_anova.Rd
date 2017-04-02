@@ -16,9 +16,8 @@ dirichlet_multinomial_anova(xFull, xNull, y, concShape = 1.0001,
 
 \item{concShape}{Gamma shape parameter for concentration parameter}
 
-\item{concShape}{Gamma rate parameter for concentration parameter}
+\item{concRate}{Gamma rate parameter for concentration parameter}
 }
 \description{
 We recommend using \code{\link{dirichlet_multinomial_glm_anova_mc}} instead.
 }
-

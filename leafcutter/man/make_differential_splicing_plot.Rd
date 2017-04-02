@@ -14,6 +14,8 @@ make_differential_splicing_plot(y, x = numeric(nrow(y)) + 1,
 
 \item{x}{[samples] vector of group membership. Can be numeric, factor or character.}
 
+\item{exons_table}{An optional data frame specifying exons, with columns: chr start end strand gene_name. For hg19 see data/gencode19_exons.txt.gz}
+
 \item{len}{Number of segments each curve is constructed from, controls smoothness.}
 
 \item{length_transform}{Function controlling how true genomic space is mapped to the plot for improved visability. Use the identity function (i.e. function(g) g}
@@ -24,9 +26,8 @@ make_differential_splicing_plot(y, x = numeric(nrow(y)) + 1,
 
 \item{summary_func}{Function to summarize counts within groups: usually colMeans or colSums}
 
-\item{Legend}{title Match this to summary_func}
+\item{legend_title}{Match this to summary_func}
 }
 \description{
 Shows only junction reads and can optionally show splicing variation across groups.
 }
-

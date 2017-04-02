@@ -7,7 +7,7 @@
 multiqq(pvalues)
 }
 \arguments{
-\item{pvales}{A list of numeric vectors of p-values.}
+\item{pvalues}{A named list of numeric vectors of p-values.}
 }
 \value{
 a ggplot
@@ -15,4 +15,3 @@ a ggplot
 \description{
 Plot multiple qq plot for p-values
 }
-

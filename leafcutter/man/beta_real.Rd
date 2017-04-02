@@ -15,4 +15,3 @@ Coefficient matrix.
 \description{
 Convert K-1 representation of parameters to real
 }
-

@@ -25,11 +25,12 @@ fisherCombined=function(p) pchisq( -2*sum(log(p),na.rm=T), df=2*sum(!is.na(p)), 
 
 pqplotHelper=function(p, ...) qqplot(-log10(runif(length(p))), -log10(p), pch=16, ...)
 
+#' @import graphics
 pqplot=function(p, ...) { pqplotHelper(p); abline(0,1) }
 
 #' Plot multiple qq plot for p-values
 #'
-#' @param pvales A list of numeric vectors of p-values.
+#' @param pvalues A named list of numeric vectors of p-values.
 #' @return a ggplot
 #' @import ggplot2
 #' @export

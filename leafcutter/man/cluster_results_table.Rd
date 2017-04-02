@@ -15,4 +15,3 @@ Data.frame with columns status, log likelihood ratio, degrees of freedom, p-valu
 \description{
 Parse output of \code{\link{differential_splicing}} and make a per cluster results table
 }
-
