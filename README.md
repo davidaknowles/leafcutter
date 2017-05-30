@@ -127,14 +127,14 @@ Running `../scripts/leafcutter_ds.R -h` will give usage info for this script.
 
 Two tab-separated text files are output:
 
-1. `leafcutter_ds_cluster_significance.txt`. This shows per cluster `p`-values for there being differential intron excision between the two groups tested. The columns are
+* `leafcutter_ds_cluster_significance.txt`. This shows per cluster `p`-values for there being differential intron excision between the two groups tested. The columns are
   1. cluster: the cluster id
   2. Status: whether this cluster was a) successfully tested b) not tested for some reason (e.g. too many introns) c) there was an error during testing - this should be rare. 
   3. loglr: log likelihood ratio between the null model (no difference between the groups) and alternative (there is a difference) 
   4. df: degrees of freedom, equal to the number of introns in the cluster minus one (assuming two groups)
   5. p: the resulting (unadjusted!) p-value under the asymptotic Chi-squared distribution. We just use `p.adjust( ..., method="fdr")` in R to control FDR based on these. 
 
-2. `leafcutter_ds_effect_sizes.txt`. This shows per intron effect sizes between the groups, with columns:
+* `leafcutter_ds_effect_sizes.txt`. This shows per intron effect sizes between the groups, with columns:
   1. intron: this has the form chromosome:intron_start:intron_end:cluster_id
   2. log effect size (as fitted by LeafCutter).
   3. Fitted usage proportion in condition 1. 
