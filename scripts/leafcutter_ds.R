@@ -11,6 +11,7 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
   make_option(c("-t","--timeout"), default=30, help="Maximum time (in seconds) allowed for a single optimization run [default %default]"),
   make_option(c("-p","--num_threads"), default=1, help="Number of threads to use [default %default]"),
     make_option(c("-e","--exon_file"), default=NULL, help="File defining known exons, example in data/gencode19_exons.txt.gz. Columns should be chr, start, end, strand, gene_name. Optional, only just to label the clusters."))),
+  args = strsplit( c("--num_threads 4 -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt"), " ")[[1]], 
   positional_arguments = 2)
 
 opt=arguments$opt
@@ -71,15 +72,15 @@ cluster_table$cluster=add_chr(cluster_table$cluster)
 if (!is.null(opt$exon_file)) {
   cat("Loading exons from",opt$exon_file,"\n")
   if (file.exists(opt$exon_file)) {
-      try( {
-          exons_table=read.table(opt$exon_file, confounders, header=T, stringsAsFactors = F)
+     tryCatch( {
+          exons_table=read.table(opt$exon_file, header=T, stringsAsFactors = F)
           intron_meta=get_intron_meta(rownames(counts))
           exons_table$chr=add_chr(exons_table$chr)
           intron_meta$chr=add_chr(intron_meta$chr)
           clu_gene_map=map_clusters_to_genes(intron_meta, exons_table)
           rownames(clu_gene_map)=clu_gene_map$clu
-          cluster_table$genes=clu_gene_map[ cluster_table, "genes" ]
-      }, error=function(err) warning(as.character(err)) ) # ignore errors here
+          cluster_table$genes=clu_gene_map[ cluster_table$clu, "genes" ]
+     }, error=function(err) warning(as.character(err)) ) # ignore errors here
   } else warning("File ",opt$exon_file," does not exist")
 } else cat("No exon_file provided.\n")
 
