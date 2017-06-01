@@ -11,7 +11,6 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
   make_option(c("-t","--timeout"), default=30, help="Maximum time (in seconds) allowed for a single optimization run [default %default]"),
   make_option(c("-p","--num_threads"), default=1, help="Number of threads to use [default %default]"),
     make_option(c("-e","--exon_file"), default=NULL, help="File defining known exons, example in data/gencode19_exons.txt.gz. Columns should be chr, start, end, strand, gene_name. Optional, only just to label the clusters."))),
-  args = strsplit( c("--num_threads 4 -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt"), " ")[[1]], 
   positional_arguments = 2)
 
 opt=arguments$opt
