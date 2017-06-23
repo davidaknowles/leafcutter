@@ -28,9 +28,10 @@ beta_real=function(r)
 leaf_cutter_effect_sizes=function(results) {
   softmax=function(g) exp(g)/sum(exp(g))
   all_introns=foreach(res=results, .combine = bind_rows) %do% {
-    if ( is.character(res) | ("error" %in% class(res)) ) NULL else 
-      beta=beta_real( res$fit_full$par )
-    data.frame( intron=colnames(beta), logef=beta[2,], baseline=softmax(beta[1,]), perturbed=softmax(beta[1,]+beta[2,]), stringsAsFactors = F )
+    if ( is.character(res) | ("error" %in% class(res)) ) NULL else {
+       beta=beta_real( res$fit_full$par )
+       data.frame( intron=colnames(beta), logef=beta[2,], baseline=softmax(beta[1,]), perturbed=softmax(beta[1,]+beta[2,]), stringsAsFactors = F )
+    }      
   } 
   all_introns$deltapsi=with(all_introns, perturbed-baseline)
   all_introns
