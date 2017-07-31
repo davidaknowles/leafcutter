@@ -18,7 +18,7 @@ model {
   matrix[K,P] beta;
   for (k in 1:K)
     for (p in 1:P)
-      beta[k,p] <- beta_scale[p] * (beta_raw[p][k] - 1.0 / K);
+      beta[k,p] = beta_scale[p] * (beta_raw[p][k] - 1.0 / K);
 
   conc ~ gamma(concShape, concRate);
   for (n in 1:N) {
@@ -27,15 +27,15 @@ model {
     vector[K] aPlusY;
     vector[K] lGaPlusY; 
     vector[K] lGaA ;
-    a <- conc * softmax(beta * x[n]); 
+    a = conc * softmax(beta * x[n]); 
     // explicit construction of multinomial dirichlet
     // y ~ multinomial_dirichlet( conc * softmax(beta * x[n]) )
-    suma <- sum(a);
-    aPlusY <- a + y[n];
+    suma = sum(a);
+    aPlusY = a + y[n];
     for (k in 1:K) {
-      lGaPlusY[k] <- lgamma(aPlusY[k]);
-      lGaA[k] <- lgamma(a[k]);
+      lGaPlusY[k] = lgamma(aPlusY[k]);
+      lGaA[k] = lgamma(a[k]);
     }
-    increment_log_prob(lgamma(suma)+sum(lGaPlusY)-lgamma(suma+sum(y[n]))-sum(lGaA));
+    target += lgamma(suma)+sum(lGaPlusY)-lgamma(suma+sum(y[n]))-sum(lGaA);
   }
 }
