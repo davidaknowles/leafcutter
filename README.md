@@ -22,21 +22,15 @@ To download the code:
 git clone https://github.com/davidaknowles/leafcutter
 ```
 
-To compile the R package to perform differential splicing analysis and make junction plots you can either...
-
-### Option 1. Install from source
-```
-cd leafcutter
-R CMD INSTALL --build .
-```
-You'll need the following R packages: `Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse`. 
-
-### Option 2. Install using devtools
-
-This has the advantage of installing the required package dependencies for you. 
+To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required package dependencies for you). 
 ```
 library(devtools)
 install_github("davidaknowles/leafcutter/leafcutter")
+```
+
+Alternatively you can install from source. You'll need to manually install the following R packages: `Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse`. Then make sure you're in the `leafcutter` package sub-directory (you should see subdirectories called `src, R, tests` etc) and run
+```
+R CMD INSTALL --build .
 ```
 
 ## Usage
