@@ -17,6 +17,11 @@ If you're annoyed by the RStan warnings try the `newstansyntax` branch. If you w
 
 ## Installation
 
+The prerequisites for LeafCutter are
+* samtools (http://samtools.sourceforge.net/) should be available on your PATH
+* Python 2.7 (early versions may be OK)
+* R (version 3.3.3, earlier versions may be OK)
+
 To download the code:
 ```
 git clone https://github.com/davidaknowles/leafcutter
