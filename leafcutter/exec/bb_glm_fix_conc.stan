@@ -16,11 +16,11 @@ model {
   real a[N];
   real b[N];
   real p[N]; 
-  xb <- x * beta;
+  xb = x * beta;
   for (n in 1:N) {
-    p[n] <- inv_logit(xb[n]); 
-    a[n] <- conc*p[n];
-    b[n] <- conc*(1.0-p[n]);
+    p[n] = inv_logit(xb[n]); 
+    a[n] = conc*p[n];
+    b[n] = conc*(1.0-p[n]);
   }
   // beta ~ normal(0,5);
   conc ~ gamma(concShape,concRate);

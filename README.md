@@ -17,15 +17,20 @@ If you're annoyed by the RStan warnings try the `newstansyntax` branch. If you w
 
 ## Installation
 
+The prerequisites for LeafCutter are
+* samtools (http://samtools.sourceforge.net/) should be available on your PATH
+* Python 2.7 (earlier versions may be OK)
+* R (version 3.3.3, earlier versions may be OK)
+
 To download the code:
 ```
 git clone https://github.com/davidaknowles/leafcutter
 ```
 
-To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required package dependencies for you). 
+To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required package dependencies for you). Fire up R and run:
 ```
-library(devtools)
-install_github("davidaknowles/leafcutter/leafcutter")
+if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-project.org')
+devtools::install_github("davidaknowles/leafcutter/leafcutter")
 ```
 
 Alternatively you can install from source. You'll need to manually install the following R packages: `Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse`. Then make sure you're in the `leafcutter` package sub-directory (you should see subdirectories called `src, R, tests` etc) and run
