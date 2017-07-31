@@ -54,7 +54,7 @@ LeafCutter has two main components:
 
 I'm skipping Step 0 which would be mapping `fastq` files, e.g. using STAR, to obtain `.bam` files. 
 
-We provide a helper script `scripts/bam2junc.sh` to (you guessed it) convert `bam` files to `junc` files. This step uses the CIGAR strings in the `bam` to quantify the usage of each intron. 
+We provide a helper script `scripts/bam2junc.sh` to (you guessed it) convert `bam` files to `junc` files. This step uses the CIGAR strings in the `bam` to quantify the usage of each intron. LeafCutter considers a read "problematic" if its mapped cigar string does not follow the pattern 'xMyNzM'.
 
 `example_data/worked_out_example.sh` gives you an example of how to do this in batch, assuming your data is in `run/geuvadis/`
 ```
