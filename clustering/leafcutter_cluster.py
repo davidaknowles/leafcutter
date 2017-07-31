@@ -288,6 +288,8 @@ def merge_files(fnames, fout, options):
 def cluster_intervals(E):
     ''' Clusters intervals together. '''
     E.sort()
+    if len(E) == 0:
+        return [], []
     current = E[0]
     Eclusters, cluster = [], []
 
