@@ -1,5 +1,5 @@
 
-leafCutterDir='..'
+leafCutterDir='/home/yangili/tools/leafcutter/'
 bamfile=$1
 bedfile=$1.bed
 juncfile=$2
