@@ -28,4 +28,6 @@ Imports:
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
 RoxygenNote: 6.0.1
-
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

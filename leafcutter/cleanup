@@ -7,6 +7,7 @@ cat src/*.cc > src/Modules.cpp
 rm src/*.cc
 R --vanilla --slave -e 'roxygen2::roxygenize(clean = TRUE)'
 echo "useDynLib(leafcutter, .registration=TRUE)" >> NAMESPACE
+#R --vanilla --slave -e 'pkgdown::build_site(path = "../docs")'
 exit $?
 
 
