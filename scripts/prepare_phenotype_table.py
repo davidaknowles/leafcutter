@@ -143,6 +143,7 @@ def main(ratio_file, pcs=50):
     sys.stdout.write("Use `sh %s_prepare.sh' to create index for fastQTL (requires tabix and bgzip).\n"%ratio_file)
 
     if pcs>0:
+        pcs = min([len(header), pcs])
         pca = PCA(n_components=pcs)                                                                                                                                                                            
         pca.fit(matrix)  
         pca_fn=ratio_file+".PCs"
