@@ -11,7 +11,7 @@ Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The 
 * simple, computationally efficient algorithms scaling to 100s or even 1000s of samples
 
 For details please see
-http://biorxiv.org/content/early/2016/03/16/044107
+(http://biorxiv.org/content/early/2016/03/16/044107)
 
 If you're annoyed by the RStan warnings try the `newstansyntax` branch. If you want to include covariates in your differential splicing analysis you can checkout the `covariates` branch. 
 

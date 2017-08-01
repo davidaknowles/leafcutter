@@ -4,6 +4,9 @@ Title: Alternative splicing quantification, differential splicing and splicing
     QTL mapping
 Version: 1.0
 Date: 2016-11-19
+Authors@R: c(person("David", "Knowles", email = "knowles84@gmail.com", role = c("aut", "cre")),
+              person("Yang", "Li", role = c("aut", "cre")),
+              person("Jonathan", "Pritchard", role = "aut"))
 Author: David A. Knowles, Yang Li, Jonathan Pritchard
 Maintainer: David A. Knowles <knowles84@gmail.com>
 Description: Alternative Splicing Quantification, Differential Splicing and Splicing QTL Mapping
