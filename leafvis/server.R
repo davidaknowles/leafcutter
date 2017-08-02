@@ -24,22 +24,7 @@ filter_intron_table <- function(introns, clu, toSave=FALSE){
   return(d)
 }
 
-# have a default option - this will be GTEX
-# so the same server.R script can be given an Rdata object 
-## by run_leafvis.R
-# or can be run alone and it will load the default dataset.
-# if( !exists("resultsData") ){
-#   print("loading example dataset")
-#   #defaultData <- "data/prudencio_fc_c9_results.Rdata"
-#   defaultData <- "example/Brain_vs_Heart_results.Rdata"
-#   if( file.exists(defaultData)){
-#     load(defaultData)
-#     # gencode_exons <- "data/gencode_hg38_all_exons.txt"
-#     # exons_table <- as.data.frame(data.table::fread(gencode_exons))
-#   }else{
-#     stop("no dataset selected")
-#   }
-# }
+if (!exists("introns")) load("example/Brain_vs_Heart_results.Rdata")
 
 #############
 # SHINY APP

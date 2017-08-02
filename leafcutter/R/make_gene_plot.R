@@ -62,7 +62,9 @@ make_gene_plot <- function(gene_name,
     toDiscard <- c(toDiscard, paste(notConnected$start, notConnected$end))
     
   }
-  exons <- exons[ !(paste(exons$start, exons$end) %in% toDiscard), ]
+  to_keep=!(paste(exons$start, exons$end) %in% toDiscard)
+  if (sum(to_keep) > 2)
+    exons <- exons[ to_keep, ]
   
   # constitutive introns that connect each exon
   # NO LONGER USED - MAY COME BACK IN 
@@ -121,11 +123,11 @@ make_gene_plot <- function(gene_name,
   }
   
   
-  
+  print(exons_here)
   exon_df <- data.frame( x=sapply(exons_here$start,FUN = function(X) invert_mapping(pos = X, s=s, coords = coords, xlim = my_xlim) ), 
                          xend=sapply(exons_here$end,FUN = function(X) invert_mapping(pos = X, s=s, coords = coords, xlim = my_xlim) ), 
-                         y=0, 
-                         yend=0,
+                         y=numeric(nrow(exons_here)), 
+                         yend=numeric(nrow(exons_here)),
                          label = exons_here$gene_name)
   
   

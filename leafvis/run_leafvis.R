@@ -13,7 +13,7 @@ library(shinycssloaders, quietly = TRUE)
 library(optparse)
 #data.table is required
 exons_table <- NULL
-resultsData <- NULL
+results_filename <- NULL
 
 # get Rdata file from option
 opt <- parse_args(
@@ -23,33 +23,13 @@ opt <- parse_args(
   ), positional_arguments = c(0,1)
 )
 
-resultsData <- opt$args
-if(length(resultsData) > 0){
-  print(paste0("results file is ",resultsData) )
-}else{
-  resultsData <- NULL
+results_filename <- opt$args
+if(length(results_filename) == 0){
+  print("No results found! Using default dataset example/Brain_vs_Heart_results.Rdata")
+  results_filename <- "example/Brain_vs_Heart_results.Rdata"
 }
 
-if(!is.null(resultsData)){
-  print("Loading in results")
-  load(resultsData)
+print(paste0("Loading results from ",results_filename))
+load(results_filename)
 
-  # soon deprecated - exons_table will be loaded in with Rdata
-  if(is.null(exons_table) ){
-    if( species == "human" ){
-      gencode_exons <- "data/gencode_hg38_all_exons.txt"
-    }
-    if( species == "mouse" ){
-      gencode_exons <- "data/gencode_mm10_all_exons.txt"
-    }
-    print("reading in exons")
-    exons_table <- as.data.frame(data.table::fread(gencode_exons))
-  }
-}else{
-  print("no results found! load with default dataset")
-  # remove variable from environment
-  # server.R will then check if it exists
-  rm(resultsData)
-}
-
-shiny::runApp( launch.browser=TRUE) 
+shiny::runApp() # launch.browser=TRUE ) 
