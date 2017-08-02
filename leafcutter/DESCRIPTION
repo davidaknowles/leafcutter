@@ -2,7 +2,7 @@ Package: leafcutter
 Type: Package
 Title: Alternative splicing quantification, differential splicing and splicing
     QTL mapping
-Version: 1.0
+Version: 0.2
 Date: 2016-11-19
 Authors@R: c(person("David", "Knowles", email = "knowles84@gmail.com", role = c("aut", "cre")),
               person("Yang", "Li", role = c("aut", "cre")),
