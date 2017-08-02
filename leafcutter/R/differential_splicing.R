@@ -44,6 +44,7 @@ leaf_cutter_effect_sizes=function(results) {
 #'
 #' @param counts An [introns] x [samples] matrix of counts. The rownames must be of the form chr:start:end:cluid. If the counts file comes from the leafcutter clustering code this should be the case already.
 #' @param x A [samples] numeric vector, should typically be 0s and 1s, although in principle scaling shouldn't matter.
+#' @param confounders A [samples] x [confounders] numeric matrix to be controlled for in the GLM. Factors should already have been converted to a 1-of-(K-1) encoding, e.g. using model.matrix (see scripts/leafcutter_ds.R for how to do this). Can be NULL, implying no covariates are controlled for. 
 #' @param max_cluster_size Don't test clusters with more introns than this
 #' @param min_samples_per_intron Ignore introns used (i.e. at least one supporting read) in fewer than n samples
 #' @param min_samples_per_group Require this many samples in each group to have at least min_coverage reads

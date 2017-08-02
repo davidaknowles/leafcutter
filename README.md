@@ -1,6 +1,6 @@
 # leafcutter
 
-<img src="./logo.png" width="200"> **Annotation-free quantification of RNA splicing.**
+<img src="./docs/logo.png" width="200"> **Annotation-free quantification of RNA splicing.**
 
 *Yang I Li, David A Knowles, Jonathan K Pritchard.*
 

@@ -13,6 +13,8 @@ differential_splicing(counts, x, confounders = NULL, max_cluster_size = 10,
 
 \item{x}{A [samples] numeric vector, should typically be 0s and 1s, although in principle scaling shouldn't matter.}
 
+\item{confounders}{A [samples] x [confounders] numeric matrix to be controlled for in the GLM. Factors should already have been converted to a 1-of-(K-1) encoding, e.g. using model.matrix (see scripts/leafcutter_ds.R for how to do this). Can be NULL, implying no covariates are controlled for.}
+
 \item{max_cluster_size}{Don't test clusters with more introns than this}
 
 \item{min_samples_per_intron}{Ignore introns used (i.e. at least one supporting read) in fewer than n samples}
