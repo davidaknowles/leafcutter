@@ -70,12 +70,13 @@
     
     
 <div class="contents">
-<p>Written by Jack Humphrey, Yang Li &amp; David Knowles</p>
-<p>The Shiny app has only been tested on OS X.</p>
+<p>Written by Jack Humphrey, David Knowles &amp; Yang Li</p>
+<p>To see an example of the leafcutter shiny app in action without installing anything take a look at <a href="https://leafvis.shinyapps.io/leafvis/" class="uri">https://leafvis.shinyapps.io/leafvis/</a>. This shows leafcutter differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from <a href="https://www.gtexportal.org/home/">GTEx</a>.</p>
+<p>The LeafCutter Shiny app has been tested on macOS 10.12 and Ubuntu 14.04.</p>
 <div id="example" class="section level4">
 <h4 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h4>
-<p>If you’ve already installed leafcutter then you can easily fire up a local shiny app on some example data. Navigate into the leafvis directory:</p>
+<p>If you’ve already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the leafvis directory:</p>
 <pre><code>cd leafvis</code></pre>
 <p>and then download the example data using</p>
 <pre><code>./download_example.sh</code></pre>
@@ -96,7 +97,8 @@
 </ul>
 <p>On Mac you can install bedtools and GNU Awk using <a href="https://brew.sh/">homebrew</a>:</p>
 <p><code>brew install gawk; brew install bedtools</code></p>
-<p>Most Linuxes will have gawk already.</p>
+<p>Most Linuxes will have ‘gawk’ already. On Ubuntu ‘bedtools’ can be installed using</p>
+<p><code>sudo apt-get install bedtools</code></p>
 </div>
 <div id="required-r-packages" class="section level4">
 <h4 class="hasAnchor">

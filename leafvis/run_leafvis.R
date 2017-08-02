@@ -32,4 +32,4 @@ if(length(results_filename) == 0){
 print(paste0("Loading results from ",results_filename))
 load(results_filename)
 
-shiny::runApp() # launch.browser=TRUE ) 
+shiny::runApp( launch.browser=TRUE ) 
