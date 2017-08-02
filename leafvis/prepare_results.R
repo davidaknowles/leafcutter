@@ -4,6 +4,7 @@
 ### annotate the output of differential splicing
 ## and prepare for visualisation
 library(optparse)
+require(leafcutter)
 
 options(echo=TRUE)
 
@@ -527,7 +528,7 @@ clusters <- fix_clusters(all.clusters)
 introns <- fix_introns(all.introns)
 intron_summary <- intron_summary(all.introns)
 cluster_summary <- cluster_summary(all.clusters) 
-introns_to_plot <- leafcutter::get_intron_meta(rownames(counts))
+introns_to_plot <- get_intron_meta(rownames(counts))
 cluster_ids <- introns_to_plot$clu 
 pca <- make_pca(counts,meta)
 
