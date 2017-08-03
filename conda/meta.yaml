@@ -3,8 +3,9 @@ package:
   version: "0.2"
 
 source:
-  git_rev: v0.2
-  git_url: https://github.com/davidaknowles/leafcutter.git
+  # git_rev: v0.2
+  # git_url: https://github.com/davidaknowles/leafcutter/tree/forconda
+  path: ..
 
 requirements:
   build:
