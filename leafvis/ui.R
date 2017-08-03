@@ -1,6 +1,6 @@
 library(shiny)
 library(DT)
-library(shinycssloaders)
+#library(shinycssloaders)
 
 ui <- shinyUI(
   navbarPage(title = "Leafcutter",
@@ -82,7 +82,8 @@ padding-left: 2%;
               h4(id = "title","cluster results"),
               hr(),
               div(
-                withSpinner(DT::dataTableOutput("all_clusters"))
+                # withSpinner(DT::dataTableOutput("all_clusters"))
+                DT::dataTableOutput("all_clusters")
               )
             )
           ),
@@ -100,7 +101,8 @@ padding-left: 2%;
                     p(HTML(paste0("To visualise a cluster, click a row in ",strong("cluster results.") ) ) ),
                     p(HTML(paste0("All clusters found within a gene are visualised in the ", strong("gene view"), " below.") ) )
                   ),
-              withSpinner(plotOutput("select_cluster_plot", width = "100%") )
+              #withSpinner(plotOutput("select_cluster_plot", width = "100%") )
+              plotOutput("select_cluster_plot", width = "100%")
             ),
             DT::dataTableOutput("cluster_view"),
               hr(),
@@ -122,7 +124,8 @@ padding-left: 2%;
           # div(id = "welcome", 
           #   h3("No gene selected")
           #   ),
-          withSpinner(plotOutput("select_gene_plot", width="100%")),
+          #withSpinner(plotOutput("select_gene_plot", width="100%")),
+          plotOutput("select_gene_plot", width="100%"),
           hr(),
           div(class = "download_btn",
             downloadButton("downloadGenePlot", label = "Save plot", class = NULL)

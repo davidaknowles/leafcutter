@@ -4,7 +4,7 @@
 
 *Yang I Li, David A Knowles, Jonathan K Pritchard.*
 
-Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The core idea is to leverage spliced reads (reads that span an intron) to quantify (differential) intron usage across samples. The advantages of this approach include
+LeafCutter quantifies RNA splicing variation using short-read RNA-seq data. The core idea is to leverage spliced reads (reads that span an intron) to quantify (differential) intron usage across samples. The advantages of this approach include
 * easy detection of novel introns
 * modeling of more complex splicing events than exonic PSI
 * avoiding the challenge of isoform abundance estimation

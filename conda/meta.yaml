@@ -1,0 +1,37 @@
+package:
+  name: leafcutter
+  version: "0.2"
+
+source:
+  git_rev: v0.2
+  git_url: https://github.com/davidaknowles/leafcutter.git
+
+requirements:
+  build:
+    - python
+    - r-essentials
+    - r-rstan
+    - r-r.utils
+    - r-hmisc
+    - r-domc
+    - r-dt
+    - r-optparse
+    - r-intervals
+
+  run:
+    - python
+    - r-essentials
+    - r-rstan
+    - r-r.utils
+    - r-hmisc
+    - r-domc
+    - r-dt
+    - r-optparse
+    - r-intervals
+    - scikit-learn
+    - bedtools
+
+about:
+  home: http://davidaknowles.github.io/leafcutter/
+  license: BSD
+  license_file: LICENSE

@@ -1,0 +1,1 @@
+$PREFIX/bin/R CMD INSTALL --build leafcutter/

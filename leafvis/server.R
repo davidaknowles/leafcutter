@@ -7,7 +7,7 @@ library(reshape2)
 library(gridExtra)
 library(intervals) # needed for pretty strand arrow placement
 library(foreach)
-library(shinycssloaders)
+#library(shinycssloaders)
 #data.table is required
 # library(shinyjs)
 
