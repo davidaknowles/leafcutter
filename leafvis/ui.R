@@ -96,11 +96,6 @@ padding-left: 2%;
             hr(),
             h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
             div(
-              div(id = "welcome", 
-                    h3("Welcome to the Leafcutter visualisation app!"),
-                    p(HTML(paste0("To visualise a cluster, click a row in ",strong("cluster results.") ) ) ),
-                    p(HTML(paste0("All clusters found within a gene are visualised in the ", strong("gene view"), " below.") ) )
-                  ),
               #withSpinner(plotOutput("select_cluster_plot", width = "100%") )
               plotOutput("select_cluster_plot", width = "100%")
             ),
