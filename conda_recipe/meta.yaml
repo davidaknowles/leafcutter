@@ -1,0 +1,113 @@
+{% set version = '0.2' %}
+
+{% set posix = 'm2-' if win else '' %}
+{% set native = 'm2w64-' if win else '' %}
+
+package:
+  name: r-leafcutter
+  version: {{ version|replace("-", "_") }}
+
+source:
+
+#  git_url: https://github.com/davidaknowles/lc_conda.git
+  git_url: https://github.com/davidaknowles/leafcutter.git
+  git_tag: v0.2.1
+  # You can add a hash for the file here, like md5, sha1 or sha256
+  # patches:
+   # List any patch files here
+   # - fix.patch
+
+build:
+  # If this is a new build for the same version, increment the build number.
+  number: 0
+
+  # This is required to make R link correctly on Linux.
+  rpaths:
+    - lib/R/lib/
+    - lib/
+
+# Suggests: knitr, rmarkdown
+requirements:
+  build:
+    - r-base
+    - r-bh >=1.58.0
+    - r-dt
+    - r-hmisc
+    - r-r.utils
+    - r-rcpp >=0.11.0
+    - r-rcppeigen
+    - r-stanheaders >=2.8.0
+    - r-domc
+    - r-dplyr
+    - r-foreach
+    - r-ggplot2
+    - r-gridextra
+    - r-intervals
+    - r-optparse
+    - r-reshape2
+    - r-rstan >=2.8.1
+    - r-shiny
+    - r-shinycssloaders
+    - r-roxygen2
+
+  run:
+    - r-base
+    - r-bh >=1.58.0
+    - r-dt
+    - r-hmisc
+    - r-r.utils
+    - r-rcpp >=0.11.0
+    - r-rcppeigen
+    - r-stanheaders >=2.8.0
+    - r-domc
+    - r-dplyr
+    - r-foreach
+    - r-ggplot2
+    - r-gridextra
+    - r-intervals
+    - r-optparse
+    - r-reshape2
+    - r-rstan >=2.8.1
+    - r-shiny
+    - r-shinycssloaders
+
+test:
+  commands:
+    # You can put additional test commands to be run here.
+    - $R -e "library('leafcutter')"  # [not win]
+    - "\"%R%\" -e \"library('leafcutter')\""  # [win]
+
+  # You can also put a file called run_test.py, run_test.sh, or run_test.bat
+  # in the recipe that will be run at test time.
+
+  # requires:
+    # Put any additional test requirements here.
+
+about:
+  home: https://CRAN.R-project.org/package=leafcutter
+  license: GPL (>= 3)
+  summary: Alternative Splicing Quantification, Differential Splicing and Splicing QTL Mapping
+  license_family: GPL3
+
+# The original CRAN metadata for this package was:
+
+# Package: leafcutter
+# Type: Package
+# Title: Alternative splicing quantification, differential splicing and splicing QTL mapping
+# Version: 0.2
+# Date: 2016-11-19
+# Authors@R: c(person("David", "Knowles", email = "knowles84@gmail.com", role = c("aut", "cre")), person("Yang", "Li", role = c("aut", "cre")), person("Jack", "Humphrey", role = c("aut", "cre")), person("Jonathan", "Pritchard", role = "aut"))
+# Author: David A. Knowles, Yang Li, Jonathan Pritchard
+# Maintainer: David A. Knowles <knowles84@gmail.com>
+# Description: Alternative Splicing Quantification, Differential Splicing and Splicing QTL Mapping
+# License: GPL (>= 3)
+# Depends: R (>= 3.0.2), Rcpp (>= 0.11.0),
+# Imports: rstan (>= 2.8.1), ggplot2, R.utils, gridExtra, reshape2, Hmisc, foreach, dplyr, doMC, optparse, shiny, DT, intervals, shinycssloaders
+# LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>= 0.11.0), RcppEigen
+# RoxygenNote: 6.0.1
+# Suggests: knitr, rmarkdown
+# VignetteBuilder: knitr
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
