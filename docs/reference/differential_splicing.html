@@ -109,6 +109,10 @@
       <td><p>A [samples] numeric vector, should typically be 0s and 1s, although in principle scaling shouldn't matter.</p></td>
     </tr>
     <tr>
+      <th>confounders</th>
+      <td><p>A [samples] x [confounders] numeric matrix to be controlled for in the GLM. Factors should already have been converted to a 1-of-(K-1) encoding, e.g. using model.matrix (see scripts/leafcutter_ds.R for how to do this). Can be NULL, implying no covariates are controlled for.</p></td>
+    </tr>
+    <tr>
       <th>max_cluster_size</th>
       <td><p>Don't test clusters with more introns than this</p></td>
     </tr>

@@ -77,13 +77,32 @@
 <li>Python 2.7 (earlier versions may be OK)</li>
 <li>R (version 3.3.3, earlier versions may be OK)</li>
 </ul>
-<p>To download the code:</p>
+<p>To download the code (you’ll need this for the leafcutter scripts)</p>
 <pre><code>git clone https://github.com/davidaknowles/leafcutter</code></pre>
-<p>To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required package dependencies for you). Fire up R and run:</p>
+<div id="installing-the-r-package" class="section level3">
+<h3 class="hasAnchor">
+<a href="#installing-the-r-package" class="anchor"></a>Installing the R package</h3>
+<div id="using-devtools-recommended" class="section level4">
+<h4 class="hasAnchor">
+<a href="#using-devtools-recommended" class="anchor"></a>Using devtools (recommended)</h4>
+<p>To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required R package dependencies for you). Fire up R and run:</p>
 <pre><code>if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-project.org')
 devtools::install_github("davidaknowles/leafcutter/leafcutter")</code></pre>
+</div>
+<div id="from-source" class="section level4">
+<h4 class="hasAnchor">
+<a href="#from-source" class="anchor"></a>From source</h4>
 <p>Alternatively you can install from source. You’ll need to manually install the following R packages: <code>Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse</code>. Then make sure you’re in the <code>leafcutter</code> package sub-directory (you should see subdirectories called <code>src, R, tests</code> etc) and run</p>
 <pre><code>R CMD INSTALL --build .</code></pre>
+</div>
+<div id="using-conda" class="section level4">
+<h4 class="hasAnchor">
+<a href="#using-conda" class="anchor"></a>Using conda</h4>
+<p>If you are a 64-bit Linux <code>conda</code> user ( <a href="https://conda.io/docs/install/quick.html#miniconda-quick-install-requirements">installation instructions</a> ) we have an experimental package which can be installed using</p>
+<pre><code>conda install -c davidaknowles r-leafcutter</code></pre>
+<p>We will build macOS and Windows packages if there is demand for this.</p>
+</div>
+</div>
 </div>
   </div>
 
