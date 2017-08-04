@@ -1,4 +1,4 @@
-The leafcutter R package is a subdir of the leafcutter repo which makes automatically building the conda recipe difficult. A workaround is to make a new github repo with just the R package: https://github.com/davidaknowles/lc_conda. Then run
+The leafcutter R package is a subdir of the leafcutter repo which makes automatically building the conda recipe difficult. A workaround is to make a new github repo with just the R package: https://github.com/davidaknowles/lc_conda (note this must have at least one `tag`) Then run
 ```conda skeleton cran https://github.com/davidaknowles/lc_conda```
 
 Additional steps: 

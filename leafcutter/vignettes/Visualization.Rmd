@@ -1,0 +1,134 @@
+---
+title: "Leafcutter Shiny App"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Written by Jack Humphrey, David Knowles & Yang Li
+
+To see an example of the `leafcutter` shiny app in action without installing anything take a look at <https://leafvis.shinyapps.io/leafvis/>. This shows `leafcutter` differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from [GTEx](https://www.gtexportal.org/home/). 
+
+The leafcutter shiny app has been tested on `macOS 10.12` and `Ubuntu 14.04`. 
+
+#### Example
+
+If you've already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the `leafvis` directory:
+```
+cd leafvis
+```
+and then download the example data using 
+```
+./download_example.sh
+```
+This will download and unzip a folder called `example`. Now starting the shiny app should be as easy as
+```
+./run_leafvis.R example/Brain_vs_Heart_results.Rdata
+```
+You can even leave out the `example/Brain_vs_Heart_results.Rdata` part as this is the default dataset `run_leafvis.R` will try to use. 
+
+#### Annotation code
+
+The Shiny app includes functionality to label detected introns as annotated or cryptic. To do for a new dataset this an "annotation code" is needed, built from a "Gene Transfer Format" file appropriate for your genome. We provide pre-built annotation codes for hg19 and hg38 which can be downloaded by running
+```
+./download_human_annotation_codes.sh
+```
+from the `leafvis` directory. To build a new annotation code you need: 
+
+* [bedtools](http://bedtools.readthedocs.io/en/latest/) >= v2.17.0
+* a GTF transcript file of your choice - we recommend [GENCODE](https://www.gencodegenes.org/).
+* GNU Awk (gawk) >= 3.1; 
+
+On Mac you can install `bedtools` and `GNU Awk` using [homebrew](https://brew.sh/):
+
+`brew install gawk; brew install bedtools`
+
+Most Linuxes will have `gawk` already. On Ubuntu `bedtools` can be installed using
+
+`sudo apt-get install bedtools`
+
+#### Required R packages
+
+These should all have been installed when you installed leafcutter: 
+
+* data.table
+* stringr
+* ggplot2
+* shiny
+* DT
+* intervals
+* reshape2
+* gridExtra
+* foreach
+* shinycssloaders
+
+### Step 0. Generate the annotation files
+
+This step processes a given GTF to generate lists of exons, introns and splice sites. This step only has to be run once to use a particular GTF file with the app.
+
+**Warning**: this has only been tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files. 
+```
+sh wrangleAnnotation.sh <GTF> <annotation_code>
+```
+
+**GTF** - a gene transfer format file, provided by GENCODE, Ensembl, etc.
+**annotation_code** - the path or folder name with a base name, eg `/path/to/gencode_hg38`
+
+This will create: 
+```<annotation_code>_all_introns.bed.gz
+<annotation_code>_threeprime.bed.gz
+<annotation_code>_fiveprime.bed.gz
+<annotation_code>_all_exons.txt.gz
+```
+
+### Step 1. Prepare the LeafCutter differential splicing results for visualisation
+
+This step annotates each intron in each cluster at a given false discovery rate.
+
+```
+Rscript prepare_results.R --iFolder <iFolder> \
+						 --oFolder <oFolder> \
+                         --support <support> \
+                         --annotation_code <annotation_code> \
+                         --code <code> \
+                         --FDR <FDR> \                       
+```
+
+**iFolder** - the folder that contains the results of the differential intron excision analysis. The script assumes all results share the same path and **code**.
+
+**oFolder** - the folder where the results will be written.
+
+**support** - the same support file as used for the previous analysis. 
+
+**annotation_code** - as before.
+
+**code** - the same code used for the rest of the analysis, eg `testYRIvsEU`
+
+**FDR** - the benjamini-hochberg false discovery rate with which to filter the results.
+
+This will create the Rdata object `<oFolder>/results/<code>_results.Rdata`. The file 'prepare_example.sh' shows how this would be done for the example dataset if you wanted to rebuild 'Brain_vs_Heart_results.Rdata'. 
+
+### Step 2. Visualise the results
+
+```
+cd leafvis/
+Rscript run_leafvis.R <oFolder>/results/<code>_results.Rdata
+```
+
+This will load in the Rdata object and run the LeafCutter Visualisation App in your browser.
+
+### Features
+
+* Visualisation of significantly changed clusters
+
+![cluster plot example](./cluster_plot_example.png)
+
+* Visualisation of all clusters discovered in a gene
+
+![gene plot example](./gene_plot_example.png)
+
+* PCA plot based on splice junction counts
+
+* All plots can be exported as PDF
