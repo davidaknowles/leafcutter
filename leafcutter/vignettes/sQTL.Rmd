@@ -1,0 +1,27 @@
+---
+title: "Splicing QTL"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Splicing QTL analysis is a little more involved than differential splicing analysis, but we provide a script `scripts/prepare_phenotype_table.py` intended to make this process a little easier. We assume you will use [FastQTL](http://fastqtl.sourceforge.net/) for the sQTL mapping itself, but reformatting the output if you want to use another tool (e.g. [MatrixEQTL](http://www.bios.unc.edu/research/genomic_software/Matrix_eQTL/) ) should be reasonably straightforward. The script is pretty simple: a) calculate intron excision ratios b) filter out introns used in less than 40% of individuals or with almost no variation c) output these ratios as gzipped txt files along with a user-specified number of PCs. 
+
+You'll need the `sklearn` and `scipy` Python packages installed, e.g. 
+```
+pip install sklearn
+```
+for the PCA calculation. 
+
+Usage is e.g.
+```
+python scripts/prepare_phenotype_table.py example_data/testYRIvsEU_perind.counts.gz -p 10
+```
+where `-p 10` specifies you want to calculate 10 PCs for FastQTL to use as covariates. 
+
+FastQTL needs `tabix` indices. To generate these you'll need `tabix` and `bgzip` which you may have as part of `samtools`, if not they're now part of `htslib`, see <https://github.com/samtools/htslib> for installation instructions (alternatively `apt-get install tabix` worked for me in Ubuntu 14.04). With these dependencies installed you can run the script created by and pointed to by the output of `prepare_phenotype_table.py`, e.g. `example_data/testYRIvsEU_perind.counts.gz_prepare.sh`. 
+
+We assume you'll run FastQTL separately for each chromosome: the files you'll need will have names like `testYRIvsEU_perind.counts.gz.qqnorm_chr21.gz`. The PC file will be e.g. testYRIvsEU_perind.counts.gz.PCs. 
+

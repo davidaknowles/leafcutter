@@ -1,0 +1,46 @@
+
+template:
+  params:
+    bootswatch: cerulean
+
+navbar:
+  left:
+    - text: "Installation"
+      href: articles/Installation.html
+    - text: "Differential splicing"
+      href: articles/Usage.html
+    - text: "Visualization"
+      href: articles/Visualization.html
+    - text: "SplicingQTL"
+      href: articles/sQTL.html
+    - text: "R functions"
+      href: "reference/index.html"
+  right:
+    - icon: fa-github
+      href: https://github.com/davidaknowles/leafcutter
+      
+reference:
+  - title: Main functions
+    contents:
+    - differential_splicing
+    - make_differential_splicing_plot
+  - title: Internal functions
+    contents:
+    - dirichlet_multinomial_anova_mc
+    - get_intron_meta
+    - map_clusters_to_genes
+    - leaf_cutter_effect_sizes
+    - cluster_results_table
+  - title: Helper functions
+    contents:
+    - add_chr
+    - beta_real
+    - bh
+    - logistic
+    - multiqq
+  - title: Deprecated
+    contents:
+    - dirichlet_multinomial_anova
+    - dirichlet_multinomial_glm
+    - betaBinomialGLM
+    
