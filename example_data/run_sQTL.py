@@ -122,7 +122,7 @@ if __name__ == "__main__":
         pass
     
 
-    print run("%s/scripts/prepare_phenotype_table.py %s/%s_perind.counts.gz"%(options.leafd,options.tmpdir,options.outprefix))
+    print run("python %s/scripts/prepare_phenotype_table.py %s/%s_perind.counts.gz"%(options.leafd,options.tmpdir,options.outprefix))
     print run("Rscript %s/scripts/leafcutter_ds.R --num_threads 1 -i 3 %s/%s_perind_numers.counts.gz %s/ds_test"%(options.leafd,options.tmpdir,options.outprefix,options.tmpdir))[1]
 
     sys.stdout.write("\n*******fastQTL instructions (also see http://fastqtl.sourceforge.net/) *******\n")
