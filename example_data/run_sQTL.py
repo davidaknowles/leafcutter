@@ -115,15 +115,15 @@ if __name__ == "__main__":
         
     fout.close()
     
-    #print run("python %s/clustering/leafcutter_cluster.py -j %s/junction_files.txt -m %s -o %s -l %s -r %s -p %s"%(options.leafd,options.tmpdir,options.minclureads, options.outprefix,str(options.maxintronlen), options.tmpdir,str(options.mincluratio)))[1]
+    print run("python %s/clustering/leafcutter_cluster.py -j %s/junction_files.txt -m %s -o %s -l %s -r %s -p %s"%(options.leafd,options.tmpdir,options.minclureads, options.outprefix,str(options.maxintronlen), options.tmpdir,str(options.mincluratio)))[1]
 
     if options.annotation != None:
-        #print run("python %s/clustering/get_cluster_gene.py %s %s/%s_perind.counts.gz"%(options.leafd,options.annotation, options.tmpdir,options.outprefix))[1]
+        print run("python %s/clustering/get_cluster_gene.py %s %s/%s_perind.counts.gz"%(options.leafd,options.annotation, options.tmpdir,options.outprefix))[1]
         pass
     
 
-    #print run("%s/scripts/prepare_phenotype_table.py %s/%s_perind.counts.gz"%(options.leafd,options.tmpdir,options.outprefix))
-    #print run("Rscript %s/scripts/leafcutter_ds.R --num_threads 1 -i 3 %s/%s_perind_numers.counts.gz %s/ds_test"%(options.leafd,options.tmpdir,options.outprefix,options.tmpdir))[1]
+    print run("%s/scripts/prepare_phenotype_table.py %s/%s_perind.counts.gz"%(options.leafd,options.tmpdir,options.outprefix))
+    print run("Rscript %s/scripts/leafcutter_ds.R --num_threads 1 -i 3 %s/%s_perind_numers.counts.gz %s/ds_test"%(options.leafd,options.tmpdir,options.outprefix,options.tmpdir))[1]
 
     sys.stdout.write("\n*******fastQTL instructions (also see http://fastqtl.sourceforge.net/) *******\n")
     sys.stdout.write("\n(1) Prepare phenotypes: Use `sh %s/%s_perind.counts.gz_prepare.sh' to create index for fastQTL (requires tabix and bgzip).\n"%(options.tmpdir,options.outprefix))
