@@ -71,7 +71,7 @@
     
 <div class="contents">
 <p>Written by Jack Humphrey, David Knowles &amp; Yang Li</p>
-<p>To see an example of the <code>leafcutter</code> shiny app in action without installing anything take a look at <a href="https://leafvis.shinyapps.io/leafvis/">https://leafvis.shinyapps.io/leafvis/</a>. This shows <code>leafcutter</code> differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from <a href="https://www.gtexportal.org/home/">GTEx</a>.</p>
+<p>To see an example of the <code>leafcutter</code> shiny app in action without installing anything take a look at <a href="https://leafvis.shinyapps.io/leafvis/" class="uri">https://leafvis.shinyapps.io/leafvis/</a>. This shows <code>leafcutter</code> differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from <a href="https://www.gtexportal.org/home/">GTEx</a>.</p>
 <p>The leafcutter shiny app has been tested on <code>macOS 10.12</code> and <code>Ubuntu 14.04</code>.</p>
 <div id="example" class="section level4">
 <h4 class="hasAnchor">
@@ -125,7 +125,10 @@
 <p><strong>Warning</strong>: this has only been tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files.</p>
 <pre><code>sh wrangleAnnotation.sh &lt;GTF&gt; &lt;annotation_code&gt;</code></pre>
 <p><strong>GTF</strong> - a gene transfer format file, provided by GENCODE, Ensembl, etc. <strong>annotation_code</strong> - the path or folder name with a base name, eg <code>/path/to/gencode_hg38</code></p>
-<p>This will create: <code>&lt;annotation_code&gt;_all_introns.bed.gz &lt;annotation_code&gt;_threeprime.bed.gz &lt;annotation_code&gt;_fiveprime.bed.gz &lt;annotation_code&gt;_all_exons.txt.gz</code></p>
+<p>This will create:</p>
+<pre class="&lt;annotation_code&gt;_all_introns.bed.gz"><code>&lt;annotation_code&gt;_threeprime.bed.gz
+&lt;annotation_code&gt;_fiveprime.bed.gz
+&lt;annotation_code&gt;_all_exons.txt.gz</code></pre>
 </div>
 <div id="step-1--prepare-the-leafcutter-differential-splicing-results-for-visualisation" class="section level3">
 <h3 class="hasAnchor">

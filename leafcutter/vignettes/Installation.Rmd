@@ -30,10 +30,15 @@ devtools::install_github("davidaknowles/leafcutter/leafcutter")
 
 #### From source
 
-Alternatively you can install from source. You'll need to manually install the following R packages: `Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse`. Then make sure you're in the `leafcutter` package sub-directory (you should see subdirectories called `src, R, tests` etc) and run
+Alternatively you can install from source. You'll need to manually install the following R packages: `Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse, shiny, intervals, shinycssloaders, DT`. Then make sure you're in the `leafcutter` package sub-directory (you should see subdirectories called `src, R, tests` etc) and run
 ```
 R CMD INSTALL --build .
 ```
+If you see errors try installing the `roxygen2` package and running
+```
+R CMD INSTALL --preclean --build .
+```
+which will attempt to use `stan` to rebuild the C++ code from the `.stan` files in `exec`. 
 
 #### Using conda
 

@@ -77,7 +77,7 @@
 <p>Usage is e.g.</p>
 <pre><code>python scripts/prepare_phenotype_table.py example_data/testYRIvsEU_perind.counts.gz -p 10</code></pre>
 <p>where <code>-p 10</code> specifies you want to calculate 10 PCs for FastQTL to use as covariates.</p>
-<p>FastQTL needs <code>tabix</code> indices. To generate these you’ll need <code>tabix</code> and <code>bgzip</code> which you may have as part of <code>samtools</code>, if not they’re now part of <code>htslib</code>, see <a href="https://github.com/samtools/htslib">https://github.com/samtools/htslib</a> for installation instructions (alternatively <code>apt-get install tabix</code> worked for me in Ubuntu 14.04). With these dependencies installed you can run the script created by and pointed to by the output of <code>prepare_phenotype_table.py</code>, e.g. <code>example_data/testYRIvsEU_perind.counts.gz_prepare.sh</code>.</p>
+<p>FastQTL needs <code>tabix</code> indices. To generate these you’ll need <code>tabix</code> and <code>bgzip</code> which you may have as part of <code>samtools</code>, if not they’re now part of <code>htslib</code>, see <a href="https://github.com/samtools/htslib" class="uri">https://github.com/samtools/htslib</a> for installation instructions (alternatively <code>apt-get install tabix</code> worked for me in Ubuntu 14.04). With these dependencies installed you can run the script created by and pointed to by the output of <code>prepare_phenotype_table.py</code>, e.g. <code>example_data/testYRIvsEU_perind.counts.gz_prepare.sh</code>.</p>
 <p>We assume you’ll run FastQTL separately for each chromosome: the files you’ll need will have names like <code>testYRIvsEU_perind.counts.gz.qqnorm_chr21.gz</code>. The PC file will be e.g. testYRIvsEU_perind.counts.gz.PCs.</p>
 </div>
   </div>

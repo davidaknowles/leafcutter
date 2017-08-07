@@ -2,7 +2,9 @@
 
 <img src="./logo.png" width="200"> 
 
-*Yang I Li, David A Knowles, Jonathan K Pritchard.*
+[Yang I. Li](http://web.stanford.edu/~yangili/index.html)<sup>1</sup>, [David A. Knowles](http://cs.stanford.edu/people/davidknowles/)<sup>1</sup>, Jack Humphrey, Alvaro N. Barbeira, Scott P. Dickinson, Hae Kyung Im, [Jonathan K. Pritchard](http://web.stanford.edu/group/pritchardlab/home.html)
+
+<sup>1</sup>*Equal contribution*
 
 Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The core idea is to leverage spliced reads (reads that span an intron) to quantify (differential) intron usage across samples. The advantages of this approach include
 * easy detection of novel introns
