@@ -102,6 +102,11 @@ do
     echo $bamfile.junc &gt;&gt; test_juncfiles.txt
 done</code></pre>
 <p>This step is pretty fast (e.g. a couple of minutes per bam) but if you have samples numbering in the 100s you might want to do this on a cluster. Note that we also make a list of the generated <code>junc</code> files in <code>test_juncfiles.txt</code>.</p>
+<div id="choice-of-6nt-overhang" class="section level4">
+<h4 class="hasAnchor">
+<a href="#choice-of-6nt-overhang" class="anchor"></a>Choice of 6nt overhang</h4>
+<p>We chose 6nt as the default overhang required by LeafCutter. By chance we would expect one match every 4<sup>6</sup>bp, or 4096bp, which appears to be quite likely for any given intron. However, RNA-seq mappers already deal with this problem by 1) assuring that the junction has already been previously annotated or is supported by reads with longer overhang (e.g. in STAR two-pass mode) 2) penalizing non-canonical junctions (i.e. non GT-AG junctions). The effect of the latter is that we would only expect one match every 4<sup>8</sup>bp, or 65,536bp (just one or two every 100kb, the max size allowed for our introns). However, our most restrictive filter is the requirement that reads considered be uniquely mapped. Therefore, even when the overhang is just 6bp, there is no ambiguity in mapping. Moreover, junctions are rarely only supported by reads that have an overhang of 6, when the size of the overhang goes up to 7, 8, or 9nt, the probability that we see these by chance goes down to one in over 4 million bp (for 9nt).</p>
+</div>
 </div>
 <div id="step-2--intron-clustering" class="section level3">
 <h3 class="hasAnchor">
@@ -172,6 +177,7 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <a href="#step-4--plotting-splice-junctions" class="anchor"></a>Step 4. Plotting splice junctions</h3>
 <p>This will make a pdf with plots of the differentially spliced clusters detected at an FDR of 5%.</p>
 <pre><code>../scripts/ds_plots.R -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt leafcutter_ds_cluster_significance.txt -f 0.05</code></pre>
+<p>We now have a LeafCutter shiny app allowing interactive visual interrogation of your results, go to the <a href="./Visualization.html">Visualization</a> tab to learn how to feed the LeafCutter output into the shiny app.</p>
 </div>
 </div>
   </div>
