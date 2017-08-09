@@ -440,7 +440,8 @@ make_gene_plot <- function(gene_name,
                      curvature=curv,lineend="round") +
           geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=as.factor(deltaPSI > 0), size = curveMax),
                      curvature=-curv,lineend="round" ) +
-          scale_colour_discrete("dPSI",labels = c("down","up") )
+          #scale_colour_discrete("dPSI",labels = c("down","up") )
+          scale_colour_manual("dPSI",labels = c("down","up"), values = c("darkturquoise", "firebrick2") )
       }
       
      
