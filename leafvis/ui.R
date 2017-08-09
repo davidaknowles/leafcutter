@@ -70,6 +70,15 @@ padding-left: 2%;
   text-align: center;
 }
 
+#UCSC {
+  border-color: #ccc;
+  color: #333;
+}
+
+#UCSC:hover {
+    background-color: #E6E6E6;
+}
+
 "),
         fluidRow(
           div(
@@ -107,7 +116,8 @@ padding-left: 2%;
               hr(),
               div(class = "download_btn",
                 downloadButton("downloadClusterPlot", label = "save plot", class = NULL),
-                downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL)
+                downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL),
+                htmlOutput("viewClusterUCSC", inline = TRUE)
               )
           )
         )
@@ -126,7 +136,8 @@ padding-left: 2%;
           withSpinner(plotOutput("select_gene_plot", width="100%")),
           hr(),
           div(class = "download_btn",
-            downloadButton("downloadGenePlot", label = "Save plot", class = NULL)
+            downloadButton("downloadGenePlot", label = "Save plot", class = NULL),
+            htmlOutput("viewGeneUCSC", inline = TRUE)
           )
         )
       )

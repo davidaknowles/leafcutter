@@ -24,7 +24,7 @@ filter_intron_table <- function(introns, clu, toSave=FALSE){
   return(d)
 }
 
-if (!exists("introns")) load("example/Brain_vs_Heart_results.Rdata")
+if (!exists("introns")) load("leafvis_example/Brain_vs_Heart_results.Rdata")
 
 #############
 # SHINY APP
@@ -106,7 +106,13 @@ server <- function(input, output) {
     clusterID <- clusters[ sel, ]$clusterID
     return(clusterID)
   } )
-   
+  
+  mycoord <- eventReactive(input$all_clusters_rows_selected,{
+    sel <- input$all_clusters_rows_selected
+    if(is.null(sel)){return("")}
+    coord <- clusters[ sel, ]$coord
+    return(coord)
+  } )
 
   # NEW PLOTTING FUNCTIONS
   output$select_cluster_plot <- renderPlot({
@@ -189,14 +195,36 @@ server <- function(input, output) {
            device = "pdf", width = 10, height = 8 )
     }
   )
-  
-  
+
   output$downloadGenePlot <- downloadHandler(
     filename = function() { paste( mygene(),"_","allClusters", '.pdf', sep='') },
     content = function(file) {
       ggsave(file, plot = selectGenePlotInput(all=TRUE), device = "pdf", width = 30, height = 5, limitsize = FALSE)
     }
   )
+  
+  # UCSC LINKS
+  output$viewClusterUCSC <- renderUI({
+    db <- strsplit(basename(annotation_code), split = "_")[[1]][2]
+    coord <- mycoord()
+    # zoom out the position a bit
+    chr <- strsplit(coord, ":")[[1]][1]
+    start <- as.numeric(strsplit( strsplit(coord, ":")[[1]][2], "-" )[[1]][1])
+    end <- as.numeric(strsplit( strsplit(coord, ":")[[1]][2], "-" )[[1]][2])
+    start <- start - 100
+    end <- end + 100
+    coord <- paste0(chr, ":", as.character(start), "-", as.character(end))
+    url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?&db=",db,"&position=", coord )
+    return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default shiny-download-link  shiny-bound-output", id = "UCSC" ) )
+    })
+  
+  output$viewGeneUCSC <- renderUI({
+    db <- strsplit(basename(annotation_code), split = "_")[[1]][2]
+    gene <- mygene()
+    url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?&db=",db,"&singleSearch=knownCanonical&position=", gene)
+    return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default", id = "UCSC" ) )
+  })
+  
   # PCA
   
   output$pca_choices <- renderUI({
@@ -208,7 +236,7 @@ server <- function(input, output) {
     if( is.null(input$first_PC) ){
       return(NULL)
     }else{
-    first_PC <- input$first_PC
+    first_PC <- input$first_P
     print(first_PC)
     second_PC <- names(pca[[1]])[ which( names(pca[[1]]) == first_PC) + 1 ]
     xlab <- paste0( first_PC, " (", pca[[2]][ which(names(pca[[1]]) == first_PC  ) ], "%)"  )
