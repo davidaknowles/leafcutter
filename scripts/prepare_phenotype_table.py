@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import gzip
 import numpy as np
