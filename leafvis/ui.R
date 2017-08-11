@@ -67,6 +67,16 @@ padding-left: 2%;
 #footer {
   margin: auto;
   padding: 10px;
+  text-align: center;
+}
+
+#UCSC {
+  border-color: #ccc;
+  color: #333;
+}
+
+#UCSC:hover {
+    background-color: #E6E6E6;
 }
 
 "),
@@ -106,7 +116,8 @@ padding-left: 2%;
               hr(),
               div(class = "download_btn",
                 downloadButton("downloadClusterPlot", label = "save plot", class = NULL),
-                downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL)
+                downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL),
+                htmlOutput("viewClusterUCSC", inline = TRUE)
               )
           )
         )
@@ -125,7 +136,8 @@ padding-left: 2%;
           withSpinner(plotOutput("select_gene_plot", width="100%")),
           hr(),
           div(class = "download_btn",
-            downloadButton("downloadGenePlot", label = "Save plot", class = NULL)
+            downloadButton("downloadGenePlot", label = "Save plot", class = NULL),
+            htmlOutput("viewGeneUCSC", inline = TRUE)
           )
         )
       )
@@ -171,14 +183,78 @@ padding-left: 2%;
       )
     ),
     # SETTINGS - any needed?
-    # tabPanel("Settings",
-    #   fluidRow()
-    # ),
+    tabPanel("About",
+       fluidRow(
+         column(
+           6,
+           offset=3,
+           div(
+            h2("What is this?"),
+            p( "This R", tags$a(href="https://shiny.rstudio.com","Shiny", target = "_blank"), 
+               "app presents and visualises the results of running",
+               a(href="https://github.com/davidaknowles/leafcutter", "Leafcutter,", target = "_blank"),
+               "a software tool that quantifies RNA-seq splicing in an annotation-free way.", 
+               "Full documentation of the package is available", a(href="http://davidaknowles.github.io/leafcutter/", "here.", target = "_blank") 
+              ),
+            h2( "Cluster results"),
+            p( "A cluster is defined as set of overlapping spliced junctions or introns.", 
+               "Clusters are initially ranked in the cluster results table by adjusted P value."
+               ),
+            tags$ul(
+                tags$li( strong("clusterID - "), "the unique id assigned to the cluster by leafcutter." ), 
+                tags$li( strong("N -") , "the number of introns in the cluster." ), 
+                tags$li( strong("coord - "), "the coordinate span of the largest intron in the cluster."  ),
+                tags$li( strong("gene -"), "the HUGO gene sympbol for that gene."),
+                tags$li( strong("annotation -"), "whether every intron in the cluster is supported by annotation (annotated) or contains at least one unannotated junction (cryptic)."),
+                tags$li( strong("FDR -"), "the Benjamini-Hochberg adjusted P value of the multinomial test of intron counts between conditions.")
+                ),
+            h2("Cluster view"),
+            p("To view a cluster, click on a row in the cluster results table. This will start the plotting function.", 
+              "A cluster plot and table are generated each time a row in the cluster results is clicked."),
+            p("For a chosen cluster, the mean number of splice junctions supporting each intron is calculated for both conditions and then normalised as a fraction of the total counts.",
+              "Therefore for each condition the normalised counts will add up to 1.",
+              "Each intron is plotted as a line connecting its start and end coordinates with a thickness proportional to the displayed normalised count value.",
+              "The colour of the intron line indicates whether it is present in the annotation (red) or not (pink).",
+              "Any exons that are annotated as flanking or being contained within the cluster are added as rectangles to the plot.",
+              "If exons from multiple genes are connected by introns then their exons will be coloured according to their gene of origin."
+              ),
+            p("Each intron is presented as a row in the cluster view table."
+              ),
+           tags$ul(
+             tags$li( strong("chr, start, end"), "the genomic coordinates of the intron." ), 
+             tags$li( strong("verdict") , "the support given to two splice sites of the intron (start and end) by annotation." ),
+             tags$ul(
+                tags$li( em("annotated -"), "both splice sites are present in an annotated junction"),
+                tags$li( em("novel annotated pair -"), "both splice sites are annotated but are not annotated as being paired in a junction"),
+                tags$li( em("cryptic_fiveprime -"), "the 3\' splice site is annotated but the 5\' is not."),
+                tags$li( em("cryptic_threeprime -"), "the 5\' splice site is annotated but the 3\' is not ")
+             ),
+             tags$li( strong("dPSI"), "The Leafcutter algorithm estimates a dPSI (delta percent spliced in) value for each intron and this is displayed in the cluster view table."  )
+           ),
+           p("Each intron in the cluster is ranked by the absolute dPSI value. The ranked introns are then assigned a letter value for labelling."),
+           
+           h2("Gene view"),
+           p("This visualises all clusters discovered by Leafcutter that can be assigned to a particular gene.",
+             "Exons are taken from the provided annotation and plotted as black rectangles.",
+             "Each junction in each cluster is plotted as curved line with uniform thickness",
+             "Junctions from significant clusters are coloured according to the estimated dPSI (see above), whereas junctions from clusters that are not significant are coloured grey.",
+             "Note that the genomic coordinates are deliberately warped to give more space to the clusters."
+             ),
+            
+            
+              h3(tags$a(href="http://davidaknowles.github.io/leafcutter/articles/Visualization.html",
+                     "How to visualise your own Leafcutter results", target = "_blank"))
+            )
+         )
+        )
+     ),
     collapsible = TRUE,
     inverse = FALSE,
     position = "fixed-top",
     footer = div(id = "footer",
-      p("created by Jack Humphrey", "(https://github.com/jackhump)"),
+      p("written by Jack Humphrey, David Knowles & Yang Li.",
+        tags$a(href="https://github.com/davidaknowles/leafcutter/tree/master/leafvis", "Fork on GitHub.", target = "_blank")
+    ),
       tags$head(tags$link(rel="shortcut icon", href="favicon.ico"))      
     )
 

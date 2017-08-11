@@ -25,8 +25,8 @@ opt <- parse_args(
 
 results_filename <- opt$args
 if(length(results_filename) == 0){
-  print("No results found! Using default dataset example/Brain_vs_Heart_results.Rdata")
-  results_filename <- "example/Brain_vs_Heart_results.Rdata"
+  print("No results found! Using default dataset leafvis_example/Brain_vs_Heart_results.Rdata")
+  results_filename <- "leafvis_example/Brain_vs_Heart_results.Rdata"
 }
 
 print(paste0("Loading results from ",results_filename))
