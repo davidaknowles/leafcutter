@@ -188,7 +188,7 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <div class="figure">
 <img src="calibration_4v4.png">
 </div>
-<p>Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the <code>-i</code> (minimum samples per intron) and <code>-g</code> (minimum samples per group) options in <code>leafcutter_ds.R</code>, e.g. <code>-i 4 -g 2</code> for 2 versus 2 comparisons (default is currently <code>-i 5 -g 3</code>).</p>
+<p>Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the <code>-i</code> (minimum samples per intron) and <code>-g</code> (minimum samples per group) options in <code>leafcutter_ds.R</code>, e.g. <code>-i 4 -g 2</code> for 2 versus 2 comparisons (default is currently <code>-i 5 -g 3</code>). In principle you could even do 1 vs. 1 comparisons, further discussion (here)[<a href="https://github.com/davidaknowles/leafcutter/issues/5" class="uri">https://github.com/davidaknowles/leafcutter/issues/5</a>].</p>
 <p>If the precision of the FDR estimates are particularly important for your application it may be worth considering performing a permutation analysis. Currently you need to do this manually (e.g. by permuting the labeling in your groups_file) but if there is demand we’ll consider implementing permutations as a built-in feature. Note that in general permutation analysis doesn’t allow you to include confounders.</p>
 </div>
 </div>

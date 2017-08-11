@@ -136,7 +136,7 @@ The Benjamini-Hochberg FDR control we use assumes p-values are well-calibrated, 
 
 ![](./calibration_4v4.png)
 
-Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the `-i` (minimum samples per intron) and `-g` (minimum samples per group) options in `leafcutter_ds.R`, e.g. `-i 4 -g 2` for 2 versus 2 comparisons (default is currently `-i 5 -g 3`). 
+Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the `-i` (minimum samples per intron) and `-g` (minimum samples per group) options in `leafcutter_ds.R`, e.g. `-i 4 -g 2` for 2 versus 2 comparisons (default is currently `-i 5 -g 3`). In principle you could even do 1 vs. 1 comparisons, further discussion (here)[https://github.com/davidaknowles/leafcutter/issues/5].
 
 If the precision of the FDR estimates are particularly important for your application it may be worth considering performing a permutation analysis. Currently you need to do this manually (e.g. by permuting the labeling in your groups_file) but if there is demand we'll consider implementing permutations as a built-in feature. Note that in general permutation analysis doesn't allow you to include confounders. 
 
