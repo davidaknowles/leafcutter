@@ -79,19 +79,19 @@ padding-left: 2%;
                       
                          margin-top: 0px;
                         ",
-              h4(id = "title","cluster results"),
+              h4(id = "title","Differential splicing events (clusters)"),
               hr(),
               div(
                 withSpinner(DT::dataTableOutput("all_clusters"))
               )
             )
           ),
-        column(6,
+        column(6, 
           
           ### CLUSTER VIEW
           
           div(id="clusterView",
-            h4(id="title","cluster view"),
+            h4(id="title","Splicing event visualization"),
             hr(),
             h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
             div(
@@ -117,7 +117,7 @@ padding-left: 2%;
       hr(),
       verticalLayout(
         div(id="geneView",
-          h4(id="title","gene view"),
+          h4(id="title","Gene-level visualization"),
           hr(),
           # div(id = "welcome", 
           #   h3("No gene selected")

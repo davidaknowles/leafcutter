@@ -36,14 +36,15 @@ server <- function(input, output) {
   }, deleteFile = FALSE)
   
   output$all_clusters <- DT::renderDataTable({
-    datatable( clusters,
+    datatable( clusters[,c("gene","coord","N","FDR","annotation")],
               escape = FALSE,
               rownames = FALSE,
+              colnames = c('Genomic location'='coord','Gene'='gene','N'='N','Annotation'='annotation','q'='FDR'),
               selection = 'single', 
-              caption = "all significant clusters. N: number of introns within a cluster",
+              caption = "Click on a row to plot the corresponding visualization. N: number of introns within a cluster. q: Benjamini–Hochberg q-value.",
               fillContainer = FALSE,
               options = list(
-                columnDefs = list(list(className = 'dt-center', targets = 0:5) )
+                columnDefs = list(list(className = 'dt-center', targets = 2:4) )
               )
               ) 
   })
