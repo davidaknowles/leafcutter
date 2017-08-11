@@ -24,7 +24,7 @@ filter_intron_table <- function(introns, clu, toSave=FALSE){
   return(d)
 }
 
-if (!exists("introns")) load("leafvis_example/Brain_vs_Heart_results.Rdata")
+if (!exists("introns")) load("example/Brain_vs_Heart_results.Rdata")
 
 #############
 # SHINY APP
