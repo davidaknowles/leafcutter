@@ -134,7 +134,7 @@ To control for confounders/covariates (e.g. batch, RIN) in the DS you can includ
 
 The Benjamini-Hochberg FDR control we use assumes p-values are well-calibrated, i.e. under the null hypothesis of no difference between conditions p-values are truly uniformly distributed. Our experiments suggest that at least down to 4 vs. 4 comparisons LeafCutter remains well calibrated. For example, the qq plot for 4 brain vs 4 muscle from the LeafCutter paper: 
 
-![gene plot example](./calibration_4v4.png)
+![](./calibration_4v4.png)
 
 Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the `-i` (minimum samples per intron) and `-g` (minimum samples per group) options in `leafcutter_ds.R`, e.g. `-i 4 -g 2` for 2 versus 2 comparisons (default is currently `-i 5 -g 3`). 
 
