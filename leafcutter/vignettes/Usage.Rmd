@@ -30,7 +30,7 @@ For `OLego` we used the command
 ```
 olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa
 ```
-where `-j` provides a [custom junction file](https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA), and `-e` specifies the required number of nt the read must extend into the exon to be quantified. 
+where `-j` provides a [custom junction file](https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA), and `-e` specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see [Li et al. 2005](http://genome.cshlp.org/content/25/1/1.full). 
 
 `STAR` was run as
 ```
@@ -129,6 +129,16 @@ Two tab-separated text files are output:
 #### Including confounders
 
 To control for confounders/covariates (e.g. batch, RIN) in the DS you can include them as additional columns in the test_diff_introns.txt file, after the sample names and two-group factor to be tested. Numeric values will be treated as such, so use non-numeric values if you want a categorical variable/factor, e.g. batch1, batch2 etc.  
+
+#### Calibration, FDR and small sample sizes
+
+The Benjamini-Hochberg FDR control we use assumes p-values are well-calibrated, i.e. under the null hypothesis of no difference between conditions p-values are truly uniformly distributed. Our experiments suggest that at least down to 4 vs. 4 comparisons LeafCutter remains well calibrated. For example, the qq plot for 4 brain vs 4 muscle from the LeafCutter paper: 
+
+![gene plot example](./calibration_4v4.png)
+
+Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the `-i` (minimum samples per intron) and `-g` (minimum samples per group) options in `leafcutter_ds.R`, e.g. `-i 4 -g 2` for 2 versus 2 comparisons (default is currently `-i 5 -g 3`). 
+
+If the precision of the FDR estimates are particularly important for your application it may be worth considering performing a permutation analysis. Currently you need to do this manually (e.g. by permuting the labeling in your groups_file) but if there is demand we'll consider implementing permutations as a built-in feature. Note that in general permutation analysis doesn't allow you to include confounders. 
 
 ### Step 4. Plotting splice junctions
 

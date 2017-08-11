@@ -95,7 +95,7 @@
 <p>Of course the real “Step 0” is running QC on your RNA-seq samples using e.g. <a href="http://multiqc.info/">MultiQC</a>. Assuming they look good you need to align reads. For the analysis in the LeafCutter paper we used either <a href="https://zhanglab.c2b2.columbia.edu/index.php/OLego">OLego</a>, which is designed to be particularly sensitive for finding de novo junctions, or <a href="https://github.com/alexdobin/STAR">STAR</a>, which is fast as long as you have enough RAM.</p>
 <p>For <code>OLego</code> we used the command</p>
 <pre><code>olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa</code></pre>
-<p>where <code>-j</code> provides a <a href="https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA">custom junction file</a>, and <code>-e</code> specifies the required number of nt the read must extend into the exon to be quantified.</p>
+<p>where <code>-j</code> provides a <a href="https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA">custom junction file</a>, and <code>-e</code> specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see <a href="http://genome.cshlp.org/content/25/1/1.full">Li et al. 2005</a>.</p>
 <p><code>STAR</code> was run as</p>
 <pre><code>STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100</code></pre>
 <div id="choice-of-6nt-overhang" class="section level4">
@@ -180,6 +180,16 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <h4 class="hasAnchor">
 <a href="#including-confounders" class="anchor"></a>Including confounders</h4>
 <p>To control for confounders/covariates (e.g. batch, RIN) in the DS you can include them as additional columns in the test_diff_introns.txt file, after the sample names and two-group factor to be tested. Numeric values will be treated as such, so use non-numeric values if you want a categorical variable/factor, e.g. batch1, batch2 etc.</p>
+</div>
+<div id="calibration-fdr-and-small-sample-sizes" class="section level4">
+<h4 class="hasAnchor">
+<a href="#calibration-fdr-and-small-sample-sizes" class="anchor"></a>Calibration, FDR and small sample sizes</h4>
+<p>The Benjamini-Hochberg FDR control we use assumes p-values are well-calibrated, i.e. under the null hypothesis of no difference between conditions p-values are truly uniformly distributed. Our experiments suggest that at least down to 4 vs. 4 comparisons LeafCutter remains well calibrated. For example, the qq plot for 4 brain vs 4 muscle from the LeafCutter paper:</p>
+<div class="figure">
+<img src="calibration_4v4.png" alt="gene plot example"><p class="caption">gene plot example</p>
+</div>
+<p>Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the <code>-i</code> (minimum samples per intron) and <code>-g</code> (minimum samples per group) options in <code>leafcutter_ds.R</code>, e.g. <code>-i 4 -g 2</code> for 2 versus 2 comparisons (default is currently <code>-i 5 -g 3</code>).</p>
+<p>If the precision of the FDR estimates are particularly important for your application it may be worth considering performing a permutation analysis. Currently you need to do this manually (e.g. by permuting the labeling in your groups_file) but if there is demand we’ll consider implementing permutations as a built-in feature. Note that in general permutation analysis doesn’t allow you to include confounders.</p>
 </div>
 </div>
 <div id="step-4--plotting-splice-junctions" class="section level3">
