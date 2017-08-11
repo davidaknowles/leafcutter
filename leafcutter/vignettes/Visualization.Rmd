@@ -9,7 +9,7 @@ vignette: >
 
 Written by Jack Humphrey, David Knowles & Yang Li
 
-To see an example of the `leafcutter` shiny app in action without installing anything take a look at <https://leafvis.shinyapps.io/leafvis/>. This shows `leafcutter` differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from [GTEx](https://www.gtexportal.org/home/). 
+To see an example of the `leafcutter` shiny app in action without installing anything take a look at <https://leafviz.shinyapps.io/leafviz/>. This shows `leafcutter` differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from [GTEx](https://www.gtexportal.org/home/). 
 
 The leafcutter shiny app has been tested on `macOS 10.12` and `Ubuntu 14.04`. 
 

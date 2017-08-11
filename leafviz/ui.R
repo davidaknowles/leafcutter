@@ -89,7 +89,7 @@ padding-left: 2%;
                       
                          margin-top: 0px;
                         ",
-              h4(id = "title",paste(output$experimentCode,"differential splicing events (clusters)")),
+              h4(id = "title","Differential splicing events (clusters)"),
               hr(),
               div(
                 withSpinner(DT::dataTableOutput("all_clusters"))

@@ -62,7 +62,6 @@ server <- function(input, output) {
   output$annotationCode <- renderText({
     paste("Annotation source:", basename(annotation_code) )
   })
-  
   output$cluster_summary <- DT::renderDataTable({
     datatable(cluster_summary,
               escape = FALSE,
