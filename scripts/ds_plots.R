@@ -16,7 +16,7 @@ cluster_significance_file=arguments$args[3]
 
 cat("Loading counts from",counts_file,"\n")
 if (!file.exists(counts_file)) stop("File ",counts_file," does not exist")
-counts=read.table(counts_file, header=T)
+counts=read.table(counts_file, header=T, check.names=F)
 
 cat("Loading metadata from",groups_file,"\n")
 if (!file.exists(groups_file)) stop("File ",groups_file," does not exist")
