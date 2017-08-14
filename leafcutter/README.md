@@ -19,4 +19,4 @@ For details please see our [bioRxiv preprint](http://biorxiv.org/content/early/2
 * [Visualization](./articles/Visualization.html)
 * [SplicingQTL](./articles/sQTL.html)
 
-Check out a demo leafcutter [shiny](https://shiny.rstudio.com/) app [here](https://leafvis.shinyapps.io/leafvis/): 10 brain vs. 10 heart samples from [GTEx](https://www.gtexportal.org/home/). 
+Check out a demo leafcutter [shiny](https://shiny.rstudio.com/) app [here](https://leafviz.shinyapps.io/leafviz/): 10 brain vs. 10 heart samples from [GTEx](https://www.gtexportal.org/home/). 

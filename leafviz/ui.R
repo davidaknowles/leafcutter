@@ -89,19 +89,19 @@ padding-left: 2%;
                       
                          margin-top: 0px;
                         ",
-              h4(id = "title","cluster results"),
+              h4(id = "title","Differential splicing events (clusters)"),
               hr(),
               div(
                 withSpinner(DT::dataTableOutput("all_clusters"))
               )
             )
           ),
-        column(6,
+        column(6, 
           
           ### CLUSTER VIEW
           
           div(id="clusterView",
-            h4(id="title","cluster view"),
+            h4(id="title","Splicing event visualization"),
             hr(),
             h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
             div(
@@ -128,7 +128,7 @@ padding-left: 2%;
       hr(),
       verticalLayout(
         div(id="geneView",
-          h4(id="title","gene view"),
+          h4(id="title","Gene-level visualization"),
           hr(),
           # div(id = "welcome", 
           #   h3("No gene selected")
@@ -196,19 +196,19 @@ padding-left: 2%;
                "a software tool that quantifies RNA-seq splicing in an annotation-free way.", 
                "Full documentation of the package is available", a(href="http://davidaknowles.github.io/leafcutter/", "here.", target = "_blank") 
               ),
-            h2( "Cluster results"),
+            h2( "Differential splicing events"),
             p( "A cluster is defined as set of overlapping spliced junctions or introns.", 
                "Clusters are initially ranked in the cluster results table by adjusted P value."
                ),
             tags$ul(
-                tags$li( strong("clusterID - "), "the unique id assigned to the cluster by leafcutter." ), 
+              tags$li( strong("Gene -"), "the HUGO gene sympbol for that gene."),
+              tags$li( strong("Genomic location - "), "the coordinate span of the largest intron in the cluster."  ),
+               # tags$li( strong("clusterID - "), "the unique id assigned to the cluster by leafcutter." ), 
                 tags$li( strong("N -") , "the number of introns in the cluster." ), 
-                tags$li( strong("coord - "), "the coordinate span of the largest intron in the cluster."  ),
-                tags$li( strong("gene -"), "the HUGO gene sympbol for that gene."),
-                tags$li( strong("annotation -"), "whether every intron in the cluster is supported by annotation (annotated) or contains at least one unannotated junction (cryptic)."),
-                tags$li( strong("FDR -"), "the Benjamini-Hochberg adjusted P value of the multinomial test of intron counts between conditions.")
+                tags$li( strong("q -"), "the Benjamini-Hochberg adjusted P value of the multinomial test of intron counts between conditions."),
+              tags$li( strong("Annotation -"), "whether every intron in the cluster is supported by annotation (annotated) or contains at least one unannotated junction (cryptic).")
                 ),
-            h2("Cluster view"),
+            h2("Splicing event visualization"),
             p("To view a cluster, click on a row in the cluster results table. This will start the plotting function.", 
               "A cluster plot and table are generated each time a row in the cluster results is clicked."),
             p("For a chosen cluster, the mean number of splice junctions supporting each intron is calculated for both conditions and then normalised as a fraction of the total counts.",
@@ -233,7 +233,7 @@ padding-left: 2%;
            ),
            p("Each intron in the cluster is ranked by the absolute dPSI value. The ranked introns are then assigned a letter value for labelling."),
            
-           h2("Gene view"),
+           h2("Gene-level visualization"),
            p("This visualises all clusters discovered by Leafcutter that can be assigned to a particular gene.",
              "Exons are taken from the provided annotation and plotted as black rectangles.",
              "Each junction in each cluster is plotted as curved line with uniform thickness",

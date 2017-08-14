@@ -22,6 +22,25 @@ LeafCutter has two main components:
    * perform differential splicing (here, differential intron excision) analysis
    * plot (differentially spliced) clusters
    
+### Step 0. Alignment
+
+Of course the real "Step 0" is running QC on your RNA-seq samples using e.g. [MultiQC](http://multiqc.info/). Assuming they look good you need to align reads. For the analysis in the LeafCutter paper we used either [OLego](https://zhanglab.c2b2.columbia.edu/index.php/OLego), which is designed to be particularly sensitive for finding de novo junctions, or [STAR](https://github.com/alexdobin/STAR), which is fast as long as you have enough RAM. 
+
+For `OLego` we used the command
+```
+olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa
+```
+where `-j` provides a [custom junction file](https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA), and `-e` specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see [Li et al. 2005](http://genome.cshlp.org/content/25/1/1.full). 
+
+`STAR` was run as
+```
+STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100
+```
+
+#### Choice of 6nt overhang
+
+We chose 6nt as the default overhang required by LeafCutter. By chance we would expect one match every 4^6^bp, or 4096bp, which appears to be quite likely for any given intron. However, RNA-seq mappers already deal with this problem by 1) assuring that the junction has already been previously annotated or is supported by reads with longer overhang (e.g. in STAR two-pass mode) 2) penalizing non-canonical junctions (i.e. non GT-AG junctions). The effect of the latter is that we would only expect one match every 4^8^bp, or 65,536bp (just one or two every 100kb, the max size allowed for our introns). However, our most restrictive filter is the requirement that reads considered be uniquely mapped. Therefore, even when the overhang is just 6bp, there is no ambiguity in mapping. Moreover, junctions are rarely only supported by reads that have an overhang of 6, when the size of the overhang goes up to 7, 8, or 9nt, the probability that we see these by chance goes down to one in over 4 million bp (for 9nt).
+
 ### Step 1. Converting `bam`s to `junc`s
 
 I'm skipping Step 0 which would be mapping `fastq` files, e.g. using STAR, to obtain `.bam` files. 
@@ -39,10 +58,6 @@ done
 ```
 
 This step is pretty fast (e.g. a couple of minutes per bam) but if you have samples numbering in the 100s you might want to do this on a cluster. Note that we also make a list of the generated `junc` files in `test_juncfiles.txt`. 
-
-#### Choice of 6nt overhang
-
-We chose 6nt as the default overhang required by LeafCutter. By chance we would expect one match every 4^6^bp, or 4096bp, which appears to be quite likely for any given intron. However, RNA-seq mappers already deal with this problem by 1) assuring that the junction has already been previously annotated or is supported by reads with longer overhang (e.g. in STAR two-pass mode) 2) penalizing non-canonical junctions (i.e. non GT-AG junctions). The effect of the latter is that we would only expect one match every 4^8^bp, or 65,536bp (just one or two every 100kb, the max size allowed for our introns). However, our most restrictive filter is the requirement that reads considered be uniquely mapped. Therefore, even when the overhang is just 6bp, there is no ambiguity in mapping. Moreover, junctions are rarely only supported by reads that have an overhang of 6, when the size of the overhang goes up to 7, 8, or 9nt, the probability that we see these by chance goes down to one in over 4 million bp (for 9nt).
 
 ### Step 2. Intron clustering
 
@@ -114,6 +129,16 @@ Two tab-separated text files are output:
 #### Including confounders
 
 To control for confounders/covariates (e.g. batch, RIN) in the DS you can include them as additional columns in the test_diff_introns.txt file, after the sample names and two-group factor to be tested. Numeric values will be treated as such, so use non-numeric values if you want a categorical variable/factor, e.g. batch1, batch2 etc.  
+
+#### Calibration, FDR and small sample sizes
+
+The Benjamini-Hochberg FDR control we use assumes p-values are well-calibrated, i.e. under the null hypothesis of no difference between conditions p-values are truly uniformly distributed. Our experiments suggest that at least down to 4 vs. 4 comparisons LeafCutter remains well calibrated. For example, the qq plot for 4 brain vs 4 muscle from the LeafCutter paper: 
+
+![](./calibration_4v4.png)
+
+Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the `-i` (minimum samples per intron) and `-g` (minimum samples per group) options in `leafcutter_ds.R`, e.g. `-i 4 -g 2` for 2 versus 2 comparisons (default is currently `-i 5 -g 3`). In principle you could even do 1 vs. 1 comparisons, further discussion [here](https://github.com/davidaknowles/leafcutter/issues/5). 
+
+If the precision of the FDR estimates are particularly important for your application it may be worth considering performing a permutation analysis. Currently you need to do this manually (e.g. by permuting the labeling in your groups_file) but if there is demand we'll consider implementing permutations as a built-in feature. Note that in general permutation analysis doesn't allow you to include confounders. 
 
 ### Step 4. Plotting splice junctions
 

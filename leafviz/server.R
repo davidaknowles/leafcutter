@@ -24,7 +24,7 @@ filter_intron_table <- function(introns, clu, toSave=FALSE){
   return(d)
 }
 
-if (!exists("introns")) load("leafvis_example/Brain_vs_Heart_results.Rdata")
+if (!exists("introns")) load("example/Brain_vs_Heart_results.Rdata")
 
 #############
 # SHINY APP
@@ -36,14 +36,15 @@ server <- function(input, output) {
   }, deleteFile = FALSE)
   
   output$all_clusters <- DT::renderDataTable({
-    datatable( clusters,
+    datatable( clusters[,c("gene","coord","N","FDR","annotation")],
               escape = FALSE,
               rownames = FALSE,
+              colnames = c('Genomic location'='coord','Gene'='gene','N'='N','Annotation'='annotation','q'='FDR'),
               selection = 'single', 
-              caption = "all significant clusters. N: number of introns within a cluster",
+              caption = "Click on a row to plot the corresponding visualization. N: number of introns within a cluster. q: Benjamini–Hochberg q-value.",
               fillContainer = FALSE,
               options = list(
-                columnDefs = list(list(className = 'dt-center', targets = 0:5) )
+                columnDefs = list(list(className = 'dt-center', targets = 2:4) )
               )
               ) 
   })
@@ -61,7 +62,6 @@ server <- function(input, output) {
   output$annotationCode <- renderText({
     paste("Annotation source:", basename(annotation_code) )
   })
-  
   output$cluster_summary <- DT::renderDataTable({
     datatable(cluster_summary,
               escape = FALSE,
