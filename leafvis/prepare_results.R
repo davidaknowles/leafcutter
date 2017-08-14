@@ -156,7 +156,6 @@ all.introns.cmd <- paste0("bedtools intersect -a ", all.file, " -b ", all_intron
   
 all.introns_intersect <- fread(all.introns.cmd)
 
-
 # intersect with bedtools to find the annotations of each splice site
 threeprime.cmd <- paste0( "bedtools intersect -a ", all.threeprime.file, " -b ",threeprime_file, " -wa -wb -loj -f 1" )
 
@@ -184,6 +183,8 @@ transcripts.list <- list()
 constitutive.list <- list()
 classification.list <- list()
 
+# for testing!
+clu <- "clu_59455"
 
 clusters <- unique( all.introns$clusterID ) 
 for( clu in clusters ){
@@ -272,7 +273,7 @@ for( clu in clusters ){
       if( all(bothSS[[intron]]$V5 != ".") ){
         verdict[intron] <- "annotated"
       }else{ # both are annotated but never in the same junction
-        verdict[intron] <- "skiptic"
+        verdict[intron] <- "novel annotated pair"
       }
     }
     verdict.list[[clu]] <- verdict
@@ -360,7 +361,7 @@ for( clu in clusters ){
       classification.list[[clu]] <- paste0( classification.list[[clu]], " - cryptic")
     }
 
-    if( verdict.list[[clu]][2] == "skiptic" & verdict.list[[clu]][1] == "annotated" & verdict.list[[clu]][3] == "annotated"  ){
+    if( verdict.list[[clu]][2] == "novel annotated pair" & verdict.list[[clu]][1] == "annotated" & verdict.list[[clu]][3] == "annotated"  ){
       classification.list[[clu]] <- paste0( classification.list[[clu]], " - skiptic")
     }
 
@@ -405,7 +406,7 @@ all.clusters <- lapply(sig$clusterID, FUN = function(clu){
   gene <- names( sort( table( unique(cluster$gene) ), decreasing = TRUE ) )[1]
   ensemblID <- names( sort( table( unique(cluster$ensemblID) ), decreasing = TRUE ) )[1]
   annotation <- "annotated"
-  if( any(grepl( "cryptic", cluster$verdict)) | any( grepl("skiptic", cluster$verdict)) ){
+  if( any(grepl( "cryptic", cluster$verdict)) | any( grepl("novel annotated pair", cluster$verdict)) ){
     annotation <- "cryptic"
   }  
   return( 
@@ -516,7 +517,7 @@ intron_summary <- function(all.introns){
                          nrow(all.introns[ all.introns$verdict == "cryptic_fiveprime",]),
                          nrow(all.introns[ all.introns$verdict == "cryptic_threeprime",]),
                          nrow(all.introns[ all.introns$verdict == "cryptic_unanchored",]),
-                         nrow(all.introns[ all.introns$verdict == "skiptic",])  
+                         nrow(all.introns[ all.introns$verdict == "novel annotated pair",])  
                   )
                 )
     return( summary )
