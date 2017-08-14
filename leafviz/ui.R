@@ -3,7 +3,7 @@ library(DT)
 library(shinycssloaders)
 
 ui <- shinyUI(
-  navbarPage(title = "Leafcutter",
+  navbarPage(title = "leafviz",
     tabPanel("All clusters",
       tags$style(type="text/css", "
 body {
@@ -17,6 +17,11 @@ hr {
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+#geneDiv {
+  padding-left: 0px;
+}
+
 #geneView {
   border-radius: 25px;
   border-color: whitesmoke;
@@ -25,18 +30,33 @@ hr {
   padding: 10px;
 }
 .navbar {
-background-size: 50px 80%;
-background-image: url(leafcutter_app_logo.png);
-background-repeat: no-repeat;
-background-position: 2%;
-padding-left: 2%;
+  background-size: 50px 80%;
+  background-image: url(leafcutter_app_logo.png);
+  background-repeat: no-repeat;
+  background-position: 2%;
+  padding-left: 2%;
 }
 
+.navbar-brand {
+  padding-left: 50px;
+}
 .download_btn{
   margin-top: 10px;
   margin-bottom: 10px;
   display: block;
   text-align: center;
+}
+
+.row {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+#clusterTable {
+  background-color: WhiteSmoke;
+  border-radius: 25px;
+  padding: 10px;
+  margin-top: 0px;
 }
 
 #clusterView {
@@ -47,6 +67,7 @@ padding-left: 2%;
   border-color: whitesmoke;
   border-style: solid;
   border-width:5px;
+  margin-left: 5px;
 }
 
 #title {
@@ -81,14 +102,8 @@ padding-left: 2%;
 
 "),
         fluidRow(
-          div(
-            column(6, 
-                  style="background-color: WhiteSmoke;
-                         border-radius: 25px;
-                         padding: 10px;
-                      
-                         margin-top: 0px;
-                        ",
+          column(6,
+            div(id = "clusterTable",
               h4(id = "title","Differential splicing events (clusters)"),
               hr(),
               div(
@@ -96,52 +111,50 @@ padding-left: 2%;
               )
             )
           ),
-        column(6, 
-          
           ### CLUSTER VIEW
-          
-          div(id="clusterView",
-            h4(id="title","Splicing event visualization"),
-            hr(),
-            h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
-            div(
-              div(id = "welcome", 
-                    h3("Welcome to the Leafcutter visualisation app!"),
-                    p(HTML(paste0("To visualise a cluster, click a row in ",strong("cluster results.") ) ) ),
-                    p(HTML(paste0("All clusters found within a gene are visualised in the ", strong("gene view"), " below.") ) )
-                  ),
-              withSpinner(plotOutput("select_cluster_plot", width = "100%") )
-            ),
-            DT::dataTableOutput("cluster_view"),
+          column(6, 
+            div(id="clusterView",
+              h4(id="title","Splicing event visualization"),
+              hr(),
+              h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
+              div(
+                div(id = "welcome", 
+                  h3("leafviz - the Leafcutter visualization app."),
+                  p(HTML(paste0("To visualize a cluster, click a row in ",strong("Differential splicing events.") ) ) ),
+                  p(HTML(paste0("All clusters found within a gene are visualized in the ", strong("Gene-level visualization"), " below.") ) )
+                ),
+                withSpinner(plotOutput("select_cluster_plot", width = "100%") )
+              ),
+              DT::dataTableOutput("cluster_view"),
               hr(),
               div(class = "download_btn",
                 downloadButton("downloadClusterPlot", label = "save plot", class = NULL),
                 downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL),
                 htmlOutput("viewClusterUCSC", inline = TRUE)
               )
+            )
           )
-        )
-      ),
+        ),
       
-      ### GENE VIEW
-      
-      hr(),
-      verticalLayout(
-        div(id="geneView",
-          h4(id="title","Gene-level visualization"),
-          hr(),
+        ### GENE VIEW
+        br(),
+        #hr(),
+        verticalLayout(fluid=TRUE,
+          div(id="geneView",
+            h4(id="title","Gene-level visualization"),
+            hr(),
           # div(id = "welcome", 
           #   h3("No gene selected")
           #   ),
-          withSpinner(plotOutput("select_gene_plot", width="100%")),
-          hr(),
-          div(class = "download_btn",
-            downloadButton("downloadGenePlot", label = "Save plot", class = NULL),
-            htmlOutput("viewGeneUCSC", inline = TRUE)
+            withSpinner(plotOutput("select_gene_plot", width="100%")),
+            hr(),
+            div(class = "download_btn",
+              downloadButton("downloadGenePlot", label = "Save plot", class = NULL),
+              htmlOutput("viewGeneUCSC", inline = TRUE)
+            )
           )
         )
-      )
-    ),
+      ),
       
     tabPanel("Summary",
       fluidRow(
