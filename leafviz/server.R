@@ -206,6 +206,15 @@ server <- function(input, output) {
   # UCSC LINKS
   output$viewClusterUCSC <- renderUI({
     db <- strsplit(basename(annotation_code), split = "_")[[1]][2]
+    # guess species from genome build - if not possible then leave blank.
+    org <- NULL
+    if( grepl("hg", db)){ org <- "human"}
+    if( grepl("mm", db)){ org <- "mouse"}
+    if( is.null(org)){
+      orgChoice <- ""
+    }else{
+      orgChoice <- paste0("&org=",org)
+    }
     coord <- mycoord()
     # zoom out the position a bit
     chr <- strsplit(coord, ":")[[1]][1]
@@ -214,14 +223,22 @@ server <- function(input, output) {
     start <- start - 100
     end <- end + 100
     coord <- paste0(chr, ":", as.character(start), "-", as.character(end))
-    url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?&db=",db,"&position=", coord )
+    url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?", orgChoice, "&db=",db,"&position=", coord )
     return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default shiny-download-link  shiny-bound-output", id = "UCSC" ) )
     })
   
   output$viewGeneUCSC <- renderUI({
     db <- strsplit(basename(annotation_code), split = "_")[[1]][2]
+    org <- NULL
+    if( grepl("hg", db)){ org <- "human"}
+    if( grepl("mm", db)){ org <- "mouse"}
+    if( is.null(org)){
+      orgChoice <- ""
+    }else{
+      orgChoice <- paste0("&org=",org)
+    }
     gene <- mygene()
-    url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?&db=",db,"&singleSearch=knownCanonical&position=", gene)
+    url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?",orgChoice,"&db=",db,"&singleSearch=knownCanonical&position=", gene)
     return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default", id = "UCSC" ) )
   })
   
