@@ -253,8 +253,8 @@ server <- function(input, output) {
     if( is.null(input$first_PC) ){
       return(NULL)
     }else{
-    first_PC <- input$first_P
-    print(first_PC)
+    first_PC <- input$first_PC
+    #print(first_PC)
     second_PC <- names(pca[[1]])[ which( names(pca[[1]]) == first_PC) + 1 ]
     xlab <- paste0( first_PC, " (", pca[[2]][ which(names(pca[[1]]) == first_PC  ) ], "%)"  )
     ylab <- paste0( second_PC, " (", pca[[2]][ which(names(pca[[1]]) == first_PC ) + 1  ], "%)"  )

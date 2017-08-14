@@ -119,7 +119,7 @@ hr {
               h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
               div(
                 div(id = "welcome", 
-                  h3("leafviz - the Leafcutter visualization app."),
+                  h3("leafviz - the Leafcutter visualization app"),
                   p(HTML(paste0("To visualize a cluster, click a row in ",strong("Differential splicing events.") ) ) ),
                   p(HTML(paste0("All clusters found within a gene are visualized in the ", strong("Gene-level visualization"), " below.") ) )
                 ),
@@ -206,7 +206,7 @@ hr {
             p( "This R", tags$a(href="https://shiny.rstudio.com","Shiny", target = "_blank"), 
                "app presents and visualises the results of running",
                a(href="https://github.com/davidaknowles/leafcutter", "Leafcutter,", target = "_blank"),
-               "a software tool that quantifies RNA-seq splicing in an annotation-free way.", 
+               "a software package that quantifies RNA-seq splicing in an annotation-free way.", 
                "Full documentation of the package is available", a(href="http://davidaknowles.github.io/leafcutter/", "here.", target = "_blank") 
               ),
             h2( "Differential splicing events"),
@@ -249,7 +249,7 @@ hr {
            h2("Gene-level visualization"),
            p("This visualises all clusters discovered by Leafcutter that can be assigned to a particular gene.",
              "Exons are taken from the provided annotation and plotted as black rectangles.",
-             "Each junction in each cluster is plotted as curved line with uniform thickness",
+             "Each junction in each cluster is plotted as curved line with uniform thickness.",
              "Junctions from significant clusters are coloured according to the estimated dPSI (see above), whereas junctions from clusters that are not significant are coloured grey.",
              "Note that the genomic coordinates are deliberately warped to give more space to the clusters."
              ),
