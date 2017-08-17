@@ -1,18 +1,39 @@
 library(shiny)
 library(DT)
 library(shinycssloaders)
+library(shinyjs)
 
-ui <- shinyUI(
-  navbarPage(title = "leafviz",
+if (!exists("introns")){
+  defaultValue <- 12 #RBFOX1
+  showCode <- "GTEx Brain vs Heart"
+}else{
+  defaultValue <- NULL
+  showCode <- code
+}
+
+
+ui <- tagList(
+  useShinyjs(),
+  navbarPage(
+    title  = actionLink("aboutLink", "LeafViz"),
+    #title = a(id = "gitLink", href="https://github.com/davidaknowles/leafcutter/tree/master/leafviz","LeafViz", target = "_blank"), 
+    id = "navBarPage",
+    windowTitle = "LeafViz",
     tabPanel("All clusters",
       tags$style(type="text/css", "
 body {
     padding-top: 70px;
 }
+
+#gitLink {
+  color: gray;
+}
+
 #title {
   color: black;
   margin-top:5px;
 }
+
 hr {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -38,7 +59,7 @@ hr {
 }
 
 .navbar-brand {
-  padding-left: 50px;
+  padding-left: 60px;
 }
 .download_btn{
   margin-top: 10px;
@@ -75,10 +96,34 @@ hr {
 }
 
 #welcome {
+  background-color: whitesmoke;
+  border-color: whitesmoke;
+  border-width: 3px;
+  border-radius: 25px;
+  border-style: solid;
+  margin-left: 15px;
+  margin-right: 15px;
+  padding-top: 3px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+#toggleInstruct {
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+#displayCode {
+  background-color: white;
+  border-color: white;
+  text-align: white;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+#hideBtnDiv {
   text-align: center;
-  font-size: large;
-  position: absolute;
-  padding: 15%;
+  font-size: 20px;
 }
 
 #summary {
@@ -101,6 +146,20 @@ hr {
 }
 
 "),
+      # WELCOME MESSAGE
+      div(class = "jumbotron", id = "welcome",
+          div(id = "popupInstruct", 
+            h1("LeafViz - the LeafCutter visualization app"),
+            p(HTML(paste0("To visualize a cluster, click a row in ",strong("Differential splicing events.") ) ) ),
+            p(HTML(paste0("All clusters found within a gene are visualized in the ", strong("Gene-level visualization"), " below.") ) ),
+            p(actionLink("aboutLink2", "Learn more")),
+            p(tags$a(href="http://davidaknowles.github.io/leafcutter/articles/Visualization.html",
+                      "How to visualise your own Leafcutter results", target = "_blank"))
+          ),
+          div( id = "hideBtnDiv", 
+               tags$p(id = "toggleInstruct", HTML('<i class="fa fa-arrows-v" ></i>') ) )
+        ),
+        div(id = "displayCode", style = "text-align: center", h4(showCode)    ),
         fluidRow(
           column(6,
             div(id = "clusterTable",
@@ -118,11 +177,6 @@ hr {
               hr(),
               h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
               div(
-                div(id = "welcome", 
-                  h3("leafviz - the Leafcutter visualization app."),
-                  p(HTML(paste0("To visualize a cluster, click a row in ",strong("Differential splicing events.") ) ) ),
-                  p(HTML(paste0("All clusters found within a gene are visualized in the ", strong("Gene-level visualization"), " below.") ) )
-                ),
                 withSpinner(plotOutput("select_cluster_plot", width = "100%") )
               ),
               DT::dataTableOutput("cluster_view"),
@@ -156,7 +210,7 @@ hr {
         )
       ),
       
-    tabPanel("Summary",
+    tabPanel("Summary", 
       fluidRow(
         column(6,offset=3,
           # this is where a summary table goes counting all the significant clusters and introns
@@ -186,7 +240,7 @@ hr {
           # plot different principal components of the splice junction counts
           br(),
           div(id = "download_btn", 
-            uiOutput("pca_choices") 
+            uiOutput("pca_choices")
             ),
           plotOutput("pca_plot")
         )
@@ -195,7 +249,6 @@ hr {
           downloadButton("downloadPCAPlot", label = "save plot", class = NULL)
       )
     ),
-    # SETTINGS - any needed?
     tabPanel("About",
        fluidRow(
          column(
@@ -206,7 +259,7 @@ hr {
             p( "This R", tags$a(href="https://shiny.rstudio.com","Shiny", target = "_blank"), 
                "app presents and visualises the results of running",
                a(href="https://github.com/davidaknowles/leafcutter", "Leafcutter,", target = "_blank"),
-               "a software tool that quantifies RNA-seq splicing in an annotation-free way.", 
+               "a software package that quantifies RNA-seq splicing in an annotation-free way.", 
                "Full documentation of the package is available", a(href="http://davidaknowles.github.io/leafcutter/", "here.", target = "_blank") 
               ),
             h2( "Differential splicing events"),
@@ -249,7 +302,7 @@ hr {
            h2("Gene-level visualization"),
            p("This visualises all clusters discovered by Leafcutter that can be assigned to a particular gene.",
              "Exons are taken from the provided annotation and plotted as black rectangles.",
-             "Each junction in each cluster is plotted as curved line with uniform thickness",
+             "Each junction in each cluster is plotted as curved line with uniform thickness.",
              "Junctions from significant clusters are coloured according to the estimated dPSI (see above), whereas junctions from clusters that are not significant are coloured grey.",
              "Note that the genomic coordinates are deliberately warped to give more space to the clusters."
              ),
@@ -266,7 +319,7 @@ hr {
     position = "fixed-top",
     footer = div(id = "footer",
       p("written by Jack Humphrey, David Knowles & Yang Li.",
-        tags$a(href="https://github.com/davidaknowles/leafcutter/tree/master/leafvis", "Fork on GitHub.", target = "_blank")
+        tags$a(href="https://github.com/davidaknowles/leafcutter/tree/master/leafviz", "Fork on GitHub.", target = "_blank")
     ),
       tags$head(tags$link(rel="shortcut icon", href="favicon.ico"))      
     )
