@@ -32,9 +32,13 @@ olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa
 ```
 where `-j` provides a [custom junction file](https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA), and `-e` specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see [Li et al. 2005](http://genome.cshlp.org/content/25/1/1.full). 
 
-`STAR` was run as
+The `STAR` index was generated as
 ```
 STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100
+```
+(alternatively use one of the [prebuilt indices](http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/) ) and alignment itself was run as
+```
+STAR --genomeDir hg19index/ --twopassMode --outSAMstrandField intronMotif --readFilesCommand zcat --outSAMtype BAM
 ```
 
 #### Choice of 6nt overhang

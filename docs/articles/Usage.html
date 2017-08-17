@@ -96,8 +96,10 @@
 <p>For <code>OLego</code> we used the command</p>
 <pre><code>olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa</code></pre>
 <p>where <code>-j</code> provides a <a href="https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA">custom junction file</a>, and <code>-e</code> specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see <a href="http://genome.cshlp.org/content/25/1/1.full">Li et al. 2005</a>.</p>
-<p><code>STAR</code> was run as</p>
+<p>The <code>STAR</code> index was generated as</p>
 <pre><code>STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100</code></pre>
+<p>(alternatively use one of the <a href="http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/">prebuilt indices</a> ) and alignment itself was run as</p>
+<pre><code>STAR --genomeDir hg19index/ --twopassMode --outSAMstrandField intronMotif --readFilesCommand zcat --outSAMtype BAM</code></pre>
 <div id="choice-of-6nt-overhang" class="section level4">
 <h4 class="hasAnchor">
 <a href="#choice-of-6nt-overhang" class="anchor"></a>Choice of 6nt overhang</h4>
