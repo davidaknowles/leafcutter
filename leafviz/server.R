@@ -11,6 +11,12 @@ library(shinycssloaders)
 #data.table is required
 # library(shinyjs)
 
+# for debugging
+options(shiny.trace=TRUE)
+source("../leafcutter/R/make_cluster_plot.R")
+source("../leafcutter/R/make_gene_plot.R")
+
+
 filter_intron_table <- function(introns, clu, toSave=FALSE){
   d <- dplyr::filter(introns, clusterID == clu) %>% 
     dplyr::select( -clusterID, -gene, -ensemblID, -transcripts) %>% 
@@ -24,13 +30,18 @@ filter_intron_table <- function(introns, clu, toSave=FALSE){
   return(d)
 }
 
-if (!exists("introns")) load("example/Brain_vs_Heart_results.Rdata")
+if (!exists("introns")){
+  load("example/Brain_vs_Heart_results.Rdata")
+  defaultValue <- 12 #RBFOX1
+}else{
+  defaultValue <- NULL
+}
 
 #############
 # SHINY APP
 #############
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   output$logo <- renderImage({
     list( src = leafcutter_logo, alt = "", width = "15%", height = "15%" )
   }, deleteFile = FALSE)
@@ -44,7 +55,8 @@ server <- function(input, output) {
               caption = "Click on a row to plot the corresponding visualization. N: number of introns within a cluster. q: Benjamini–Hochberg q-value.",
               fillContainer = FALSE,
               options = list(
-                columnDefs = list(list(className = 'dt-center', targets = 2:4) )
+                pageLength = 15,
+                columnDefs = list(list(className = 'dt-center', targets = 0:4) )
               )
               ) 
   })
@@ -56,6 +68,22 @@ server <- function(input, output) {
               options <- list( searching = FALSE, paging = FALSE, info = FALSE )
               )
   })
+  
+  # observeEvent(input$toggleInstruct, {
+  #   renderUI()
+  # })
+
+  onclick("toggleInstruct", toggle(id = "popupInstruct", anim = TRUE) ) #, 
+          #html(id = "toggleInstruct", html = '<i class="fa fa-chevron-down"></i>') )
+ # onclick("toggleInstruct", hideElement(id = "popupInstruct", anim = TRUE), 
+          #html(id = "toggleInstruct", html = '<i class="fa fa-chevron-down"></i>'),
+   #       toggleClass(id = "toggleInstruct", class ="fa-chevron-down") )
+  #onclick("toggleInstruct", showElement(id = "popupInstruct", anim = TRUE), html(id = "toggleInstruct", html = '<i class="fa fa-chevron-up"></i>') )
+  
+  observeEvent( input$aboutLink, {
+    updateTabsetPanel(session, "navBarPage", selected = "About")
+  })
+  
   output$experimentCode <- renderText({
     paste("Experiment code:", code )
   })
@@ -88,32 +116,92 @@ server <- function(input, output) {
                  options <- list( searching = FALSE, paging = FALSE, info = FALSE)
           )
       }
+    }else{
+      print("no cluster selected!")
     }
     
   })
   
-  mygene <- eventReactive(input$all_clusters_rows_selected,{
-    sel <- input$all_clusters_rows_selected
-    if(is.null(sel)){ return(NULL)}
+  values <- reactiveValues(default = defaultValue) # RBFOX1 in the Brain vs Heart dataset
+
+  observeEvent(input$all_clusters_rows_selected,{
+    print("new row selected!")
+    values$default <- input$all_clusters_rows_selected # if all_clusters_rows_selected changes then update value - this sets everything!
+    print(paste0("VALUE: ", values$default ))
+  })
+  
+  # mygene <- eventReactive(input$all_clusters_rows_selected,{
+  #   sel <- input$all_clusters_rows_selected
+  #   if(is.null(sel)){
+  #     return(NULL)
+  #   }
+  #   gene  <- clusters[ sel, ]$gene
+  #   gene <- gsub("<.*?>", "", gene) # strip out html italic tags
+  #   return(gene)
+  # })
+
+  # mycluster <- eventReactive(input$all_clusters_rows_selected,{
+  #   sel <- input$all_clusters_rows_selected
+  #   if(is.null(sel)){
+  #     return(NULL)
+  #   }
+  #   clusterID <- clusters[ sel, ]$clusterID
+  #   return(clusterID)
+  # } )
+  # 
+  # mycoord <- eventReactive(input$all_clusters_rows_selected,{
+  #   sel <- input$all_clusters_rows_selected
+  #   if(is.null(sel)){
+  #     return(NULL)
+  #   }
+  #   coord <- clusters[ sel, ]$coord
+  #   return(coord)
+  # } )
+
+  # old functions from previous commit
+  # mygene <- eventReactive(input$all_clusters_rows_selected,{
+  #   sel <- input$all_clusters_rows_selected
+  #   if(is.null(sel)){ return(NULL)}
+  #   gene  <- clusters[ sel, ]$gene
+  #   gene <- gsub("<.*?>", "", gene) # strip out html italic tags
+  #   return(gene)
+  # })
+  # 
+  # mycluster <- eventReactive(input$all_clusters_rows_selected,{
+  #   sel <- input$all_clusters_rows_selected
+  #   if(is.null(sel)){return(NULL)}
+  #   clusterID <- clusters[ sel, ]$clusterID
+  #   return(clusterID)
+  # } )
+  # 
+  # mycoord <- eventReactive(input$all_clusters_rows_selected,{
+  #   sel <- input$all_clusters_rows_selected
+  #   if(is.null(sel)){return("")}
+  #   coord <- clusters[ sel, ]$coord
+  #   return(coord)
+  # } )
+  
+  #based on changing the default value instead.
+
+  mygene <- eventReactive(values$default,{
+    sel <- values$default
     gene  <- clusters[ sel, ]$gene
     gene <- gsub("<.*?>", "", gene) # strip out html italic tags
     return(gene)
   })
-  
-  mycluster <- eventReactive(input$all_clusters_rows_selected,{
-    sel <- input$all_clusters_rows_selected
-    if(is.null(sel)){return(NULL)}
+
+  mycluster <- eventReactive(values$default,{
+    sel <- values$default
     clusterID <- clusters[ sel, ]$clusterID
     return(clusterID)
   } )
-  
-  mycoord <- eventReactive(input$all_clusters_rows_selected,{
-    sel <- input$all_clusters_rows_selected
-    if(is.null(sel)){return("")}
+
+  mycoord <- eventReactive(values$default,{
+    sel <- values$default
     coord <- clusters[ sel, ]$coord
     return(coord)
   } )
-
+  
   # NEW PLOTTING FUNCTIONS
   output$select_cluster_plot <- renderPlot({
     suppressWarnings( print(
@@ -168,7 +256,7 @@ server <- function(input, output) {
 
   output$gene_title <- renderText({
     g <- mygene()
-    if( is.null(mygene())){return("Cluster view\nSelect a cluster from the results table")}
+    if( is.null(mygene())){return(NULL)}
     return( as.character( g )  ) 
   })
 
@@ -264,7 +352,8 @@ server <- function(input, output) {
                                   x = second_PC, 
                                   colour = "groups" ) ) + geom_point(size = 60 / nrow(pca[[1]])  ) +
       xlab( xlab ) +
-      ylab( ylab )
+      ylab( ylab ) +
+      theme_classic()
     
     pca_plot
     }
@@ -274,7 +363,8 @@ server <- function(input, output) {
     if( ! is.null( input$first_PC)){
       createPCAPlot()
     }else{
-      NULL
+      #plot(x=1:1000,y=(1:1000)^2) 
+        NULL
     }
   }, width = "auto", height ="auto", res = 90)
 
