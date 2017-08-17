@@ -12,9 +12,9 @@ library(shinycssloaders)
 # library(shinyjs)
 
 # for debugging
-options(shiny.trace=TRUE)
-source("../leafcutter/R/make_cluster_plot.R")
-source("../leafcutter/R/make_gene_plot.R")
+#options(shiny.trace=TRUE)
+#source("../leafcutter/R/make_cluster_plot.R")
+#source("../leafcutter/R/make_gene_plot.R")
 
 
 filter_intron_table <- function(introns, clu, toSave=FALSE){
@@ -73,14 +73,13 @@ server <- function(input, output, session) {
   #   renderUI()
   # })
 
-  onclick("toggleInstruct", toggle(id = "popupInstruct", anim = TRUE) ) #, 
-          #html(id = "toggleInstruct", html = '<i class="fa fa-chevron-down"></i>') )
- # onclick("toggleInstruct", hideElement(id = "popupInstruct", anim = TRUE), 
-          #html(id = "toggleInstruct", html = '<i class="fa fa-chevron-down"></i>'),
-   #       toggleClass(id = "toggleInstruct", class ="fa-chevron-down") )
-  #onclick("toggleInstruct", showElement(id = "popupInstruct", anim = TRUE), html(id = "toggleInstruct", html = '<i class="fa fa-chevron-up"></i>') )
+  onclick("welcome", toggle(id = "popupInstruct", anim = TRUE) )
   
   observeEvent( input$aboutLink, {
+    updateTabsetPanel(session, "navBarPage", selected = "About")
+  })
+  
+  observeEvent( input$aboutLink2, {
     updateTabsetPanel(session, "navBarPage", selected = "About")
   })
   

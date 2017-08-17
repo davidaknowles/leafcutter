@@ -3,11 +3,22 @@ library(DT)
 library(shinycssloaders)
 library(shinyjs)
 
+if (!exists("introns")){
+  defaultValue <- 12 #RBFOX1
+  showCode <- "GTEx Brain vs Heart"
+}else{
+  defaultValue <- NULL
+  showCode <- code
+}
+
+
 ui <- tagList(
   useShinyjs(),
-  navbarPage(title = a(id = "gitLink", href="https://github.com/davidaknowles/leafcutter/tree/master/leafviz","LeafViz", target = "_blank"), 
-             id = "navBarPage",
-             windowTitle = "LeafViz",
+  navbarPage(
+    title  = actionLink("aboutLink", "LeafViz"),
+    #title = a(id = "gitLink", href="https://github.com/davidaknowles/leafcutter/tree/master/leafviz","LeafViz", target = "_blank"), 
+    id = "navBarPage",
+    windowTitle = "LeafViz",
     tabPanel("All clusters",
       tags$style(type="text/css", "
 body {
@@ -86,12 +97,28 @@ hr {
 
 #welcome {
   background-color: whitesmoke;
+  border-color: whitesmoke;
+  border-width: 3px;
   border-radius: 25px;
+  border-style: solid;
   margin-left: 15px;
   margin-right: 15px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  margin-bottom: 15px;
+  padding-top: 3px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+#toggleInstruct {
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+#displayCode {
+  background-color: white;
+  border-color: white;
+  text-align: white;
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 #hideBtnDiv {
@@ -119,17 +146,20 @@ hr {
 }
 
 "),
+      # WELCOME MESSAGE
       div(class = "jumbotron", id = "welcome",
           div(id = "popupInstruct", 
             h1("LeafViz - the LeafCutter visualization app"),
             p(HTML(paste0("To visualize a cluster, click a row in ",strong("Differential splicing events.") ) ) ),
             p(HTML(paste0("All clusters found within a gene are visualized in the ", strong("Gene-level visualization"), " below.") ) ),
-            p(actionLink("aboutLink", "Learn more")),
+            p(actionLink("aboutLink2", "Learn more")),
             p(tags$a(href="http://davidaknowles.github.io/leafcutter/articles/Visualization.html",
                       "How to visualise your own Leafcutter results", target = "_blank"))
           ),
-          div( id = "hideBtnDiv", tags$button(id = "toggleInstruct", HTML('<i class="fa fa-arrows-v" ></i>') ) )
-          ),
+          div( id = "hideBtnDiv", 
+               tags$p(id = "toggleInstruct", HTML('<i class="fa fa-arrows-v" ></i>') ) )
+        ),
+        div(id = "displayCode", style = "text-align: center", h4(showCode)    ),
         fluidRow(
           column(6,
             div(id = "clusterTable",
@@ -147,9 +177,6 @@ hr {
               hr(),
               h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
               div(
-                # div(id = "welcome" 
-                #   
-                # ),
                 withSpinner(plotOutput("select_cluster_plot", width = "100%") )
               ),
               DT::dataTableOutput("cluster_view"),
@@ -222,7 +249,6 @@ hr {
           downloadButton("downloadPCAPlot", label = "save plot", class = NULL)
       )
     ),
-    # SETTINGS - any needed?
     tabPanel("About",
        fluidRow(
          column(
