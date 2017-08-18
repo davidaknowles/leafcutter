@@ -19,10 +19,10 @@ ui <- tagList(
     #title = a(id = "gitLink", href="https://github.com/davidaknowles/leafcutter/tree/master/leafviz","LeafViz", target = "_blank"), 
     id = "navBarPage",
     windowTitle = "LeafViz",
-    tabPanel("All clusters",
+    tabPanel("All clusters", # padding-top: 70px
       tags$style(type="text/css", "
 body {
-    padding-top: 70px;
+
 }
 
 #gitLink {
@@ -78,6 +78,7 @@ hr {
   border-radius: 25px;
   padding: 10px;
   margin-top: 0px;
+  overflow: scroll;
 }
 
 #clusterView {
@@ -103,7 +104,7 @@ hr {
   border-style: solid;
   margin-left: 15px;
   margin-right: 15px;
-  padding-top: 3px;
+  padding-top: 45px;
   padding-bottom: 0px;
   margin-bottom: 0px;
 }
@@ -150,10 +151,14 @@ hr {
     background-color: #E6E6E6;
 }
 
+#tabDiv {
+  padding-top: 70px;
+}
+
 "),
       # WELCOME MESSAGE
       div(class = "jumbotron", id = "welcome",
-          div(id = "popupInstruct", 
+          div(id = "popupInstruct",
             h2("LeafViz - the LeafCutter visualization app"),
             p(HTML(paste0("To visualize a cluster, click a row in ",strong("Differential splicing events.") ) ) ),
             p(HTML(paste0("All clusters found within a gene are visualized in the ", strong("Gene-level visualization"), " below.") ) ),
@@ -161,40 +166,40 @@ hr {
             p(tags$a(href="http://davidaknowles.github.io/leafcutter/articles/Visualization.html",
                       "How to visualise your own Leafcutter results", target = "_blank"))
           ),
-          div( id = "hideBtnDiv", 
+          div( id = "hideBtnDiv",
                tags$p(id = "toggleInstruct", HTML('<i class="fa fa-arrows-v" ></i>') ) )
         ),
         div(id = "displayCode", style = "text-align: center", h4(showCode)    ),
-        fluidRow(
-          column(6,
-            div(id = "clusterTable",
-              h4(id = "title","Differential splicing events (clusters)"),
-              hr(),
-              div(
-                withSpinner(DT::dataTableOutput("all_clusters"))
+          fluidRow(
+            column(6,
+              div(id = "clusterTable",
+                h4(id = "title","Differential splicing events (clusters)"),
+                hr(),
+                div(
+                  withSpinner(DT::dataTableOutput("all_clusters"))
+                )
               )
-            )
-          ),
-          ### CLUSTER VIEW
-          column(6, 
-            div(id="clusterView",
-              h4(id="title","Splicing event visualization"),
-              hr(),
-              h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
-              div(
-                withSpinner(plotOutput("select_cluster_plot", width = "100%") )
-              ),
-              DT::dataTableOutput("cluster_view"),
-              hr(),
-              div(class = "download_btn",
-                downloadButton("downloadClusterPlot", label = "save plot", class = NULL),
-                downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL),
-                htmlOutput("viewClusterUCSC", inline = TRUE)
+            ),
+            ### CLUSTER VIEW
+            column(6,
+              div(id="clusterView",
+                h4(id="title","Splicing event visualization"),
+                hr(),
+                h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
+                div(
+                  withSpinner(plotOutput("select_cluster_plot", width = "100%") )
+                ),
+                DT::dataTableOutput("cluster_view"),
+                hr(),
+                div(class = "download_btn",
+                    downloadButton("downloadClusterPlot", label = "save plot", class = NULL),
+                    downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL)#,
+                    #            htmlOutput("viewClusterUCSC", inline = TRUE) # CAUSING STALLING BUG?
+                )
               )
-            )
           )
-        ),
-      
+         ),
+      # 
         ### GENE VIEW
         br(),
         #hr(),
@@ -202,11 +207,8 @@ hr {
           div(id="geneView",
             h4(id="title","Gene-level visualization"),
             hr(),
-          # div(id = "welcome", 
-          #   h3("No gene selected")
-          #   ),
             div(id="genePlot",
-              withSpinner(plotOutput("select_gene_plot", width="100%"))
+              withSpinner(plotOutput("select_gene_plot", width="100%", height = "300px"))
               ),
             hr(),
             div(class = "download_btn",
@@ -214,11 +216,11 @@ hr {
               htmlOutput("viewGeneUCSC", inline = TRUE)
             )
           )
-        )
+       )
       ),
       
     tabPanel("Summary", 
-      fluidRow(
+      fluidRow(id = "tabDiv",
         column(6,offset=3,
           # this is where a summary table goes counting all the significant clusters and introns
           h3("Experiment",id="summary"),
@@ -242,7 +244,7 @@ hr {
       )
     ),
     tabPanel("PCA",
-      fluidRow(
+      fluidRow(id = "tabDiv",
         column(6, offset =3,
           # plot different principal components of the splice junction counts
           br(),
@@ -257,7 +259,7 @@ hr {
       )
     ),
     tabPanel("About",
-       fluidRow(
+       fluidRow(id = "tabDiv",
          column(
            6,
            offset=3,

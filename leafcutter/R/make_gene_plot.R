@@ -53,7 +53,7 @@ make_gene_plot <- function(gene_name,
   # for each cluster, remove any exon that fall with the cluster but are not connected by any junctions
   toDiscard <- c()
   for( clu in unique(cluster_ids) ){
-    print(clu)
+    #print(clu)
     clusterMin <- min(clusters[clusters$clu == clu,]$start)
     clusterMax <- max(clusters[clusters$clu == clu,]$end)
     clusterExons <- exons[ exons$end >= clusterMin & exons$start <= clusterMax,]
@@ -123,7 +123,8 @@ make_gene_plot <- function(gene_name,
   }
   
   
-  print(exons_here)
+  #print(exons_here)
+  # exon_df is scaled exons, exons_here are non-scaled
   exon_df <- data.frame( x=sapply(exons_here$start,FUN = function(X) invert_mapping(pos = X, s=s, coords = coords, xlim = my_xlim) ), 
                          xend=sapply(exons_here$end,FUN = function(X) invert_mapping(pos = X, s=s, coords = coords, xlim = my_xlim) ), 
                          y=numeric(nrow(exons_here)), 
@@ -134,6 +135,10 @@ make_gene_plot <- function(gene_name,
   
   # if exons fall upstream of the first cluster
   upstream_exons <- exons_here[ exons_here$start < min(s),]
+  
+  #print("upstream exons")
+  #print(upstream_exons)
+  
   if( nrow(upstream_exons) > 0){
     upstream_s <- c( min(upstream_exons$start), max(upstream_exons$end))
     upstream_coords <- c( -length_transform( upstream_s[2] - upstream_s[1] ), 0) # fit all exons within this space
@@ -146,6 +151,8 @@ make_gene_plot <- function(gene_name,
     # replace exon_df top and bottom with the new values
     exon_df[ 1:nrow(upstream_df),] <- upstream_df
   }
+  #print("new values:")
+  #print(upstream_df)
   
   # exons that are downstream of the clusters
   downstream_exons <- exons_here[ exons_here$end > max(s),]
@@ -172,6 +179,10 @@ make_gene_plot <- function(gene_name,
   # create gene_length term
   gene_length <- max(exon_df$xend) - min(exon_df$x)
   
+  #print(exon_df)
+  #print(my_xlim)
+  #print(gene_length)
+  
   # CREATE NEW THEME FOR PLOT
   
   new_theme_empty <- theme_bw(base_size = 15)
@@ -183,11 +194,11 @@ make_gene_plot <- function(gene_name,
  
   # HARD CODED PLOT SETTINGS 
   
-  YLIMN=5 # 8
-  YLIMP=-5  # -9
+  YLIMN=1000 # 8
+  YLIMP=-700  # -9
   # plot junctions as curves
   curv = 0.25 # normally 0.5
-  curveMax = 1
+  curveMax = 0.1
   curveExponent = 2
   yOffset = 0
   # horizontal white line to clean up the edges of the curvess
@@ -292,8 +303,8 @@ make_gene_plot <- function(gene_name,
                                           end = max(end), 
                                           middle = start + ( (end - start) / 2) , 
                                           ytext = max(ytext) ) )
-  
-  
+  #print("labels:")
+  #print(label_df)
   
   if( !is.null(cluster_list) ){
     label_df$FDR <- cluster_list$FDR[ match( label_df$clu, cluster_list$clusterID)]
@@ -304,11 +315,13 @@ make_gene_plot <- function(gene_name,
   
     # GENE HEIGHTS
     
-    df <- data.frame(x=coords, xend=total_length*(s-min(s))/(max(s)-min(s)), y=0, yend=min_height)
-
-    gene_heights=min_height - ((1:length(levels(exons_here$gene_name)))-1.0) * abs(min_height) *  .15 # 0.05
-    heights=gene_heights[ as.numeric(exons_here$gene_name)] # .15
-    df=data.frame(x=total_length*(exons_here$start-min(s))/(max(s)-min(s)), xend=total_length*(exons_here$end-min(s))/(max(s)-min(s)), y=heights, yend=heights)
+    # df <- data.frame(x=coords, xend=total_length*(s-min(s))/(max(s)-min(s)), y=0, yend=min_height)
+    # 
+    # gene_heights=min_height - ((1:length(levels(exons_here$gene_name)))-1.0) * abs(min_height) *  .15 # 0.05
+    # heights=gene_heights[ as.numeric(exons_here$gene_name)] # .15
+    # df=data.frame(x=total_length*(exons_here$start-min(s))/(max(s)-min(s)), xend=total_length*(exons_here$end-min(s))/(max(s)-min(s)), y=heights, yend=heights)
+    # 
+    #print(df)
     
     # GENE NAME
     n_genes <- seq(1, length( levels(exons_here$gene_name) ) )
@@ -386,10 +399,7 @@ make_gene_plot <- function(gene_name,
                                y = 0)
     }
     
-    print(strand_df)
-    
-    # STRAND ARROWS
-    # only if exons are at least 1 unit in length
+    #print(strand_df)
     
     #print(allEdgesP)
     #print(allEdges)
@@ -412,6 +422,7 @@ make_gene_plot <- function(gene_name,
     
     
     plots <- ggplot() + 
+      
       # cluster junctions
 
       geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
@@ -420,7 +431,8 @@ make_gene_plot <- function(gene_name,
                  curvature=-curv,lineend="round",  colour = junction_colour )
       
       if( nrow(  allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,]) > 0  ){
-      # if there are non-significant clusters, then colour  grey
+      
+        # if there are non-significant clusters, then colour  grey
       plots <- plots +
       geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
                  curvature=curv,lineend="round", colour = "gray" )
@@ -445,10 +457,6 @@ make_gene_plot <- function(gene_name,
       }
       
      
-      # geom_curve(data=allEdgesP, aes(x = start, xend = end, y = 0, yend = 0, group = Group, colour=cluster_coloursP, size = curveMax ),
-      #            curvature=curv,lineend="round" ) +
-      # geom_curve(data=allEdges,aes(x = start, xend = end, y = 0, yend = 0, group = Group, colour=cluster_colours, size = curveMax),
-      #            curvature=-curv,lineend="round" ) +
       plots <- plots +      
       
       new_theme_empty + 
@@ -496,7 +504,7 @@ make_gene_plot <- function(gene_name,
     
       # ADD STRANDING ARROWS
     #print(paste("strand is: ", strand_pos) )
-    print(strand_df)
+    #print(strand_df)
     if( !is.null(strand_pos)){
         plots <- plots +
           geom_line( data = strand_df,
@@ -513,33 +521,41 @@ make_gene_plot <- function(gene_name,
       # geom_segment( data = allEdges, aes(x = end, xend=end + 0.05, y = 0, yend = 0), colour = "white", size = 6 ) +
       # geom_segment( data = allEdgesP, aes(x = start, xend=start - 0.05, y = 0, yend = 0), colour = "white", size = 6 ) +
       # geom_segment( data = allEdges, aes(x = start, xend=start - 0.05, y = 0, yend = 0), colour = "white", size = 6 ) +
-      # EXONS
+      
+      # EXON DEMARCATION
       geom_segment( data = exon_df, aes(x = xend, xend=xend + 0.05, y = 0, yend = 0), colour = "white", size = 6 ) +
       geom_segment( data = exon_df, aes(x = x, xend=x - 0.05, y = 0, yend = 0), colour = "white", size = 6 ) 
     
     
-  
+    
     
     # LABEL CLUSTERS
-    label_max <- YLIMN - 0.1*YLIMN  
+    label_max <- YLIMN - 0.2*YLIMN # how far down the labels should 
+    label_df$label <- gsub("_", "\n", label_df$label)
     plots <- plots +
+      # add dotted lines to indicate the regions that belong to each cluster
+      geom_segment( data = label_df, aes( x = start, xend = middle, y = 0, yend = label_max ), colour = "gray", linetype = 3) +
+      geom_segment( data = label_df, aes( x = end, xend = middle, y = 0, yend = label_max ), colour = "gray", linetype = 3) +
+      # label clusters
+      geom_point( data = label_df, aes( x = middle, y = label_max), colour = "white", size = 22) +
       geom_text( data = label_df, aes( x = middle, y = label_max, label = label)) +
-      theme(legend.position="bottom", legend.justification = 'right') 
-    
-    
-    
-   #print(label_df)
-    
-  #print(clusterID)  
-    
+      
+      #theme(legend.position="bottom", legend.justification = 'right')
+      theme(legend.justification=c(1,0), legend.position=c(1,0)) # stick legend inside plot
+    # if a particular cluster is selected then give a border
     if( !is.null(clusterID) ){
       plots <- plots + 
-        geom_label( data = label_df[ label_df$clu == clusterID,],  aes( x = middle, y = label_max, label = label), fontface = "bold", label.size = 0.5, label.r = unit(0.3,"lines"), label.padding = unit(0.5,"lines") )
-      
+        geom_label( data = label_df[ label_df$clu == clusterID,],  aes( x = middle, y = label_max, label = label ), fontface = "bold", label.size = 0.5, label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") )
     }
-    print("gene plot:")    
-    print(exon_df)
-   plots
+    #print("gene plot:")    
+    #print(exon_df)
+    # toReturn <-  list( plot = plots, geneLength = geneLength)
+    # if( !is.null(clusterID) ){
+    #   toReturn$clusterPos <- clusterPos
+    # }else{
+    #   toReturn$clusterPos <- NULL
+    # }
+   return( plots )
 }
   #if (!is.na(main_title)) plots[[1]] = plots[[1]] + ggtitle(main_title)
   # arrange plots

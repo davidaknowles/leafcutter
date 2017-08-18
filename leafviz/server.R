@@ -13,10 +13,12 @@ library(shinycssloaders)
 # for debugging
 #options(shiny.trace=TRUE)
 options(shiny.reactlog=TRUE)
-#load("example/Brain_vs_Heart_results.Rdata")
+# load("example/Brain_vs_Heart_results.Rdata")
 source("../leafcutter/R/make_cluster_plot.R")
 source("../leafcutter/R/make_gene_plot.R")
-#x <- make_gene_plot("RBFOX1", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot)
+#make_gene_plot("MEG3", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot)
+
+
 
 filter_intron_table <- function(introns, clu, toSave=FALSE){
   d <- dplyr::filter(introns, clusterID == clu) %>% 
@@ -70,9 +72,6 @@ if (!exists("introns")){
 # SHINY APP
 #############
 
-
-
-
 server <- function(input, output, session) {
   output$logo <- renderImage({
     list( src = leafcutter_logo, alt = "", width = "15%", height = "15%" )
@@ -115,6 +114,8 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "navBarPage", selected = "About")
   })
   
+  # SUMMARY - does this need to be in server and not just UI?
+  
   output$experimentCode <- renderText({
     paste("Experiment code:", code )
   })
@@ -138,8 +139,11 @@ server <- function(input, output, session) {
               options <- list( searching = FALSE, paging = FALSE, info = FALSE )
               )
   })
+  
+  # TABLES
+  
   output$cluster_view = DT::renderDataTable({
-    clu <- mycluster()
+    clu <- mydata()$cluster
     if(!is.null(clu)){
       if(length(introns)){
         datatable( filter_intron_table(introns, clu, toSave=FALSE),
@@ -153,105 +157,34 @@ server <- function(input, output, session) {
     
   })
   
+  # SET REACTIVE VALUE WITH A DEFAULT
+  
   values <- reactiveValues(default = defaultValue) # RBFOX1 in the Brain vs Heart dataset
-
+  # REACTIVE VALUE IS UPDATED BY INPUT
   observeEvent(input$all_clusters_rows_selected,{
     print("new row selected!")
     values$default <- input$all_clusters_rows_selected # if all_clusters_rows_selected changes then update value - this sets everything!
     print(paste0("VALUE: ", values$default ))
   })
   
-  # mygene <- eventReactive(input$all_clusters_rows_selected,{
-  #   sel <- input$all_clusters_rows_selected
-  #   if(is.null(sel)){
-  #     return(NULL)
-  #   }
-  #   gene  <- clusters[ sel, ]$gene
-  #   gene <- gsub("<.*?>", "", gene) # strip out html italic tags
-  #   return(gene)
-  # })
-
-  # mycluster <- eventReactive(input$all_clusters_rows_selected,{
-  #   sel <- input$all_clusters_rows_selected
-  #   if(is.null(sel)){
-  #     return(NULL)
-  #   }
-  #   clusterID <- clusters[ sel, ]$clusterID
-  #   return(clusterID)
-  # } )
-  # 
-  # mycoord <- eventReactive(input$all_clusters_rows_selected,{
-  #   sel <- input$all_clusters_rows_selected
-  #   if(is.null(sel)){
-  #     return(NULL)
-  #   }
-  #   coord <- clusters[ sel, ]$coord
-  #   return(coord)
-  # } )
-
-  # old functions from previous commit
-  # mygene <- eventReactive(input$all_clusters_rows_selected,{
-  #   sel <- input$all_clusters_rows_selected
-  #   if(is.null(sel)){ return(NULL)}
-  #   gene  <- clusters[ sel, ]$gene
-  #   gene <- gsub("<.*?>", "", gene) # strip out html italic tags
-  #   return(gene)
-  # })
-  # 
-  # mycluster <- eventReactive(input$all_clusters_rows_selected,{
-  #   sel <- input$all_clusters_rows_selected
-  #   if(is.null(sel)){return(NULL)}
-  #   clusterID <- clusters[ sel, ]$clusterID
-  #   return(clusterID)
-  # } )
-  # 
-  # mycoord <- eventReactive(input$all_clusters_rows_selected,{
-  #   sel <- input$all_clusters_rows_selected
-  #   if(is.null(sel)){return("")}
-  #   coord <- clusters[ sel, ]$coord
-  #   return(coord)
-  # } )
+  # USE REACTIVE VALUE TO GENERATE ALL VARIABLES NEEDED
   
-  #based on changing the default value instead.
-
-  mygene <- eventReactive(values$default,{
+  mydata <- eventReactive(values$default,{
     sel <- values$default
     gene  <- clusters[ sel, ]$gene
     gene <- gsub("<.*?>", "", gene) # strip out html italic tags
     width <- getGeneLength(gene)
-    return(list(gene = gene, width = width) )
-  })
-
-  mycluster <- eventReactive(values$default,{
-    sel <- values$default
     clusterID <- clusters[ sel, ]$clusterID
-    return(clusterID)
-  } )
-
-  mycoord <- eventReactive(values$default,{
-    sel <- values$default
     coord <- clusters[ sel, ]$coord
-    return(coord)
-  } )
+    return(list(gene = gene, width = width, cluster = clusterID, coord = coord) )
+  })
   
   
-  # plotWidth <- reactiveVal(value = defaultWidth)
-  # 
-  # observeEvent( values$default,{
-  #   sel <- values$default
-  #   gene  <- clusters[ sel, ]$gene
-  #   gene <- gsub("<.*?>", "", gene)
-  #   width = getGeneLength(gene, widthFactor)
-  #   print("WIDTH:")
-  #   print(width)
-  #   plotWidth <- width
-  #   print(plotWidth)
-  # })
+  # PLOTTING
   
-  # NEW PLOTTING FUNCTIONS
   output$select_cluster_plot <- renderPlot({
     suppressWarnings( print(
-      make_cluster_plot( mycluster(),
+      make_cluster_plot( mydata()$cluster,
                        main_title = NA,
                        meta = meta,
                        cluster_ids = cluster_ids,
@@ -261,82 +194,52 @@ server <- function(input, output, session) {
     ))
   }, width = "auto", height = "auto",  res = 90
   )
-  
-  selectGenePlotInput <- function(all=FALSE){
-    gene <- mygene()$gene
-    clu <- mycluster()
-    if( ! is.null( gene) ){
-      print( paste0( "gene is: ", gene))
-      if(all != TRUE){
-        clusterID <- clu
-      }else{
-        clusterID <- NULL
-      }
-      make_gene_plot(gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = clusterID, introns_to_plot = introns_to_plot)
-    }else{
-      NULL
-    }
-  }
-  
-  selectClusterPlotInput <- function(title=NA){
-    clu <- mycluster()
-    if( !is.null(clu)) {
-      make_cluster_plot( clu,
-                       main_title = title,
-                       meta = meta,
-                       cluster_ids = cluster_ids,
-                       exons_table = exons_table,
-                       counts = counts,
-                       introns = introns
-                       )
-    }else{
-      NULL
-    }
-  }
-  
 
-  observe({ 
+  observeEvent(values$default,{ 
     output$select_gene_plot <- renderPlot({
-    suppressWarnings( print( selectGenePlotInput(all=FALSE) ) )
-    }, width = mygene()$width, height ="auto", res = 90
+    suppressWarnings( print( 
+      make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = mydata()$cluster, introns_to_plot = introns_to_plot)
+      )
+    )
+    }, width = mydata()$width, height = "auto", res = 90 # try changing height param
    )
   })
   
-
+  # TITLES
+  
   output$gene_title <- renderText({
-    g <- mygene()$gene
-    if( is.null(mygene()$gene)){return(NULL)}
-    return( as.character( g )  ) 
+    return( as.character( mydata()$gene )  ) 
   })
 
   output$cluster_title <- renderText({
-    return( as.character(mycluster()))
+    return( as.character(mydata()$cluster))
   })
   
   # DOWNLOAD HANDLING
+  
   output$downloadClusterPlot <- downloadHandler(
-    filename = function() { paste0(mygene()$gene,"_", mycluster(), '.pdf') },
+    filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '.pdf') },
     content = function(file) {
-      plotTitle <- paste(mygene()$gene, mycluster() )
+      plotTitle <- paste(mydata()$gene, mydata()$cluster )
       ggsave(file, plot = selectClusterPlotInput(title = plotTitle ), device = "pdf", width = 10, height = 5 )
     }
   )
   
   output$downloadClusterPlotWithTable <- downloadHandler(
-    filename = function() { paste0(mygene()$gene,"_", mycluster(), '_table.pdf') },
+    filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '_table.pdf') },
     content = function(file) {
-      plotTitle <- paste(mygene()$gene, mycluster() )
+      plotTitle <- paste(mydata()$gene, mydata()$cluster )
       clusterPlot <- selectClusterPlotInput(title=plotTitle)
-      tablePlot <- tableGrob(filter_intron_table(introns, mycluster(), toSave=TRUE) )
+      tablePlot <- tableGrob(filter_intron_table(introns, mydata()$cluster, toSave=TRUE) )
       ggsave(file, plot = grid.arrange(clusterPlot, tablePlot, nrow =2),
            device = "pdf", width = 10, height = 8 )
     }
   )
 
   output$downloadGenePlot <- downloadHandler(
-    filename = function() { paste( mygene()$gene,"_","allClusters", '.pdf', sep='') },
+    filename = function() { paste( mydata()$gene,"_","allClusters", '.pdf', sep='') },
     content = function(file) {
-      ggsave(file, plot = selectGenePlotInput(all=TRUE), device = "pdf", width = 30, height = 5, limitsize = FALSE)
+      ggsave(file, plot = selectGenePlotInput(all=TRUE), device = "pdf", width = mydata()$width, limitsize = FALSE)
     }
   )
   
@@ -352,7 +255,7 @@ server <- function(input, output, session) {
     }else{
       orgChoice <- paste0("&org=",org)
     }
-    coord <- mycoord()
+    coord <- mydata()$coord
     # zoom out the position a bit
     chr <- strsplit(coord, ":")[[1]][1]
     start <- as.numeric(strsplit( strsplit(coord, ":")[[1]][2], "-" )[[1]][1])
@@ -374,12 +277,12 @@ server <- function(input, output, session) {
     }else{
       orgChoice <- paste0("&org=",org)
     }
-    gene <- mygene()$gene
+    gene <- mydata()$gene
     url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?",orgChoice,"&db=",db,"&singleSearch=knownCanonical&position=", gene)
     return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default", id = "UCSC" ) )
   })
   
-  # PCA
+  #### PCA
   
   output$pca_choices <- renderUI({
     choices <- names(pca[[1]])[ 1:(length(pca[[1]]) - 2) ]
@@ -411,9 +314,6 @@ server <- function(input, output, session) {
   output$pca_plot <- renderPlot({
     if( ! is.null( input$first_PC)){
       createPCAPlot()
-    }else{
-      #plot(x=1:1000,y=(1:1000)^2) 
-        NULL
     }
   }, width = "auto", height ="auto", res = 90)
 

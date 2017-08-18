@@ -37,7 +37,7 @@ make_cluster_plot <- function(
   junction_colour <- "red"
   cryptic_colour <- "pink"
   
-  print(introns_to_plot)
+  #print(introns_to_plot)
   
   # convert colnames(y) into meta data
   intron_meta=get_intron_meta(colnames(y))
@@ -53,7 +53,7 @@ make_cluster_plot <- function(
     #intron_meta$rank <- ranks[ order(abs(intron_meta$dPSI), decreasing=TRUE) ]
     intron_meta$rank <- ranks[match(intron_meta$dPSI, absPSI)]
   }
-  print(intron_meta)
+  #print(intron_meta)
   #return(intron_meta)
   new_theme_empty <- theme_bw(base_size = 15 )
   new_theme_empty$panel.background = element_rect(fill="white", colour = "white")
@@ -326,7 +326,7 @@ make_cluster_plot <- function(
     # 
     exons_here$gene_name=factor(exons_here$gene_name)
     
-    print(exons_here)
+    #print(exons_here)
    
     # gene_heights=min_height - ((1:length(levels(exons_here$gene_name)))-1.0) * abs(min_height) *  .15 # 0.05
     # heights=gene_heights[ as.numeric(exons_here$gene_name)] # .15
@@ -468,7 +468,7 @@ make_cluster_plot <- function(
                                    y = 0)
         }
         
-        print(strand_df)
+        #print(strand_df)
         
       # add strand arrows
         for (i in 1:length(plots) ){
