@@ -126,6 +126,11 @@ hr {
   font-size: 20px;
 }
 
+#genePlot{
+  overflow: auto;
+  white-space: nowrap;
+}
+
 #summary {
   text-align: center;
 }
@@ -149,7 +154,7 @@ hr {
       # WELCOME MESSAGE
       div(class = "jumbotron", id = "welcome",
           div(id = "popupInstruct", 
-            h1("LeafViz - the LeafCutter visualization app"),
+            h2("LeafViz - the LeafCutter visualization app"),
             p(HTML(paste0("To visualize a cluster, click a row in ",strong("Differential splicing events.") ) ) ),
             p(HTML(paste0("All clusters found within a gene are visualized in the ", strong("Gene-level visualization"), " below.") ) ),
             p(actionLink("aboutLink2", "Learn more")),
@@ -200,7 +205,9 @@ hr {
           # div(id = "welcome", 
           #   h3("No gene selected")
           #   ),
-            withSpinner(plotOutput("select_gene_plot", width="100%")),
+            div(id="genePlot",
+              withSpinner(plotOutput("select_gene_plot", width="100%"))
+              ),
             hr(),
             div(class = "download_btn",
               downloadButton("downloadGenePlot", label = "Save plot", class = NULL),

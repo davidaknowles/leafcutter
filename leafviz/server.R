@@ -10,12 +10,13 @@ library(foreach)
 library(shinycssloaders)
 #data.table is required
 # library(shinyjs)
-
 # for debugging
 #options(shiny.trace=TRUE)
-#source("../leafcutter/R/make_cluster_plot.R")
-#source("../leafcutter/R/make_gene_plot.R")
-
+options(shiny.reactlog=TRUE)
+#load("example/Brain_vs_Heart_results.Rdata")
+source("../leafcutter/R/make_cluster_plot.R")
+source("../leafcutter/R/make_gene_plot.R")
+#x <- make_gene_plot("RBFOX1", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot)
 
 filter_intron_table <- function(introns, clu, toSave=FALSE){
   d <- dplyr::filter(introns, clusterID == clu) %>% 
@@ -30,6 +31,34 @@ filter_intron_table <- function(introns, clu, toSave=FALSE){
   return(d)
 }
 
+getGeneLength <- function(gene_name){
+  # gets length of gene in nucleotides and decides on a pixel length for the gene plot
+  # RBFOX1 is 1.7Mbp - scale to 5000px
+  # most genes are < 100kb
+  exons <- exons_table[ exons_table$gene_name == gene_name, ]
+  geneStart <- min(exons$start)
+  geneEnd <- max(exons$end)
+  geneLength <- geneEnd - geneStart
+  print(geneLength)
+  if( geneLength >1E6){
+    pixels <- 5000 # scales RBFOX1 to 5000px
+  }
+  if( geneLength > 5e5 & geneLength < 1e6){
+    pixels <- 3000
+  }
+  if( geneLength > 1.5e5 & geneLength <= 5e5){
+    pixels <- 2000
+  }
+  if( geneLength <= 1.5e5){
+    pixels <- "auto"
+  }
+  print(pixels)
+  return(pixels)
+}
+# test
+#getGeneLength("RBFOX1", 530)
+
+
 if (!exists("introns")){
   load("example/Brain_vs_Heart_results.Rdata")
   defaultValue <- 12 #RBFOX1
@@ -40,6 +69,9 @@ if (!exists("introns")){
 #############
 # SHINY APP
 #############
+
+
+
 
 server <- function(input, output, session) {
   output$logo <- renderImage({
@@ -186,7 +218,8 @@ server <- function(input, output, session) {
     sel <- values$default
     gene  <- clusters[ sel, ]$gene
     gene <- gsub("<.*?>", "", gene) # strip out html italic tags
-    return(gene)
+    width <- getGeneLength(gene)
+    return(list(gene = gene, width = width) )
   })
 
   mycluster <- eventReactive(values$default,{
@@ -200,6 +233,20 @@ server <- function(input, output, session) {
     coord <- clusters[ sel, ]$coord
     return(coord)
   } )
+  
+  
+  # plotWidth <- reactiveVal(value = defaultWidth)
+  # 
+  # observeEvent( values$default,{
+  #   sel <- values$default
+  #   gene  <- clusters[ sel, ]$gene
+  #   gene <- gsub("<.*?>", "", gene)
+  #   width = getGeneLength(gene, widthFactor)
+  #   print("WIDTH:")
+  #   print(width)
+  #   plotWidth <- width
+  #   print(plotWidth)
+  # })
   
   # NEW PLOTTING FUNCTIONS
   output$select_cluster_plot <- renderPlot({
@@ -216,7 +263,7 @@ server <- function(input, output, session) {
   )
   
   selectGenePlotInput <- function(all=FALSE){
-    gene <- mygene()
+    gene <- mygene()$gene
     clu <- mycluster()
     if( ! is.null( gene) ){
       print( paste0( "gene is: ", gene))
@@ -247,15 +294,18 @@ server <- function(input, output, session) {
     }
   }
   
-  output$select_gene_plot <- renderPlot({
+
+  observe({ 
+    output$select_gene_plot <- renderPlot({
     suppressWarnings( print( selectGenePlotInput(all=FALSE) ) )
-  }, width = "auto", height ="auto", res = 90
-  )
+    }, width = mygene()$width, height ="auto", res = 90
+   )
+  })
   
 
   output$gene_title <- renderText({
-    g <- mygene()
-    if( is.null(mygene())){return(NULL)}
+    g <- mygene()$gene
+    if( is.null(mygene()$gene)){return(NULL)}
     return( as.character( g )  ) 
   })
 
@@ -265,17 +315,17 @@ server <- function(input, output, session) {
   
   # DOWNLOAD HANDLING
   output$downloadClusterPlot <- downloadHandler(
-    filename = function() { paste0(mygene(),"_", mycluster(), '.pdf') },
+    filename = function() { paste0(mygene()$gene,"_", mycluster(), '.pdf') },
     content = function(file) {
-      plotTitle <- paste(mygene(), mycluster() )
+      plotTitle <- paste(mygene()$gene, mycluster() )
       ggsave(file, plot = selectClusterPlotInput(title = plotTitle ), device = "pdf", width = 10, height = 5 )
     }
   )
   
   output$downloadClusterPlotWithTable <- downloadHandler(
-    filename = function() { paste0(mygene(),"_", mycluster(), '_table.pdf') },
+    filename = function() { paste0(mygene()$gene,"_", mycluster(), '_table.pdf') },
     content = function(file) {
-      plotTitle <- paste(mygene(), mycluster() )
+      plotTitle <- paste(mygene()$gene, mycluster() )
       clusterPlot <- selectClusterPlotInput(title=plotTitle)
       tablePlot <- tableGrob(filter_intron_table(introns, mycluster(), toSave=TRUE) )
       ggsave(file, plot = grid.arrange(clusterPlot, tablePlot, nrow =2),
@@ -284,7 +334,7 @@ server <- function(input, output, session) {
   )
 
   output$downloadGenePlot <- downloadHandler(
-    filename = function() { paste( mygene(),"_","allClusters", '.pdf', sep='') },
+    filename = function() { paste( mygene()$gene,"_","allClusters", '.pdf', sep='') },
     content = function(file) {
       ggsave(file, plot = selectGenePlotInput(all=TRUE), device = "pdf", width = 30, height = 5, limitsize = FALSE)
     }
@@ -324,7 +374,7 @@ server <- function(input, output, session) {
     }else{
       orgChoice <- paste0("&org=",org)
     }
-    gene <- mygene()
+    gene <- mygene()$gene
     url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?",orgChoice,"&db=",db,"&singleSearch=knownCanonical&position=", gene)
     return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default", id = "UCSC" ) )
   })
