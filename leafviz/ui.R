@@ -268,7 +268,8 @@ hr {
             p( "This R", tags$a(href="https://shiny.rstudio.com","Shiny", target = "_blank"), 
                "app presents and visualises the results of running",
                a(href="https://github.com/davidaknowles/leafcutter", "Leafcutter,", target = "_blank"),
-               "a software package that quantifies RNA-seq splicing in an annotation-free way.", 
+               "a software package that quantifies RNA-seq splicing in an annotation-free way - ", 
+               strong( a(href="http://www.biorxiv.org/content/early/2016/03/16/044107", "read the paper.", target = "_blank")),
                "Full documentation of the package is available", a(href="http://davidaknowles.github.io/leafcutter/", "here.", target = "_blank") 
               ),
             h2( "Differential splicing events"),
