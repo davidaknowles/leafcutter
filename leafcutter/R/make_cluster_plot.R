@@ -211,7 +211,9 @@ make_cluster_plot <- function(
     #print(allEdges)
     #print(allEdgesP)
     #print(max(c(max(allEdges$SIZE), max(allEdgesP$SIZE))))
-    if (is.na(main_title) | !first_plot) new_theme_empty$plot.title <- element_blank()
+    if ( is.na(main_title) | !first_plot){
+      new_theme_empty$plot.title <- element_blank()
+    }
     first_plot=F
 
     # YLIMN=8 # set as 8
@@ -490,7 +492,9 @@ make_cluster_plot <- function(
   }
 
   
-  if (!is.na(main_title)) plots[[1]] = plots[[1]] + ggtitle(main_title)
+  if (!is.na(main_title)){ plots[[1]] = plots[[1]] + ggtitle(main_title) +
+    theme(plot.title = element_text(face="bold.italic", colour="black", size = 20))
+  }
   # arrange plots
   #do.call( gridExtra::grid.arrange, c(plots, list(ncol=1)))
   # only if no SNP is present
