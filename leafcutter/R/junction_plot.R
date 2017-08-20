@@ -21,7 +21,7 @@
 make_differential_splicing_plot=function(y, x=numeric(nrow(y))+1, exons_table=NULL, len=500, length_transform=function(g) log(g+1), main_title=NA, snp_pos=NA, summary_func=colMeans, legend_title="Mean count") {
 
   # convert colnames(y) into meta data
-  intron_meta=leafcutter:::get_intron_meta(colnames(y))
+  intron_meta=get_intron_meta(colnames(y))
 
   new_theme_empty <- theme_bw(base_size = 16)
   new_theme_empty$line <- element_blank()
