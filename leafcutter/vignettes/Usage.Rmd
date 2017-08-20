@@ -107,12 +107,11 @@ RNA.NA06989_CEU.chr1.bam CEU
 RNA.NA06994_CEU.chr1.bam CEU
 ```
 
-Having made that file we can run DS (this assumes you have successfully installed the `leafcutter` R package as described under Installation above) 
+Having made that file we can run DS (this assumes you have successfully installed the `leafcutter` R package as described under Installation above)
 ```
-../scripts/leafcutter_ds.R --num_threads 4 ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt
+../scripts/leafcutter_ds.R --num_threads 4 --exons_file=../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt
 ```
-
-Running `../scripts/leafcutter_ds.R -h` will give usage info for this script. 
+Running `../scripts/leafcutter_ds.R -h` will give usage info for this script. Here have included an `exons_file`: this is optional but allows LeafCutter to annotate clusters according to which gene they correspond to. An example exon file for `hg19` derived from GENCODE v19 is included with LeafCutter. The exons file should have the following columns: chr, start, end, strand, gene_name. We provide a helper script `gtf_to_exons.R` which will convert a `.gtf` to the required format. I'm also hosting the exon file for `GRCh38` GENCODE v.26 [here](http://web.stanford.edu/~dak33/leafcutter/gencode.v26.exons.txt.gz). 
 
 Two tab-separated text files are output:
 
