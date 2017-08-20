@@ -63,6 +63,7 @@ These should all have been installed when you installed leafcutter:
 * gridExtra
 * foreach
 * shinycssloaders
+* gtables
 
 ### Step 0. Generate the annotation files
 
