@@ -8,12 +8,14 @@ library(gridExtra)
 library(intervals) # needed for pretty strand arrow placement
 library(foreach)
 library(shinycssloaders)
+library(grid)
+library(gtable)
 #data.table is required
 # library(shinyjs)
 # for debugging
 #options(shiny.trace=TRUE)
-options(shiny.reactlog=TRUE)
-# load("example/Brain_vs_Heart_results.Rdata")
+# options(shiny.reactlog=TRUE)
+# # load("example/Brain_vs_Heart_results.Rdata")
 source("../leafcutter/R/make_cluster_plot.R")
 source("../leafcutter/R/make_gene_plot.R")
 #make_gene_plot("MEG3", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot)
@@ -221,7 +223,15 @@ server <- function(input, output, session) {
     filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '.pdf') },
     content = function(file) {
       plotTitle <- paste(mydata()$gene, mydata()$cluster )
-      ggsave(file, plot = selectClusterPlotInput(title = plotTitle ), device = "pdf", width = 10, height = 5 )
+      ggsave(file, 
+             plot = make_cluster_plot( mydata()$cluster,
+                                  main_title = plotTitle,
+                                  meta = meta,
+                                  cluster_ids = cluster_ids,
+                                  exons_table = exons_table,
+                                  counts = counts,
+                                  introns = introns),
+             device = "pdf", width = 10, height = 5 )
     }
   )
   
@@ -229,9 +239,58 @@ server <- function(input, output, session) {
     filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '_table.pdf') },
     content = function(file) {
       plotTitle <- paste(mydata()$gene, mydata()$cluster )
-      clusterPlot <- selectClusterPlotInput(title=plotTitle)
-      tablePlot <- tableGrob(filter_intron_table(introns, mydata()$cluster, toSave=TRUE) )
-      ggsave(file, plot = grid.arrange(clusterPlot, tablePlot, nrow =2),
+      clusterPlot <- make_cluster_plot( mydata()$cluster,
+                                        main_title = plotTitle,
+                                        meta = meta,
+                                        cluster_ids = cluster_ids,
+                                        exons_table = exons_table,
+                                        counts = counts,
+                                        introns = introns)
+      # make table theme
+      tableTheme <- ttheme_minimal(
+        core=list(bg_params = list(fill = c("whitesmoke","white"), col=NA)
+        ),
+        colhead=list(fg_params=list(col="black", fontface="bold"),
+                     bg_params = list(fill="white")),
+        rowhead=list(fg_params=list(col="black"), 
+                     bg_params = list(fill=c("white", "whitesmoke"))))
+      
+      mytable <- tableGrob(filter_intron_table(introns, mydata()$cluster, toSave=TRUE), theme = tableTheme )
+      mycols <- ncol(mytable)
+      mytable$widths <- unit( c( 1/(3*mycols), rep(1/mycols, mycols-1) ), "npc")
+
+      ## add vertical lines on the left side of columns (after 2nd)
+      # separators <- replicate(nrow(mytable),
+      #                         segmentsGrob(
+      #                           x0 = unit(0,"npc"),
+      #                           y0 = unit(0,"npc"),
+      #                           x1 = unit(1,"npc"),
+      #                           y1 = unit(0,"npc"),
+      #                           gp = gpar(lwd = 1.0, col= "gray")
+      #                           #gp = gpar(lwd = 2.0, col = c("gray", rep("gray", nrow(mytable) -1)) )
+      #                         ),
+      #                         simplify=FALSE)
+      # mytable <- gtable::gtable_add_grob(mytable, grobs = separators,
+      #                                    t = seq_len(nrow(mytable)), b = 1, l = 1, r = mycols)
+      mytable <- gtable_add_grob(mytable,
+                           grobs = segmentsGrob( # line across the bottom
+                             x0 = unit(0,"npc"),
+                             y0 = unit(0,"npc"),
+                             x1 = unit(1,"npc"),
+                             y1 = unit(0,"npc"),
+                             gp = gpar(lwd = 2.0)),
+                           t = 2, b = nrow(mytable), l = 1, r = mycols)
+
+      mytable <- gtable_add_grob(mytable,
+                                 grobs = segmentsGrob( # line across the bottom
+                                   x0 = unit(0,"npc"),
+                                   y0 = unit(0,"npc"),
+                                   x1 = unit(1,"npc"),
+                                   y1 = unit(0,"npc"),
+                                   gp = gpar(lwd = 2.0)),
+                                 t = 1, b = 1, l = 1, r = mycols)
+
+      ggsave(file, plot = grid.arrange(clusterPlot, mytable, nrow =2),
            device = "pdf", width = 10, height = 8 )
     }
   )
@@ -239,7 +298,9 @@ server <- function(input, output, session) {
   output$downloadGenePlot <- downloadHandler(
     filename = function() { paste( mydata()$gene,"_","allClusters", '.pdf', sep='') },
     content = function(file) {
-      ggsave(file, plot = selectGenePlotInput(all=TRUE), device = "pdf", width = mydata()$width, limitsize = FALSE)
+      ggsave(file, 
+             plot = make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot), 
+             device = "pdf", width = ifelse( mydata()$width == "auto", yes = 10, no = mydata()$width / 100 ), height = 6, units = "in", limitsize = FALSE)
     }
   )
   
