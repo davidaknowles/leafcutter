@@ -16,8 +16,8 @@ library(gtable)
 #options(shiny.trace=TRUE)
 # options(shiny.reactlog=TRUE)
 # # load("example/Brain_vs_Heart_results.Rdata")
-source("../leafcutter/R/make_cluster_plot.R")
-source("../leafcutter/R/make_gene_plot.R")
+#source("../leafcutter/R/make_cluster_plot.R")
+#source("../leafcutter/R/make_gene_plot.R")
 #make_gene_plot("MEG3", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot)
 
 
