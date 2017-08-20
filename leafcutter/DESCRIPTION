@@ -29,7 +29,8 @@ Imports:
 	shiny,
 	DT,
 	intervals,
-	shinycssloaders
+	shinycssloaders,
+	gtable
 LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
 RoxygenNote: 6.0.1
