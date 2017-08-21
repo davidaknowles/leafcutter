@@ -10,15 +10,17 @@ library(foreach)
 library(shinycssloaders)
 library(grid)
 library(gtable)
+library(ggrepel)
 #data.table is required
 # library(shinyjs)
 # for debugging
 #options(shiny.trace=TRUE)
 # options(shiny.reactlog=TRUE)
-# # load("example/Brain_vs_Heart_results.Rdata")
-#source("../leafcutter/R/make_cluster_plot.R")
-#source("../leafcutter/R/make_gene_plot.R")
-#make_gene_plot("MEG3", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot)
+#load("example/Brain_vs_Heart_results.Rdata")
+source("../leafcutter/R/make_cluster_plot.R")
+source("../leafcutter/R/make_gene_plot.R")
+#make_gene_plot("MICAL3", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = "clu_36585", introns_to_plot = introns_to_plot)
+#make_gene_plot("MICAL3",counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot) 
 
 
 
@@ -43,7 +45,7 @@ getGeneLength <- function(gene_name){
   geneStart <- min(exons$start)
   geneEnd <- max(exons$end)
   geneLength <- geneEnd - geneStart
-  print(geneLength)
+  #print(geneLength)
   if( geneLength >1E6){
     pixels <- 5000 # scales RBFOX1 to 5000px
   }
@@ -56,7 +58,7 @@ getGeneLength <- function(gene_name){
   if( geneLength <= 1.5e5){
     pixels <- "auto"
   }
-  print(pixels)
+  #print(pixels)
   return(pixels)
 }
 # test
@@ -164,9 +166,9 @@ server <- function(input, output, session) {
   values <- reactiveValues(default = defaultValue) # RBFOX1 in the Brain vs Heart dataset
   # REACTIVE VALUE IS UPDATED BY INPUT
   observeEvent(input$all_clusters_rows_selected,{
-    print("new row selected!")
+    #print("new row selected!")
     values$default <- input$all_clusters_rows_selected # if all_clusters_rows_selected changes then update value - this sets everything!
-    print(paste0("VALUE: ", values$default ))
+    #print(paste0("VALUE: ", values$default ))
   })
   
   # USE REACTIVE VALUE TO GENERATE ALL VARIABLES NEEDED
@@ -185,9 +187,10 @@ server <- function(input, output, session) {
   # PLOTTING
   
   output$select_cluster_plot <- renderPlot({
+    plotTitle <- c(mydata()$gene, as.character(mydata()$cluster) )
     suppressWarnings( print(
       make_cluster_plot( mydata()$cluster,
-                       main_title = NA,
+                       main_title = plotTitle,
                        meta = meta,
                        cluster_ids = cluster_ids,
                        exons_table = exons_table,
@@ -222,7 +225,7 @@ server <- function(input, output, session) {
   output$downloadClusterPlot <- downloadHandler(
     filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '.pdf') },
     content = function(file) {
-      plotTitle <- paste(mydata()$gene, mydata()$cluster )
+      plotTitle <- c(mydata()$gene, as.character(mydata()$cluster) )
       ggsave(file, 
              plot = make_cluster_plot( mydata()$cluster,
                                   main_title = plotTitle,
@@ -238,7 +241,7 @@ server <- function(input, output, session) {
   output$downloadClusterPlotWithTable <- downloadHandler(
     filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '_table.pdf') },
     content = function(file) {
-      plotTitle <- paste(mydata()$gene, mydata()$cluster )
+      plotTitle <- c(mydata()$gene, as.character(mydata()$cluster ) )
       clusterPlot <- make_cluster_plot( mydata()$cluster,
                                         main_title = plotTitle,
                                         meta = meta,
@@ -259,19 +262,6 @@ server <- function(input, output, session) {
       mycols <- ncol(mytable)
       mytable$widths <- unit( c( 1/(3*mycols), rep(1/mycols, mycols-1) ), "npc")
 
-      ## add vertical lines on the left side of columns (after 2nd)
-      # separators <- replicate(nrow(mytable),
-      #                         segmentsGrob(
-      #                           x0 = unit(0,"npc"),
-      #                           y0 = unit(0,"npc"),
-      #                           x1 = unit(1,"npc"),
-      #                           y1 = unit(0,"npc"),
-      #                           gp = gpar(lwd = 1.0, col= "gray")
-      #                           #gp = gpar(lwd = 2.0, col = c("gray", rep("gray", nrow(mytable) -1)) )
-      #                         ),
-      #                         simplify=FALSE)
-      # mytable <- gtable::gtable_add_grob(mytable, grobs = separators,
-      #                                    t = seq_len(nrow(mytable)), b = 1, l = 1, r = mycols)
       mytable <- gtable_add_grob(mytable,
                            grobs = segmentsGrob( # line across the bottom
                              x0 = unit(0,"npc"),
@@ -306,6 +296,7 @@ server <- function(input, output, session) {
   
   # UCSC LINKS
   output$viewClusterUCSC <- renderUI({
+    coord <- mydata()$coord
     db <- strsplit(basename(annotation_code), split = "_")[[1]][2]
     # guess species from genome build - if not possible then leave blank.
     org <- NULL
@@ -316,7 +307,7 @@ server <- function(input, output, session) {
     }else{
       orgChoice <- paste0("&org=",org)
     }
-    coord <- mydata()$coord
+
     # zoom out the position a bit
     chr <- strsplit(coord, ":")[[1]][1]
     start <- as.numeric(strsplit( strsplit(coord, ":")[[1]][2], "-" )[[1]][1])
@@ -325,7 +316,7 @@ server <- function(input, output, session) {
     end <- end + 100
     coord <- paste0(chr, ":", as.character(start), "-", as.character(end))
     url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?", orgChoice, "&db=",db,"&position=", coord )
-    return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default shiny-download-link  shiny-bound-output", id = "UCSC" ) )
+    return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default", id = "UCSC" ) )
     })
   
   output$viewGeneUCSC <- renderUI({

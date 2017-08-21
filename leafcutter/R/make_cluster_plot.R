@@ -16,8 +16,10 @@ make_cluster_plot <- function(
   
   if( is.null(cluster_to_plot)){
     print("no cluster selected!")
-    grid.arrange(tableGrob("hello there"))
+    #grid.arrange(tableGrob("hello there"))
   }
+  #for testing!
+  #cluster_to_plot <- "clu_8845"
   
   meta$group=as.factor(meta$group)
   group_names=levels(meta$group)
@@ -279,8 +281,8 @@ make_cluster_plot <- function(
       geom_hline(yintercept=0,alpha=.9, size=1) +
 
       # label the junctions
-      geom_label(data=allEdgesP,aes(x=xtext,y=0.95*ytext,label=label), size = labelTextSize, label.size = 0, parse=TRUE, fill = "white",colour = "black", label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") ) +
-      geom_label(data=allEdges,aes(x=xtext,y=0.95*ytext,label=label), size= labelTextSize, label.size = 0, parse=TRUE, fill = "white", colour = "black", label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") ) +
+      geom_label(data=allEdgesP,aes(x=xtext,y=0.95*ytext,label=label), size = labelTextSize, label.size = NA, parse=TRUE, fill = "white",colour = "black", label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") ) +
+      geom_label(data=allEdges,aes(x=xtext,y=0.95*ytext,label=label), size= labelTextSize, label.size = NA, parse=TRUE, fill = "white", colour = "black", label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") ) +
       #
       ylim(YLIMN,YLIMP) +
       scale_size_continuous(limits=c(0,10),guide='none')
@@ -309,6 +311,8 @@ make_cluster_plot <- function(
   if (!is.null(exons_table)) {
     exons_chr <- exons_table[exons_table$chr==intron_meta$chr[1],] # subset by chr
     exons_here <- exons_chr[ ( min(s) <= exons_chr$start & exons_chr$start <= max(s) ) | ( min(s) <= exons_chr$end & exons_chr$end <= max(s) ), ] # find exons
+    
+    #print(exons_here)
     
     #return(list(intron_meta, exons_here))
     # remove exons that don't actually start or end with a junction
@@ -491,9 +495,16 @@ make_cluster_plot <- function(
     }
   }
 
-  
-  if (!is.na(main_title)){ plots[[1]] = plots[[1]] + ggtitle(main_title) +
-    theme(plot.title = element_text(face="bold.italic", colour="black", size = 20))
+  # for downloading - give a main_title argument, ideally a vector of c(gene_name, cluster_name)
+  if( all( !is.na(main_title) ) ){
+    #print(main_title)
+    if( length(main_title) > 1){
+    plots[[1]] <- plots[[1]] + ggtitle(main_title[1],subtitle = main_title[2]) +
+    theme(plot.title = element_text(face="bold.italic", colour="black", size = 15, hjust = 0.45), # centre titles - account for xlabels
+          plot.subtitle = element_text(hjust = 0.45))
+    }else{
+    plots[[1]] = plots[[1]] + ggtitle(main_title) 
+    }
   }
   # arrange plots
   #do.call( gridExtra::grid.arrange, c(plots, list(ncol=1)))
@@ -506,3 +517,4 @@ make_cluster_plot <- function(
 
   }
   
+

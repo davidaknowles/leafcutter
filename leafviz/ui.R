@@ -78,7 +78,7 @@ hr {
   border-radius: 25px;
   padding: 10px;
   margin-top: 0px;
-  overflow: scroll;
+  overflow: auto;
 }
 
 #clusterView {
@@ -185,7 +185,7 @@ hr {
               div(id="clusterView",
                 h4(id="title","Splicing event visualization"),
                 hr(),
-                h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
+                #h4(id="title", strong(  em( textOutput("gene_title") ) ), textOutput("cluster_title"), align = "left"),
                 div(
                   withSpinner(plotOutput("select_cluster_plot", width = "100%") )
                 ),
@@ -193,8 +193,8 @@ hr {
                 hr(),
                 div(class = "download_btn",
                     downloadButton("downloadClusterPlot", label = "save plot", class = NULL),
-                    downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL)#,
-                    #            htmlOutput("viewClusterUCSC", inline = TRUE) # CAUSING STALLING BUG?
+                    downloadButton("downloadClusterPlotWithTable", label = "save plot + table", class = NULL),
+                               htmlOutput("viewClusterUCSC", inline = TRUE) # CAUSING STALLING BUG?
                 )
               )
           )

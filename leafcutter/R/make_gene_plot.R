@@ -4,6 +4,36 @@
 #' Take a gene name or ID, search the counts matrix for all clusters that fall within that gene's boundaries (found from the exon table). 
 #' @import ggplot2
 #' @export
+
+# # 
+# gene_name <- "RILPL1"
+# clusterID <- NULL
+# min_exon_length <- 0.5
+# cluster_list <- clusters
+# # for testing - create interval plot of a given dataframe
+# # int <- function(data, print_length = NULL){
+#   if("start" %in% names(data) ){
+#     intMatrix <- matrix(data = c(data$start, data$end), ncol = 2 )
+#     if( !is.null(print_length)){
+#       row.names(intMatrix) <- data$end - data$start
+#     }
+#   }else{
+#     intMatrix <- matrix(data = c(data$x, data$xend), ncol = 2 )
+#     if( !is.null(print_length)){
+#       row.names(intMatrix) <- data$xend - data$x
+#     }
+#   }
+#   if( !is.null(print_length)){
+#     plot(Intervals(intMatrix), use_points = FALSE, lwd = 2.0, use_names = TRUE)
+#     print(intMatrix)
+#   }else{
+#     plot(Intervals(intMatrix), use_points = FALSE, lwd = 2.0)
+# 
+#   }
+#   return( intMatrix )
+# }
+
+
 make_gene_plot <- function(gene_name,
                            clusterID=NULL,
                            cluster_list=NULL,
@@ -18,6 +48,8 @@ make_gene_plot <- function(gene_name,
                            summary_func=colSums,
                            legend_title="Mean counts"){
   
+  exonMax <- 1000
+  
   stopifnot( !is.null(exons_table) )
   stopifnot( !is.null(introns_to_plot))
   # only get the exons of the gene of interest - no overlapping genes!
@@ -30,12 +62,12 @@ make_gene_plot <- function(gene_name,
   
   # subset out the introns to plot based on whether they fall within the coordinates
 
-  clusters <- introns_to_plot[ introns_to_plot$start >= gene_start & introns_to_plot$end <= gene_end & introns_to_plot$chr == unique(exons$chr) , ]
-  cluster_ids <- introns_to_plot[ introns_to_plot$start >= gene_start & introns_to_plot$end <= gene_end& introns_to_plot$chr == unique(exons$chr) , ]$clu 
+  myclusters <- introns_to_plot[ introns_to_plot$start >= gene_start & introns_to_plot$end <= gene_end & introns_to_plot$chr == unique(exons$chr) , ]
+  cluster_ids <- myclusters$clu 
   
-  #return(list(clusters,cluster_ids))
+  #return(list(myclusters,cluster_ids))
   
-  stopifnot( nrow( clusters) > 0 )
+  stopifnot( nrow( myclusters) > 0 )
   
   if( !is.null(clusterID)){
     stopifnot( clusterID %in% cluster_ids)
@@ -47,42 +79,44 @@ make_gene_plot <- function(gene_name,
   # remove duplicates
   exons <- exons[ !duplicated(paste( exons$start, exons$end)) ,]
   # remove exons over 500bp in length
-  exons <- exons[ exons$end - exons$start <= 500,]
+  exons <- exons[ exons$end - exons$start <= exonMax,]
   # sort by end
   exons <- exons[ order(exons$end),]
-  # for each cluster, remove any exon that fall with the cluster but are not connected by any junctions
-  toDiscard <- c()
-  for( clu in unique(cluster_ids) ){
-    #print(clu)
-    clusterMin <- min(clusters[clusters$clu == clu,]$start)
-    clusterMax <- max(clusters[clusters$clu == clu,]$end)
-    clusterExons <- exons[ exons$end >= clusterMin & exons$start <= clusterMax,]
-    notConnected <- clusterExons[ !(clusterExons$end %in% clusters[clusters$clu == clu,]$start |
-                                 clusterExons$start %in% clusters[clusters$clu == clu,]$end), ]
-    toDiscard <- c(toDiscard, paste(notConnected$start, notConnected$end))
-    
-  }
-  to_keep=!(paste(exons$start, exons$end) %in% toDiscard)
-  if (sum(to_keep) > 2)
-    exons <- exons[ to_keep, ]
-  
+  # for each cluster, remove any exon that fall within the cluster but are not connected by any junctions
+  # if they don't fall inside then ignore
+  # 20/08/17 - MAY BE TOO STRICT DUE TO OVERLAPPING myclusters - REMOVE FOR NOW
+  # toDiscard <- c()
+  # for( clu in unique(cluster_ids) ){
+  #   #print(clu)
+  #   clusterMin <- min(myclusters[myclusters$clu == clu,]$start)
+  #   clusterMax <- max(myclusters[myclusters$clu == clu,]$end)
+  #   clusterExons <- exons[ exons$end >= clusterMin & exons$start <= clusterMax,]
+  #   notConnected <- clusterExons[ !(clusterExons$end %in% myclusters[myclusters$clu == clu,]$start |
+  #                                clusterExons$start %in% myclusters[myclusters$clu == clu,]$end), ]
+  #   toDiscard <- c(toDiscard, paste(notConnected$start, notConnected$end))
+  #   
+  # }
+  # to_keep=!(paste(exons$start, exons$end) %in% toDiscard)
+  # if (sum(to_keep) > 2){
+  #   exons <- exons[ to_keep, ]
+  # }
   # constitutive introns that connect each exon
   # NO LONGER USED - MAY COME BACK IN 
   # exon_junctions <- data.frame( start = c(NA, exons$end), end = c(exons$start, NA)  )
   # exon_junctions <- exon_junctions[ !is.na(exon_junctions$start) & !is.na(exon_junctions$end),]
-  # # remove exon-exon junctions that are found in the clusters
-  # exon_junctions <- exon_junctions[ !(exon_junctions$start %in% clusters$start) & !(exon_junctions$end %in% clusters$end), ]
+  # # remove exon-exon junctions that are found in the myclusters
+  # exon_junctions <- exon_junctions[ !(exon_junctions$start %in% myclusters$start) & !(exon_junctions$end %in% myclusters$end), ]
   # 
-  # even_junctions <- clusters[seq(2,nrow(clusters), 2),]
-  # odd_junctions <- clusters[seq(1,nrow(clusters), 2),]
+  # even_junctions <- myclusters[seq(2,nrow(myclusters), 2),]
+  # odd_junctions <- myclusters[seq(1,nrow(myclusters), 2),]
 
   # # plot the normal values - no scaling applied!
 
   
   # SCALE JUNCTIONS
   
-  clusters$id <- "cluster"
-  all_junctions <- clusters[, c("start","end", "clu")]
+  myclusters$id <- "cluster"
+  all_junctions <- myclusters[, c("start","end", "clu")]
   
   # SCALE EXONS WITH SAME METHOD AS JUNCTIONS
   exons$clu <- row.names(exons)
@@ -108,8 +142,8 @@ make_gene_plot <- function(gene_name,
   exons_here <- exons
   exons_here$gene_name=factor(exons_here$gene_name)
 
-  # currently if a coordinate falls outside of the clusters then it is converted to the minimum or maximum
-  # this removes exons that fall outside the clusters so fix this
+  # currently if a coordinate falls outside of the myclusters then it is converted to the minimum or maximum
+  # this removes exons that fall outside the myclusters so fix this
   invert_mapping=function(pos, s, coords, xlim){
     if (pos %in% s) coords[as.character(pos)] else
       if (pos < min(s)) xlim[1] else
@@ -135,10 +169,7 @@ make_gene_plot <- function(gene_name,
   
   # if exons fall upstream of the first cluster
   upstream_exons <- exons_here[ exons_here$start < min(s),]
-  
-  #print("upstream exons")
-  #print(upstream_exons)
-  
+
   if( nrow(upstream_exons) > 0){
     upstream_s <- c( min(upstream_exons$start), max(upstream_exons$end))
     upstream_coords <- c( -length_transform( upstream_s[2] - upstream_s[1] ), 0) # fit all exons within this space
@@ -195,9 +226,9 @@ make_gene_plot <- function(gene_name,
   # HARD CODED PLOT SETTINGS 
   
   YLIMN=1000 # 8
-  YLIMP=-700  # -9
+  YLIMP=-1000  # -9
   # plot junctions as curves
-  curv = 0.25 # normally 0.5
+  curv = 0.35 # normally 0.5
   curveMax = 0.1
   curveExponent = 2
   yOffset = 0
@@ -310,6 +341,8 @@ make_gene_plot <- function(gene_name,
     label_df$FDR <- cluster_list$FDR[ match( label_df$clu, cluster_list$clusterID)]
     label_df$FDR[ is.na(label_df$FDR)] <- "."
     label_df$label <- paste0( label_df$clu, "\n", label_df$FDR )
+    # save space - remove the \n.
+    label_df$label <- gsub( "\n.$", "", label_df$label)
   }
     #print(label_df)
   
@@ -464,7 +497,7 @@ make_gene_plot <- function(gene_name,
       #ylab(paste0(tis," (n=",group_sample_size,")")) + 
       xlab("") + 
       ylab("") +
-      xlim(my_xlim) +
+      #xlim(my_xlim) +
       # try titling instead - why doesn't this work?
       #ggtitle(paste0(tis," (n=",group_sample_size,")" ) ) + 
       
@@ -493,7 +526,7 @@ make_gene_plot <- function(gene_name,
 #                    aes(x,y,label=label ),colour = "black"
 #         ) + 
         ggtitle( paste(gene_name_df$label, collapse = "+") ) +
-        theme(plot.title = element_text(face="bold.italic", colour="black", size = 20)) +
+        theme(plot.title = element_text(face="bold.italic", colour="black", size = 20) ) +
       # EXONS
       geom_segment( data=exon_df, aes(x=x,y=y,xend=xend,yend=yend ), alpha=1, size=6, colour = 'black' )      
       
@@ -526,27 +559,84 @@ make_gene_plot <- function(gene_name,
       geom_segment( data = exon_df, aes(x = xend, xend=xend + 0.05, y = 0, yend = 0), colour = "white", size = 6 ) +
       geom_segment( data = exon_df, aes(x = x, xend=x - 0.05, y = 0, yend = 0), colour = "white", size = 6 ) 
     
+
     
-    
-    
-    # LABEL CLUSTERS
-    label_max <- YLIMN - 0.2*YLIMN # how far down the labels should 
+    #return(label_df)
+    # LABEL clusters
+    #label_max <- c(YLIMN - 0.2*YLIMN)#, YLIMP - 0.2*YLIMP) # how far down the labels should go 
     label_df$label <- gsub("_", "\n", label_df$label)
+    label_df <- label_df[ order(label_df$middle),]
+    # alternate labels as up or down
+    label_df$labelY <- 0 
+    label_df$labelY[seq(1,nrow(label_df), 2)] <- YLIMN - 0.2*YLIMN
+    # in case of only one label
+    if( nrow(label_df) > 1){
+      label_df$labelY[ seq(2, nrow(label_df), 2)] <- YLIMP - 0.2*YLIMP
+    }
+   # print("plot")
+   ## grid.ls(grid.force(ggplotGrob(plots)) )
+   #  
+   #  p1 <- plots + geom_text_repel( data = label_df, aes( x = middle, y = labelY, label = label), point.padding = NA, direction = "x" )
+   #  
+   #  #print(p1)
+   #  #grid.force()
+   #  #grid.newpage()
+   #  print("plot with repelled labels")
+   #  #grid.ls(grid.force(ggplotGrob(p1)) )
+   #  #g <- ggplotGrob(p1)
+   #  #grid.force(g)
+   #  
+   #  # work out the repelled label coordinates - taken from https://github.com/slowkow/ggrepel/issues/24 and https://stackoverflow.com/questions/45065567/getting-coordinates-for-the-label-locations-from-ggrepel
+   #  # Get new x positions of all labels - done by ggrepel
+   #  xrg <- ggplot_build(p1)$layout$panel_ranges[[1]]$x.range
+   #  
+   #  #print(xrg)
+   #  #print(grid.ls(g))
+   #  #kids <- childNames(grid.get(gTree = grid.force(ggplotGrob(p1)), gPath = "textrepeltree", grep = TRUE))
+   #  
+   #  kids <- childNames( getGrob( grid.force(ggplotGrob(p1)), "textrepeltree", grep = TRUE) )
+   #  #print(grid.ls(getGrob( grid.force(ggplotGrob(p1)), "textrepeltree", grep = TRUE)))
+   #  #print(grid.ls( grid.force(ggplotGrob(p1))) )
+   # 
+   #  
+   # # print( grid.get(kids) )
+   #  
+   #  # Function: get the x and y positions of a single ggrepel label
+   #  get.x.pos.labs <- function(n) {
+   #    #grb <- getGrob(grid.force(ggplotGrob(p1)), n)
+   #    grb <- grid.gget(n, global=TRUE)
+   #    print(grb$x)
+   #    grb <- grid.get(n,global=TRUE)
+   #    print(grb$x)
+   #    grb <- getGrob(grid.force(ggplotGrob(p1)), n, strict = TRUE,grep = FALSE, global = TRUE)
+   #    grb <- grid.get(n, allDevices = TRUE)
+   #    #data.frame(
+   #      #x = xrg[1]+diff(xrg)*convertX(grb$x, "native", valueOnly = TRUE)
+   #      #y = yrg[1]+diff(yrg)*convertY(grb$y, "native", valueOnly = TRUE)
+   #   # )
+   #  }
+   #  repelled_x <- do.call(rbind, lapply(kids, get.x.pos.labs))
+   #  # use this for the dotted lines and points as well - everything looks nice!
+   #  label_df$newMiddle <- repelled_x$x
+
     plots <- plots +
       # add dotted lines to indicate the regions that belong to each cluster
-      geom_segment( data = label_df, aes( x = start, xend = middle, y = 0, yend = label_max ), colour = "gray", linetype = 3) +
-      geom_segment( data = label_df, aes( x = end, xend = middle, y = 0, yend = label_max ), colour = "gray", linetype = 3) +
-      # label clusters
-      geom_point( data = label_df, aes( x = middle, y = label_max), colour = "white", size = 22) +
-      geom_text( data = label_df, aes( x = middle, y = label_max, label = label)) +
-      
-      #theme(legend.position="bottom", legend.justification = 'right')
-      theme(legend.justification=c(1,0), legend.position=c(1,0)) # stick legend inside plot
+      geom_segment( data = label_df, aes( x = start, xend = middle, y = 0, yend = labelY ), colour = "gray", linetype = 3) +
+      geom_segment( data = label_df, aes( x = end, xend = middle, y = 0, yend = labelY ), colour = "gray", linetype = 3) +
+      # give each cluster a white circle behind 
+      geom_point( data = label_df, aes( x = middle, y = labelY), colour = "white", size = 22)
+
     # if a particular cluster is selected then give a border
     if( !is.null(clusterID) ){
-      plots <- plots + 
-        geom_label( data = label_df[ label_df$clu == clusterID,],  aes( x = middle, y = label_max, label = label ), fontface = "bold", label.size = 0.5, label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") )
+      plots <- plots +
+        geom_text_repel( data = label_df[ label_df$clu != clusterID,], aes( x = middle, y = labelY, label = label ), point.padding = NA, direction = "y", segment.alpha = 0 ) +
+        geom_label( data = label_df[ label_df$clu == clusterID,],  
+                    aes( x = middle, y = labelY, label = label ), fontface = "bold", 
+                    label.size = 0.5, label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") ) 
+    }else{
+     plots <- plots + geom_text_repel( data = label_df, aes( x = middle, y = labelY, label = label ), point.padding = NA, direction = "y", segment.alpha = 0 )
     }
+    
     #print("gene plot:")    
     #print(exon_df)
     # toReturn <-  list( plot = plots, geneLength = geneLength)
