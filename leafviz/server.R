@@ -13,15 +13,15 @@ library(gtable)
 library(ggrepel)
 #data.table is required
 # library(shinyjs)
-# for debugging
+#### options for debugging
 #options(shiny.trace=TRUE)
 # options(shiny.reactlog=TRUE)
 #load("example/Brain_vs_Heart_results.Rdata")
-source("../leafcutter/R/make_cluster_plot.R")
-source("../leafcutter/R/make_gene_plot.R")
+#source("../leafcutter/R/make_gene_plot.R")
 #make_gene_plot("MICAL3", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = "clu_36585", introns_to_plot = introns_to_plot)
 #make_gene_plot("MICAL3",counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot) 
-
+#source("../leafcutter/R/make_cluster_plot.R")
+#make_cluster_plot( "clu_8845",main_title = c("RILP1", "clu_8845"), meta = meta, cluster_ids = cluster_ids, exons_table = exons_table, counts = counts,introns = introns)
 
 
 filter_intron_table <- function(introns, clu, toSave=FALSE){
@@ -68,6 +68,10 @@ getGeneLength <- function(gene_name){
 if (!exists("introns")){
   load("example/Brain_vs_Heart_results.Rdata")
   defaultValue <- 12 #RBFOX1
+  # for testing - simulate data aligned to genome without "chr" in chr name
+  #introns_to_plot$chr <- gsub("chr","", introns_to_plot$chr)
+  #row.names(counts) <- gsub("chr", "", row.names(counts))
+  
 }else{
   defaultValue <- NULL
 }

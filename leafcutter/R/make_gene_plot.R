@@ -6,12 +6,12 @@
 #' @export
 
 # # 
-# gene_name <- "RILPL1"
+# gene_name <- "ADIPOR2"
 # clusterID <- NULL
 # min_exon_length <- 0.5
 # cluster_list <- clusters
 # # for testing - create interval plot of a given dataframe
-# # int <- function(data, print_length = NULL){
+# int <- function(data, print_length = NULL){
 #   if("start" %in% names(data) ){
 #     intMatrix <- matrix(data = c(data$start, data$end), ncol = 2 )
 #     if( !is.null(print_length)){
@@ -39,7 +39,7 @@ make_gene_plot <- function(gene_name,
                            cluster_list=NULL,
                            introns=NULL,
                            introns_to_plot=NULL,
-                           counts,
+                           counts, # no longer used
                            exons_table=NULL, 
                            len=500,
                            min_exon_length=0.5,
@@ -60,14 +60,21 @@ make_gene_plot <- function(gene_name,
   
   stopifnot( length( unique(exons$chr) ) == 1 )
   
-  # subset out the introns to plot based on whether they fall within the coordinates
+  # if introns_to_plot doesn't have the "chr" in front of chromosome names
+  if( all(grepl("chr", sample(introns_to_plot$chr, 100) )) ){ # if all introns to plot chromosomes have "chr"
+    myChr <- unique(exons$chr)
+  }else{
+    myChr <- gsub( "chr", "", unique(exons$chr) ) # remove the "chr"
+  }
 
-  myclusters <- introns_to_plot[ introns_to_plot$start >= gene_start & introns_to_plot$end <= gene_end & introns_to_plot$chr == unique(exons$chr) , ]
+  
+  # subset out the introns to plot based on whether they fall within the coordinates
+  myclusters <- introns_to_plot[ introns_to_plot$start >= gene_start & introns_to_plot$end <= gene_end & introns_to_plot$chr == myChr , ]
   cluster_ids <- myclusters$clu 
   
   #return(list(myclusters,cluster_ids))
   
-  stopifnot( nrow( myclusters) > 0 )
+  stopifnot( nrow( myclusters) > 0 ) # flagged by asaferali - myclusters has 0 rows but neither exons table nor introns_to_plot are not null
   
   if( !is.null(clusterID)){
     stopifnot( clusterID %in% cluster_ids)
@@ -405,8 +412,8 @@ make_gene_plot <- function(gene_name,
     
     # use intervals package to compute the correct placement of stranding arrows
     exon_intervals <- Intervals( matrix(data = c(exon_df$x, exon_df$xend), ncol = 2) )
-    exon_intervals <- interval_union( exon_intervals )
-    intron_intervals <- interval_complement( exon_intervals )
+    #exon_intervals <- intervals::interval_union( exon_intervals )
+    intron_intervals <- intervals::interval_complement( exon_intervals )
     intron_intervals <- intron_intervals[ 2:(nrow(intron_intervals)-1),]
     # strand arrows should be placed between exons
     #plot(intron_intervals, use_points=FALSE)
