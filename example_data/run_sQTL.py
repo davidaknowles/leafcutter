@@ -11,7 +11,6 @@ def run(cmd, max_minutes = 6000):
                          stderr=subprocess.PIPE,
                          close_fds=True)
 
-
     (file_stdin, file_stdout, file_stderr) = (p.stdin, p.stdout, p.stderr)
 
     t = 0
@@ -24,7 +23,6 @@ def run(cmd, max_minutes = 6000):
         e += file_stderr.read()
     r += file_stdout.read()
     e += file_stderr.read()
-
     
     file_stdin.close()
     #lines = file_stdout.read()
@@ -37,16 +35,6 @@ def run(cmd, max_minutes = 6000):
 
 
 
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     import sys, os
     from optparse import OptionParser
@@ -54,30 +42,28 @@ if __name__ == "__main__":
     parser = OptionParser()
 
     parser.add_option("-o", "--outprefix", dest="outprefix", default = 'leafcutter',
-                      help="output prefix (default leafcutter)")
+                      help="Output prefix (default leafcutter)")
 
     parser.add_option("-t", "--tempdir", dest="tmpdir", default='./tmp/',
-                      help="write to directory (default ./)")
+                      help="Where to output files (default ./)")
 
     parser.add_option("-d", "--leafdir", dest="leafd", default='./',
-                      help="LeafCutter directory")
+                      help="Top-level LeafCutter directory")
     
     parser.add_option("-l", "--maxintronlen", dest="maxintronlen", default = 100000,
-                  help="maximum intron length in bp (default 100,000bp)")
+                  help="Maximum intron length in bp (default 100,000bp)")
 
     parser.add_option("-m", "--minclureads", dest="minclureads", default = 30,
-                  help="minimum reads in a cluster (default 30 reads)")
+                  help="Minimum reads in a cluster (default 30 reads)")
 
     parser.add_option("-p", "--mincluratio", dest="mincluratio", default = 0.001,
-                  help="minimum fraction of reads in a cluster that support a junction (default 0.001)")
+                  help="Minimum fraction of reads in a cluster that support a junction (default 0.001)")
 
-    parser.add_option("-a", "--annot", dest="annotation", default = "gencode.v19.annotation.gtf.gz",
-                  help="path of annotation file e.g. ~/tools/leafcutter/clustering/gencode.v19.annotation.gtf.gz")
+    parser.add_option("-a", "--annot", dest="annotation", default = None,
+                  help="[optional] Path of annotation GTF file e.g. ~/tools/leafcutter/clustering/gencode.v19.annotation.gtf.gz")
 
     parser.add_option("-b", "--bams", dest="bam",
-                  help="bam files")
-
-
+                  help="Text file listing bam files to quantify")
     
     (options, args) = parser.parse_args()
 
@@ -92,11 +78,11 @@ if __name__ == "__main__":
 
     bams = open(options.bam).readlines()
 
-    # create tmp file
+    # create tmp file directory
     try: os.mkdir(options.tmpdir)
     except: pass
 
-    # check samtools
+    # (should check if samtools are installed)
 
     sys.stderr.write("processing bam files...\n")
     fout = file("%s/junction_files.txt"%options.tmpdir,'w')
