@@ -58,6 +58,11 @@ while (<IN>){
       my $sTranscriptID = exists $rhAnnots->{'transcript_id'} ? $rhAnnots->{'transcript_id'} : "";
       my $sTag          = exists $rhAnnots->{'tag'}           ? join("|", @{$rhAnnots->{'tag'}}) : "";
       
+      # Fall back options if gene name is empty
+      unless ($sGeneName){
+         $sGeneName = $sGeneID ? $sGeneID : 'Unknown';
+      }
+      
       # Try to get the biotype; there are differences between gtf versions so let's traverse the various options in order of preference
       my $sBiotype = "";
       if ( exists $rhAnnots->{'transcript_type'} ){
