@@ -88,6 +88,7 @@ if(file.exists(counts_file)){
 if(file.exists(groups_file)){
   cat("Loading metadata from",groups_file,"\n")
   meta <- read.table(groups_file, header=F, stringsAsFactors = F)
+  meta = meta[,1:2]
   colnames(meta)=c("sample","group")
 
   sample_table <- data.frame( group = names(table(meta$group) ), count = as.vector(table(meta$group)) )
