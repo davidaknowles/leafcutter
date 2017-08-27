@@ -124,6 +124,14 @@ results <- fread(results.file, stringsAsFactors = F)
 
 results$FDR <- p.adjust( results$p, method = "fdr")
 
+# If there were no significant results, stop here and provide feedback to the user by printing
+# an error message and writing an empty file indicating that no significant clusters were found at this FDR threshold
+if( !any(results$FDR < FDR_limit, na.rm=T) ){
+   write.table( data.frame(), file=paste0(resultsFolder,"/no-significant-clusters-found.txt"), col.names=FALSE);
+   stop("No significant clusters found\n");
+}
+
+# Gather introns meeting the FDR threshold
 all.introns <- merge(x = results, y = effectSizes, by = "cluster")
 all.introns <- all.introns[ order(all.introns$FDR),]
 
