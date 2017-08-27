@@ -82,7 +82,7 @@ if( !file.exists(system("which bedtools", intern=TRUE) )){
 
 if(file.exists(counts_file)){
   cat("Loading counts from",counts_file,"\n")
-  counts <- read.table(counts_file)
+  counts <- read.table(counts_file, check.names=FALSE)
 }
 
 if(file.exists(groups_file)){
