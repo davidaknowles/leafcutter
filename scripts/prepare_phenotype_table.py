@@ -108,7 +108,7 @@ def main(ratio_file, pcs=50):
             geneRows.append("\t".join([chr_,s,e,chrom]))
             if len(geneRows) % 1000 == 0:
                 sys.stderr.write("Parsed %s introns...\n"%len(geneRows))
-
+                
     for i in fout:
         fout[i].close()
 
@@ -145,6 +145,7 @@ def main(ratio_file, pcs=50):
     sys.stdout.write("Use `sh %s_prepare.sh' to create index for fastQTL (requires tabix and bgzip).\n"%ratio_file)
 
     if pcs>0:
+        matrix = np.transpose(matrix) # important bug fix
         pcs = min([len(header), pcs])
         pca = PCA(n_components=pcs)                                                                                                                                                                            
         pca.fit(matrix)  
@@ -153,6 +154,7 @@ def main(ratio_file, pcs=50):
         pcafile = file(pca_fn,'w')  
         pcafile.write("\t".join(['id']+header)+'\n')
         pcacomp = list(pca.components_)
+    
         for i in range(len(pcacomp)):
             pcafile.write("\t".join([str(i+1)]+[str(x) for x in pcacomp[i]])+'\n')
 
