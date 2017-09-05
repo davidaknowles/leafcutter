@@ -6,7 +6,8 @@
 \usage{
 dirichlet_multinomial_anova_mc(xFull, xNull, y, concShape = 1.0001,
   concRate = 1e-04, robust = T, outlier_prior_a = 1.01,
-  outlier_prior_b = 100, fit_null = NULL, debug = F, ...)
+  outlier_prior_b = 100, fit_null = NULL, debug = F, init = "smart",
+  ...)
 }
 \arguments{
 \item{xFull}{[samples] x [covariates] matrix for the alternative model}
@@ -29,7 +30,9 @@ dirichlet_multinomial_anova_mc(xFull, xNull, y, concShape = 1.0001,
 
 \item{debug}{Whether to give verbose output from rstan.}
 
-\item{...}{will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS).}
+\item{init}{Can be one of {"smart", "random"}. smart uses an method of moments estimator to get a reasonable initialization. The seed for "random" can be set through the ... arguments passed to rstan::optimizing.}
+
+\item{...}{will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS) or the random seed if random initialization is requested.}
 }
 \description{
 Dirichlet multinomial GLM likelihood ratio test for a single cluster
