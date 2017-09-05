@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # MODULES
 use strict;
@@ -43,7 +43,16 @@ HELP
 my %hOut;
 my $nCountSkips = 0;
 my $nCountParse = 0;
-open IN, $ARGV[0] or die "Error: can't open '$ARGV[0]': $!\n";
+
+my $infile=$ARGV[0];
+
+if ($infile =~ /.gz$/) {
+    open(IN, "gunzip -c $infile |") || die "can't open pipe to $infile";
+}
+else {
+    open(IN, $infile) || die "can’t open $infile";
+}
+
 while (<IN>){
    next if (/^\s*$/);
    next if (/^ *#/);
