@@ -10,7 +10,9 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
   make_option(c("-c","--min_coverage"), default=20, help="Require min_samples_per_group samples in each group to have at least this many reads [default %default]"), 
   make_option(c("-t","--timeout"), default=30, help="Maximum time (in seconds) allowed for a single optimization run [default %default]"),
   make_option(c("-p","--num_threads"), default=1, help="Number of threads to use [default %default]"),
-  make_option(c("-e","--exon_file"), default=NULL, help="File defining known exons, example in data/gencode19_exons.txt.gz. Columns should be chr, start, end, strand, gene_name. Optional, only just to label the clusters."))),
+  make_option(c("-e","--exon_file"), default=NULL, help="File defining known exons, example in data/gencode19_exons.txt.gz. Columns should be chr, start, end, strand, gene_name. Optional, only just to label the clusters."),
+  make_option(c("--init"), default="smart", help="One of 'smart' (default) or 'random'."), 
+  make_option(c("--seed"), default=12345, help="Random seed if using random initialization."))),
   positional_arguments = 2)
 
 opt=arguments$opt
@@ -61,7 +63,7 @@ cat("Settings:\n")
 print(opt)
 
 cat("Running differential splicing analysis...\n")
-results <- differential_splicing(counts, numeric_x, confounders=confounders, max_cluster_size=opt$max_cluster_size, min_samples_per_intron=opt$min_samples_per_intron, min_samples_per_group=opt$min_samples_per_group, min_coverage=opt$min_coverage, timeout=opt$timeout) 
+results <- differential_splicing(counts, numeric_x, confounders=confounders, max_cluster_size=opt$max_cluster_size, min_samples_per_intron=opt$min_samples_per_intron, min_samples_per_group=opt$min_samples_per_group, min_coverage=opt$min_coverage, timeout=opt$timeout, init=opt$init, seed=opt$seed ) 
 
 cat("Saving results...\n")
 
