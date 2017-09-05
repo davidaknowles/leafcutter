@@ -45,6 +45,7 @@ make_gene_plot <- function(gene_name,
                            min_exon_length=0.5,
                            main_title=NA,
                            snp_pos=NA,
+                           snp=NA,
                            summary_func=colSums,
                            legend_title="Mean counts"){
   
@@ -134,7 +135,11 @@ make_gene_plot <- function(gene_name,
   length_transform <- function(g) log(g+1)
   m <- reshape2::melt(all_junctions, id.vars = "clu") # melt to get list of all coordinates
   s <- unique(m$value) # get unique start and end values
-  #if (!is.na(snp_pos)) s=c(s,snp_pos)
+  
+  if (!is.na(snp_pos)){
+    SNP_pos <- as.numeric(str_split_fixed(snp_pos, ":",2)[,2])
+    s <- c(s,SNP_pos)
+  }
   s <- sort(s) 
   d <- s[2:length(s)] - s[1:length(s)-1] # get the difference between pairs of coordinates
   trans_d <- length_transform(d) # e.g. log(d+1), sqrt(d), d ^ .33 # apply a trasnformation function - doesn't work on negative numbers!
@@ -143,7 +148,9 @@ make_gene_plot <- function(gene_name,
   total_length=sum(trans_d) # ==max(coords)
   # this is a problem - xlim is set to the total distance between the clusters - not the exons in the gene
   my_xlim=c(-.05*total_length,1.05*total_length)
-  
+  if( !is.na(snp_pos)){
+    snp_coord <- coords[as.character(SNP_pos)]
+  }
   # SCALE EXON COORDINATES
   
   exons_here <- exons
@@ -439,6 +446,14 @@ make_gene_plot <- function(gene_name,
                                y = 0)
     }
     
+    # SNP position
+    if( !is.na(snp_pos)){
+    SNP_df <- data.frame( x=snp_coord - (min_exon_length/2),
+                          xend=snp_coord + (min_exon_length/2),
+                          y=0,
+                          yend=0,
+                          label = snp )
+    }
     #print(strand_df)
     
     #print(allEdgesP)
@@ -461,32 +476,49 @@ make_gene_plot <- function(gene_name,
     #print(exon_df)
     
     
-    plots <- ggplot() + 
+    plots <- ggplot() 
       
-      # cluster junctions
-
-      geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
+      # cluster junctions - if FDR is available then colour
+      if( !is.null(cluster_list)){
+        plots <- plots + geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
                  curvature=curv,lineend="round", colour = junction_colour ) +
-      geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
+        geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
                  curvature=-curv,lineend="round",  colour = junction_colour )
-      
-      if( nrow(  allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,]) > 0  ){
-      
-        # if there are non-significant clusters, then colour  grey
-      plots <- plots +
-      geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
-                 curvature=curv,lineend="round", colour = "gray" )
+        if( nrow(  allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,]) > 0  ){
+          # if there are non-significant clusters, then colour  grey
+          plots <- plots +
+            geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
+                       curvature=curv,lineend="round", colour = "gray" )
+        }
+        
+        if( nrow(  allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] == "." ,]) > 0  ){
+          plots <- plots +
+            geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] == "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
+                       curvature=-curv,lineend="round",  colour = "gray" )
+        }
+      }else{
+        if( is.null(clusterID)){
+          plots <- plots + geom_curve(data=allEdgesP, aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
+                                    curvature=curv,lineend="round", colour = junction_colour ) +
+          geom_curve(data=allEdges, aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
+                     curvature=-curv,lineend="round",  colour = junction_colour )
+        }else{
+          # colour only the selected cluster
+          plots <- plots + geom_curve(data=allEdgesP, aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=factor(clu == clusterID ), size = curveMax ),
+                                      curvature=curv,lineend="round") +
+            geom_curve(data=allEdges, aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=factor(clu == clusterID), size = curveMax),
+                       curvature=-curv,lineend="round" ) +
+            scale_colour_manual("", breaks = c(TRUE, FALSE), limits = c(TRUE, FALSE), values = c("firebrick2", "gray") ) +
+            guides(colour=FALSE) 
+          
+        }
       }
       
-      if( nrow(  allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] == "." ,]) > 0  ){
-      plots <- plots +
-      geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] == "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
-                 curvature=-curv,lineend="round",  colour = "gray" )
-      }
-      
+
+
       # to increase visual contrast convert all positive deltaPSI to 0.5 and all negative to -0.5
     
-      if( !is.null(introns)){
+      if( !is.null(introns) & !is.null(cluster_list)){
         plots <- plots +
           geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=as.factor(deltaPSI > 0) , size = curveMax ),
                      curvature=curv,lineend="round") +
@@ -496,7 +528,7 @@ make_gene_plot <- function(gene_name,
           scale_colour_manual("dPSI",labels = c("down","up"), values = c("darkturquoise", "firebrick2") )
       }
       
-     
+
       plots <- plots +      
       
       new_theme_empty + 
@@ -520,20 +552,8 @@ make_gene_plot <- function(gene_name,
         
       scale_size_continuous(limits=c(0,10),guide='none') + 
       
-      # is this used for anything? color is currently set to clu which doesn't change for each junction
-      #scale_color_discrete( c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928'),guide='none') #+ scale_color_gradient2(low='white',mid='lightblue',high='purple4',guide="none")  #  + scale_color_discrete(guide="none")
-      #scale_colour_manual( values = cbbPalette ) +
-      #guides(colour=FALSE) + # don't show legend
-# 
-#       geom_text( data = gene_name_df, 
-#                    fontface = "bold.italic",  
-#                    size = 6, 
-#                    nudge_x = 0, 
-#                    nudge_y = 0, 
-#                    aes(x,y,label=label ),colour = "black"
-#         ) + 
-        ggtitle( paste(gene_name_df$label, collapse = "+") ) +
-        theme(plot.title = element_text(face="bold.italic", colour="black", size = 20) ) +
+      ggtitle( paste(gene_name_df$label, collapse = "+") ) +
+      theme(plot.title = element_text(face="bold.italic", colour="black", size = 20) ) +
       # EXONS
       geom_segment( data=exon_df, aes(x=x,y=y,xend=xend,yend=yend ), alpha=1, size=6, colour = 'black' )      
       
@@ -567,82 +587,48 @@ make_gene_plot <- function(gene_name,
       geom_segment( data = exon_df, aes(x = x, xend=x - 0.05, y = 0, yend = 0), colour = "white", size = 6 ) 
     
 
-    
-    #return(label_df)
-    # LABEL clusters
-    #label_max <- c(YLIMN - 0.2*YLIMN)#, YLIMP - 0.2*YLIMP) # how far down the labels should go 
-    label_df$label <- gsub("_", "\n", label_df$label)
-    label_df <- label_df[ order(label_df$middle),]
-    # alternate labels as up or down
-    label_df$labelY <- 0 
-    label_df$labelY[seq(1,nrow(label_df), 2)] <- YLIMN - 0.2*YLIMN
-    # in case of only one label
-    if( nrow(label_df) > 1){
-      label_df$labelY[ seq(2, nrow(label_df), 2)] <- YLIMP - 0.2*YLIMP
-    }
-   # print("plot")
-   ## grid.ls(grid.force(ggplotGrob(plots)) )
-   #  
-   #  p1 <- plots + geom_text_repel( data = label_df, aes( x = middle, y = labelY, label = label), point.padding = NA, direction = "x" )
-   #  
-   #  #print(p1)
-   #  #grid.force()
-   #  #grid.newpage()
-   #  print("plot with repelled labels")
-   #  #grid.ls(grid.force(ggplotGrob(p1)) )
-   #  #g <- ggplotGrob(p1)
-   #  #grid.force(g)
-   #  
-   #  # work out the repelled label coordinates - taken from https://github.com/slowkow/ggrepel/issues/24 and https://stackoverflow.com/questions/45065567/getting-coordinates-for-the-label-locations-from-ggrepel
-   #  # Get new x positions of all labels - done by ggrepel
-   #  xrg <- ggplot_build(p1)$layout$panel_ranges[[1]]$x.range
-   #  
-   #  #print(xrg)
-   #  #print(grid.ls(g))
-   #  #kids <- childNames(grid.get(gTree = grid.force(ggplotGrob(p1)), gPath = "textrepeltree", grep = TRUE))
-   #  
-   #  kids <- childNames( getGrob( grid.force(ggplotGrob(p1)), "textrepeltree", grep = TRUE) )
-   #  #print(grid.ls(getGrob( grid.force(ggplotGrob(p1)), "textrepeltree", grep = TRUE)))
-   #  #print(grid.ls( grid.force(ggplotGrob(p1))) )
-   # 
-   #  
-   # # print( grid.get(kids) )
-   #  
-   #  # Function: get the x and y positions of a single ggrepel label
-   #  get.x.pos.labs <- function(n) {
-   #    #grb <- getGrob(grid.force(ggplotGrob(p1)), n)
-   #    grb <- grid.gget(n, global=TRUE)
-   #    print(grb$x)
-   #    grb <- grid.get(n,global=TRUE)
-   #    print(grb$x)
-   #    grb <- getGrob(grid.force(ggplotGrob(p1)), n, strict = TRUE,grep = FALSE, global = TRUE)
-   #    grb <- grid.get(n, allDevices = TRUE)
-   #    #data.frame(
-   #      #x = xrg[1]+diff(xrg)*convertX(grb$x, "native", valueOnly = TRUE)
-   #      #y = yrg[1]+diff(yrg)*convertY(grb$y, "native", valueOnly = TRUE)
-   #   # )
-   #  }
-   #  repelled_x <- do.call(rbind, lapply(kids, get.x.pos.labs))
-   #  # use this for the dotted lines and points as well - everything looks nice!
-   #  label_df$newMiddle <- repelled_x$x
-
-    plots <- plots +
-      # add dotted lines to indicate the regions that belong to each cluster
-      geom_segment( data = label_df, aes( x = start, xend = middle, y = 0, yend = labelY ), colour = "gray", linetype = 3) +
-      geom_segment( data = label_df, aes( x = end, xend = middle, y = 0, yend = labelY ), colour = "gray", linetype = 3) +
-      # give each cluster a white circle behind 
-      geom_point( data = label_df, aes( x = middle, y = labelY), colour = "white", size = 22)
-
-    # if a particular cluster is selected then give a border
-    if( !is.null(clusterID) ){
+    if( !is.null(cluster_list)){
+      #return(label_df)
+      # LABEL clusters
+      #label_max <- c(YLIMN - 0.2*YLIMN)#, YLIMP - 0.2*YLIMP) # how far down the labels should go 
+      label_df$label <- gsub("_", "\n", label_df$label)
+      label_df <- label_df[ order(label_df$middle),]
+      # alternate labels as up or down
+      label_df$labelY <- 0 
+      label_df$labelY[seq(1,nrow(label_df), 2)] <- YLIMN - 0.2*YLIMN
+      # in case of only one label
+      if( nrow(label_df) > 1){
+        label_df$labelY[ seq(2, nrow(label_df), 2)] <- YLIMP - 0.2*YLIMP
+      }
+      
       plots <- plots +
-        geom_text_repel( data = label_df[ label_df$clu != clusterID,], aes( x = middle, y = labelY, label = label ), point.padding = NA, direction = "y", segment.alpha = 0 ) +
-        geom_label( data = label_df[ label_df$clu == clusterID,],  
-                    aes( x = middle, y = labelY, label = label ), fontface = "bold", 
-                    label.size = 0.5, label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") ) 
-    }else{
-     plots <- plots + geom_text_repel( data = label_df, aes( x = middle, y = labelY, label = label ), point.padding = NA, direction = "y", segment.alpha = 0 )
+        # add dotted lines to indicate the regions that belong to each cluster
+        geom_segment( data = label_df, aes( x = start, xend = middle, y = 0, yend = labelY ), colour = "gray", linetype = 3) +
+        geom_segment( data = label_df, aes( x = end, xend = middle, y = 0, yend = labelY ), colour = "gray", linetype = 3) +
+        # give each cluster a white circle behind 
+        geom_point( data = label_df, aes( x = middle, y = labelY), colour = "white", size = 22)
+      
+      # if a particular cluster is selected then give a border
+      if( !is.null(clusterID) ){
+        plots <- plots +
+          geom_text_repel( data = label_df[ label_df$clu != clusterID,], aes( x = middle, y = labelY, label = label ), point.padding = NA, direction = "y", segment.alpha = 0 ) +
+          geom_label( data = label_df[ label_df$clu == clusterID,],  
+                      aes( x = middle, y = labelY, label = label ), fontface = "bold", 
+                      label.size = 0.5, label.r = unit(0.3,"lines"), label.padding = unit(0.3,"lines") ) 
+      }else{
+        plots <- plots + geom_text_repel( data = label_df, aes( x = middle, y = labelY, label = label ), point.padding = NA, direction = "y", segment.alpha = 0 )
+      }
+    
     }
+    
+    # ADD SNP POSITION
+    if(!is.na(snp_pos)){ 
+      plots <- plots +  
+        geom_segment(data=SNP_df,aes(x=x,y=y,xend=xend,yend=yend),colour = "goldenrod", size = 6.5 ) +
+        geom_text( data = SNP_df, aes(x =x, y = 0.5*YLIMP, label = label)) +
+        geom_segment( data = SNP_df, aes( x = x, xend = x, y = 0, yend = 0.45*YLIMP ), colour = "gray", linetype = 3)
+    }
+
     
     #print("gene plot:")    
     #print(exon_df)
