@@ -3,6 +3,17 @@
 #### Jack Humphrey 2017
 ### annotate the output of differential splicing
 ## and prepare for visualisation
+
+# # for testing
+# outFolder <- ""
+# iFolder <- "example/"
+# groups_file <- "example/Brain_vs_Heart_meta.txt"
+# annotation_code <- "annotation_codes/gencode_hg19/gencode_hg19"
+# species <- "human"
+# FDR_limit <- 0.05
+# code <- "Brain_vs_Heart"
+
+
 library(optparse)
 require(leafcutter)
 
@@ -119,7 +130,7 @@ print(head(effectSizesSplit))
 effectSizes <- cbind( effectSizes, effectSizesSplit)
 effectSizes$cluster <- paste(effectSizesSplit$chr, effectSizesSplit$clusterID, sep = ":")
 
-results <- fread(results.file, stringsAsFactors = F)
+results <- fread(results.file, stringsAsFactors = FALSE)
 
 results$FDR <- p.adjust( results$p, method = "fdr")
 
@@ -184,7 +195,7 @@ constitutive.list <- list()
 classification.list <- list()
 
 # for testing!
-clu <- "clu_59455"
+#clu <- "clu_59455"
 
 clusters <- unique( all.introns$clusterID ) 
 for( clu in clusters ){
@@ -192,23 +203,28 @@ for( clu in clusters ){
   # output a vector of string descriptions 
   cluster <- all.introns[ all.introns$clusterID == clu , ]
   
+  # first subset the intersected files to speed up later query - this uses the data.tables method
+  fprimeClu <- fiveprime_intersect[ V4 == clu,]
+  tprimeClu <- threeprime_intersect[ V4 == clu,]
+  bothSSClu <- all.introns_intersect[ V4 == clu,]
+  
   # for each intron in the cluster:
   #   create vector of overlapping splice sites, indexed by the row of the intersect
   # five prime splice sites
   fprime <- apply( cluster, MAR = 1, FUN = function(x) {
     chr <- which( names(cluster) == "chr" )
     start <- which( names(cluster) == "start" )
-    fiveprime_intersect[   
-      fiveprime_intersect$V1 == x[chr] & 
-      fiveprime_intersect$V2 == as.numeric( x[start] ),]
+    fprimeClu[   
+      V1 == x[chr] & 
+      V2 == as.numeric( x[start] ),]
   } )
   # three prime splice sites
   tprime <- apply( cluster, MAR = 1, FUN = function(x) {
     chr <- which( names(cluster) == "chr" )
     end <- which( names(cluster) == "end" )
-    threeprime_intersect[   
-      threeprime_intersect$V1 == x[chr] & 
-      threeprime_intersect$V2 == as.numeric( x[end] ),]
+    tprimeClu[   
+      V1 == x[chr] & 
+      V2 == as.numeric( x[end] ),]
   } )
 
   # both splice sites
@@ -216,23 +232,38 @@ for( clu in clusters ){
       chr <- which( names(cluster) == "chr" )
       start <- which(names(cluster) == "start")
       end <- which( names(cluster) == "end" )
-      all.introns_intersect[   
-        all.introns_intersect$V1 == x[chr] &
-          all.introns_intersect$V2 == x[start] &
-          all.introns_intersect$V3 == as.numeric( x[end] ) &
-          all.introns_intersect$V4 == clu,]
+      bothSSClu[   
+        V6 == as.numeric( x[start] ) &
+        V7 == as.numeric( x[end] ) ,]
     } )
 
-  # find gene and ensemblID by the most represented gene among all the splice sites
-  cluster_genes <- names(sort(table(do.call( what = rbind, tprime )$V8), decreasing = TRUE ))
+  # find gene and ensemblID by the most represented gene among all the splice sites - lazy
+  cluster_genes <- names(sort(table(do.call( what = rbind, c(tprime,fprime) )$V8), decreasing = TRUE ))
 
   cluster_gene <- cluster_genes[ cluster_genes != "." ][1]
   # if no cluster gene found then leave as "."
-  if( length(cluster_gene) == 0){
-    cluster_gene == "."
+  if( is.na(cluster_gene) ){
+    cluster_gene <- "."
   }
+  
+  #print(cluster_gene)
+  
+  if( cluster_gene != "." ){
+    # get strand the same way - would prefer to use the strand of the junction
+    strands <- do.call( rbind, c(tprime, fprime))$V10
+    # hope that all junctions align to the same gene on the same strand
+    strands <- unique( strands[ strands != "." ])
+    if( all(strands == ".") | length(strands) != 1 ){
+      gene_strand <- NA
+    }else{
+      gene_strand <- strands
+    }
+  }else{
+    gene_strand <- NA
+  }
+  
   # do the same for EnsemblID
-  cluster_ensemblIDs <- names(sort(table(do.call( what = rbind, tprime )$V9), decreasing = TRUE ))
+  cluster_ensemblIDs <- names(sort(table(do.call( what = rbind, c(tprime,fprime) )$V9), decreasing = TRUE ))
   cluster_ensemblID <- cluster_ensemblIDs[ cluster_ensemblIDs != "." ][1]
   if( length( cluster_ensemblID ) == 0 ){
     cluster_ensemblID == "."
@@ -259,12 +290,17 @@ for( clu in clusters ){
     ){ verdict[intron] <- "cryptic_unanchored"
     }
     if( # if only one is annotated
-    all( tprime[[intron]]$V5 == ".") & all( fprime[[intron]]$V5 != "." )
+    ( all( tprime[[intron]]$V5 == ".") & all( fprime[[intron]]$V5 != "." ) & all(gene_strand == "+") ) |
+    ( all( fprime[[intron]]$V5 == ".") & all( tprime[[intron]]$V5 != "." ) & all(gene_strand == "-") )
     ){ verdict[intron] <- "cryptic_threeprime"
     }
     if(
-    all( tprime[[intron]]$V5 != ".") & all( fprime[[intron]]$V5 == "." )
+    ( all( tprime[[intron]]$V5 != ".") & all( fprime[[intron]]$V5 == "." ) & all(gene_strand == "+") ) |
+    ( all( fprime[[intron]]$V5 != ".") & all( tprime[[intron]]$V5 == "." ) & all(gene_strand == "-") )
     ){ verdict[intron] <- "cryptic_fiveprime"
+    }
+    if( is.na(gene_strand) & ( all(tprime[[intron]]$V5 != ".") | all(fprime[[intron]]$V5 != "." ) ) ){
+      verdict[intron] <- "cryptic"
     }
     if( # if both splice sites are annotated
       all( tprime[[intron]]$V5 != "." ) & all( fprime[[intron]]$V5 != "." )
