@@ -7,7 +7,7 @@ RCPP_MODULE(stan_fit4bb_glm_mod) {
 
     class_<rstan::stan_fit<model_bb_glm_namespace::model_bb_glm, boost::random::ecuyer1988> >("model_bb_glm")
 
-    .constructor<SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP>()
 
 
     .method("call_sampler", &rstan::stan_fit<model_bb_glm_namespace::model_bb_glm, boost::random::ecuyer1988> ::call_sampler)
@@ -36,7 +36,7 @@ RCPP_MODULE(stan_fit4bb_glm_fix_conc_mod) {
 
     class_<rstan::stan_fit<model_bb_glm_fix_conc_namespace::model_bb_glm_fix_conc, boost::random::ecuyer1988> >("model_bb_glm_fix_conc")
 
-    .constructor<SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP>()
 
 
     .method("call_sampler", &rstan::stan_fit<model_bb_glm_fix_conc_namespace::model_bb_glm_fix_conc, boost::random::ecuyer1988> ::call_sampler)
@@ -65,7 +65,7 @@ RCPP_MODULE(stan_fit4dm_glm_mod) {
 
     class_<rstan::stan_fit<model_dm_glm_namespace::model_dm_glm, boost::random::ecuyer1988> >("model_dm_glm")
 
-    .constructor<SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP>()
 
 
     .method("call_sampler", &rstan::stan_fit<model_dm_glm_namespace::model_dm_glm, boost::random::ecuyer1988> ::call_sampler)
@@ -94,7 +94,7 @@ RCPP_MODULE(stan_fit4dm_glm_multi_conc_mod) {
 
     class_<rstan::stan_fit<model_dm_glm_multi_conc_namespace::model_dm_glm_multi_conc, boost::random::ecuyer1988> >("model_dm_glm_multi_conc")
 
-    .constructor<SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP>()
 
 
     .method("call_sampler", &rstan::stan_fit<model_dm_glm_multi_conc_namespace::model_dm_glm_multi_conc, boost::random::ecuyer1988> ::call_sampler)
@@ -123,7 +123,7 @@ RCPP_MODULE(stan_fit4dm_glm_robust_mod) {
 
     class_<rstan::stan_fit<model_dm_glm_robust_namespace::model_dm_glm_robust, boost::random::ecuyer1988> >("model_dm_glm_robust")
 
-    .constructor<SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP>()
 
 
     .method("call_sampler", &rstan::stan_fit<model_dm_glm_robust_namespace::model_dm_glm_robust, boost::random::ecuyer1988> ::call_sampler)

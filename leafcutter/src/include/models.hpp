@@ -301,21 +301,14 @@ public:
                 stan::math::fill(p,DUMMY_VAR__);
 
 
-                current_statement_begin__ = 19;
                 stan::math::assign(xb, multiply(x,beta));
-                current_statement_begin__ = 20;
                 for (int n = 1; n <= N; ++n) {
 
-                    current_statement_begin__ = 21;
                     stan::math::assign(get_base1_lhs(p,n,"p",1), inv_logit(get_base1(xb,n,"xb",1)));
-                    current_statement_begin__ = 22;
                     stan::math::assign(get_base1_lhs(a,n,"a",1), (conc * get_base1(p,n,"p",1)));
-                    current_statement_begin__ = 23;
                     stan::math::assign(get_base1_lhs(b,n,"b",1), (conc * (1.0 - get_base1(p,n,"p",1))));
                 }
-                current_statement_begin__ = 26;
                 lp_accum__.add(gamma_log<propto__>(conc, concShape, concRate));
-                current_statement_begin__ = 27;
                 lp_accum__.add(beta_binomial_log<propto__>(ys, ns, a, b));
             }
         } catch (const std::exception& e) {
@@ -750,21 +743,14 @@ public:
                 stan::math::fill(p,DUMMY_VAR__);
 
 
-                current_statement_begin__ = 19;
                 stan::math::assign(xb, multiply(x,beta));
-                current_statement_begin__ = 20;
                 for (int n = 1; n <= N; ++n) {
 
-                    current_statement_begin__ = 21;
                     stan::math::assign(get_base1_lhs(p,n,"p",1), inv_logit(get_base1(xb,n,"xb",1)));
-                    current_statement_begin__ = 22;
                     stan::math::assign(get_base1_lhs(a,n,"a",1), (conc * get_base1(p,n,"p",1)));
-                    current_statement_begin__ = 23;
                     stan::math::assign(get_base1_lhs(b,n,"b",1), (conc * (1.0 - get_base1(p,n,"p",1))));
                 }
-                current_statement_begin__ = 26;
                 lp_accum__.add(gamma_log<propto__>(conc, concShape, concRate));
-                current_statement_begin__ = 27;
                 lp_accum__.add(beta_binomial_log<propto__>(ys, ns, a, b));
             }
         } catch (const std::exception& e) {
@@ -1223,17 +1209,12 @@ public:
                 stan::math::fill(beta,DUMMY_VAR__);
 
 
-                current_statement_begin__ = 19;
                 for (int k = 1; k <= K; ++k) {
-                    current_statement_begin__ = 20;
                     for (int p = 1; p <= P; ++p) {
-                        current_statement_begin__ = 21;
                         stan::math::assign(get_base1_lhs(beta,k,p,"beta",1), (get_base1(beta_scale,p,"beta_scale",1) * (get_base1(get_base1(beta_raw,p,"beta_raw",1),k,"beta_raw",2) - (1.0 / K))));
                     }
                 }
-                current_statement_begin__ = 23;
                 lp_accum__.add(gamma_log<propto__>(conc, concShape, concRate));
-                current_statement_begin__ = 24;
                 for (int n = 1; n <= N; ++n) {
                     {
                         validate_non_negative_index("a", "K", K);
@@ -1267,21 +1248,14 @@ public:
                         stan::math::fill(lGaA,DUMMY_VAR__);
 
 
-                        current_statement_begin__ = 30;
                         stan::math::assign(a, multiply(conc,softmax(multiply(beta,get_base1(x,n,"x",1)))));
-                        current_statement_begin__ = 33;
                         stan::math::assign(suma, sum(a));
-                        current_statement_begin__ = 34;
                         stan::math::assign(aPlusY, add(a,get_base1(y,n,"y",1)));
-                        current_statement_begin__ = 35;
                         for (int k = 1; k <= K; ++k) {
 
-                            current_statement_begin__ = 36;
                             stan::math::assign(get_base1_lhs(lGaPlusY,k,"lGaPlusY",1), stan::math::lgamma(get_base1(aPlusY,k,"aPlusY",1)));
-                            current_statement_begin__ = 37;
                             stan::math::assign(get_base1_lhs(lGaA,k,"lGaA",1), stan::math::lgamma(get_base1(a,k,"a",1)));
                         }
-                        current_statement_begin__ = 39;
                         lp_accum__.add((((stan::math::lgamma(suma) + sum(lGaPlusY)) - stan::math::lgamma((suma + sum(get_base1(y,n,"y",1))))) - sum(lGaA)));
                     }
                 }
@@ -1793,17 +1767,12 @@ public:
                 stan::math::fill(beta,DUMMY_VAR__);
 
 
-                current_statement_begin__ = 19;
                 for (int k = 1; k <= K; ++k) {
-                    current_statement_begin__ = 20;
                     for (int p = 1; p <= P; ++p) {
-                        current_statement_begin__ = 21;
                         stan::math::assign(get_base1_lhs(beta,k,p,"beta",1), (get_base1(beta_scale,p,"beta_scale",1) * (get_base1(get_base1(beta_raw,p,"beta_raw",1),k,"beta_raw",2) - (1.0 / K))));
                     }
                 }
-                current_statement_begin__ = 23;
                 lp_accum__.add(gamma_log<propto__>(conc, concShape, concRate));
-                current_statement_begin__ = 24;
                 for (int n = 1; n <= N; ++n) {
                     {
                         validate_non_negative_index("a", "K", K);
@@ -1843,26 +1812,17 @@ public:
                         stan::math::fill(s,DUMMY_VAR__);
 
 
-                        current_statement_begin__ = 31;
                         stan::math::assign(s, softmax(multiply(beta,get_base1(x,n,"x",1))));
-                        current_statement_begin__ = 32;
                         for (int k = 1; k <= K; ++k) {
-                            current_statement_begin__ = 33;
                             stan::math::assign(get_base1_lhs(a,k,"a",1), (get_base1(conc,k,"conc",1) * get_base1(s,k,"s",1)));
                         }
-                        current_statement_begin__ = 36;
                         stan::math::assign(suma, sum(a));
-                        current_statement_begin__ = 37;
                         stan::math::assign(aPlusY, add(a,get_base1(y,n,"y",1)));
-                        current_statement_begin__ = 38;
                         for (int k = 1; k <= K; ++k) {
 
-                            current_statement_begin__ = 39;
                             stan::math::assign(get_base1_lhs(lGaPlusY,k,"lGaPlusY",1), stan::math::lgamma(get_base1(aPlusY,k,"aPlusY",1)));
-                            current_statement_begin__ = 40;
                             stan::math::assign(get_base1_lhs(lGaA,k,"lGaA",1), stan::math::lgamma(get_base1(a,k,"a",1)));
                         }
-                        current_statement_begin__ = 42;
                         lp_accum__.add((((stan::math::lgamma(suma) + sum(lGaPlusY)) - stan::math::lgamma((suma + sum(get_base1(y,n,"y",1))))) - sum(lGaA)));
                     }
                 }
@@ -2421,19 +2381,13 @@ public:
                 stan::math::fill(beta,DUMMY_VAR__);
 
 
-                current_statement_begin__ = 22;
                 for (int k = 1; k <= K; ++k) {
-                    current_statement_begin__ = 23;
                     for (int p = 1; p <= P; ++p) {
-                        current_statement_begin__ = 24;
                         stan::math::assign(get_base1_lhs(beta,k,p,"beta",1), (get_base1(beta_scale,p,"beta_scale",1) * (get_base1(get_base1(beta_raw,p,"beta_raw",1),k,"beta_raw",2) - (1.0 / K))));
                     }
                 }
-                current_statement_begin__ = 26;
                 lp_accum__.add(beta_log<propto__>(outlier_prob, outlier_prior_a, outlier_prior_b));
-                current_statement_begin__ = 28;
                 lp_accum__.add(gamma_log<propto__>(conc, concShape, concRate));
-                current_statement_begin__ = 29;
                 for (int n = 1; n <= N; ++n) {
                     {
                         validate_non_negative_index("a", "K", K);
@@ -2484,28 +2438,18 @@ public:
                         stan::math::fill(s,DUMMY_VAR__);
 
 
-                        current_statement_begin__ = 38;
                         stan::math::assign(s, softmax(multiply(beta,get_base1(x,n,"x",1))));
-                        current_statement_begin__ = 39;
                         for (int k = 1; k <= K; ++k) {
-                            current_statement_begin__ = 40;
                             stan::math::assign(get_base1_lhs(a,k,"a",1), (get_base1(conc,k,"conc",1) * get_base1(s,k,"s",1)));
                         }
-                        current_statement_begin__ = 43;
                         stan::math::assign(suma, sum(a));
-                        current_statement_begin__ = 44;
                         stan::math::assign(sumy, sum(get_base1(y,n,"y",1)));
-                        current_statement_begin__ = 45;
                         for (int k = 1; k <= K; ++k) {
 
-                            current_statement_begin__ = 46;
                             stan::math::assign(get_base1_lhs(lGaPlusY,k,"lGaPlusY",1), stan::math::lgamma((get_base1(a,k,"a",1) + get_base1(get_base1(y,n,"y",1),k,"y",2))));
-                            current_statement_begin__ = 47;
                             stan::math::assign(get_base1_lhs(lGaA,k,"lGaA",1), stan::math::lgamma(get_base1(a,k,"a",1)));
-                            current_statement_begin__ = 48;
                             stan::math::assign(get_base1_lhs(lG1PlusY,k,"lG1PlusY",1), stan::math::lgamma((1.0 + get_base1(get_base1(y,n,"y",1),k,"y",2))));
                         }
-                        current_statement_begin__ = 50;
                         lp_accum__.add(log_sum_exp(((((log((1.0 - outlier_prob)) + stan::math::lgamma(suma)) + sum(lGaPlusY)) - stan::math::lgamma((suma + sumy))) - sum(lGaA)),(((log(outlier_prob) + stan::math::lgamma(K)) + sum(lG1PlusY)) - stan::math::lgamma((K + sumy)))));
                     }
                 }
