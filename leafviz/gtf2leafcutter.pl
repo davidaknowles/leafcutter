@@ -8,8 +8,7 @@ use Getopt::Long;
 # GET PARAMETERS
 my $sHelp         = 0;
 my $sOutputPrefix = "leafviz-annotations";
-GetOptions("help!"   => \$sHelp);
-
+GetOptions("help!"   => \$sHelp, "output:s" => \$sOutputPrefix); 
 # GLOBALS
 my %hMultiCopyTags = ('tag'=>'','Dbxref'=>'','gbkey'=>'','Name'=>'','product'=>'','Note'=>'','tss_id'=>'', 'ont'=>'');
 
