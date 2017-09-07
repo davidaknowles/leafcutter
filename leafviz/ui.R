@@ -51,11 +51,16 @@ hr {
   padding: 10px;
 }
 .navbar {
-  background-size: 50px 80%;
+  background-size: 50px 42px;
   background-image: url(leafcutter_app_logo.png);
   background-repeat: no-repeat;
-  background-position: 2%;
+  background-position-x: 2%;
+  background-position-y: 5px;
   padding-left: 2%;
+}
+
+.navbar-toggle {
+  float: initial;
 }
 
 .navbar-brand {
@@ -155,6 +160,10 @@ hr {
   padding-top: 70px;
 }
 
+.PCAchoices {
+  text-align: center;
+}
+
 "),
       # WELCOME MESSAGE
       div(class = "jumbotron", id = "welcome",
@@ -245,12 +254,19 @@ hr {
     ),
     tabPanel("PCA",
       fluidRow(id = "tabDiv",
-        column(6, offset =3,
-          # plot different principal components of the splice junction counts
-          br(),
-          div(id = "download_btn", 
+               class = "PCAchoices",
+        br(),
+        # plot different principal components of the splice junction counts
+        column(2, offset = 3,
             uiOutput("pca_choices")
             ),
+        column(2,
+            uiOutput("pca_colour_choices")
+        ),
+        column(2,
+               uiOutput("pca_shape_choices")
+        ),
+        column(4, offset =4,
           plotOutput("pca_plot")
         )
       ),

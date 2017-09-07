@@ -339,17 +339,28 @@ server <- function(input, output, session) {
   })
   
   #### PCA
-  
+  #names(pca[[1]]) <- gsub(" ", "_", names(pca[[1]]))
   output$pca_choices <- renderUI({
-    choices <- names(pca[[1]])[ 1:(length(pca[[1]]) - 2) ]
+    choices <- names(pca[[1]])[ grepl("^PC[0-9]", names(pca[[1]])) ] # find all PCs
     selectInput( inputId = "first_PC", label = "First principal component", choices = choices, selected = choices[1]  )
   })
+  output$pca_colour_choices <- renderUI({
+    choices <- names(pca[[1]])[ !grepl("^PC[0-9]", names(pca[[1]])) ]
+    selectInput( inputId = "colour_choice", label = "Colour points by", choices = choices, selected = choices[1]  )
+  })
+  output$pca_shape_choices <- renderUI({
+    choices <- names(pca[[1]])[ !grepl("^PC[0-9]", names(pca[[1]])) ]
+    selectInput( inputId = "shape_choice", label = "Shape points by", choices = choices, selected = choices[1]  )
+  })
+  
   
   createPCAPlot <- function(){
     if( is.null(input$first_PC) ){
       return(NULL)
     }else{
     first_PC <- input$first_PC
+    colour_choice <- input$colour_choice
+    shape_choice <- input$shape_choice
     #print(first_PC)
     second_PC <- names(pca[[1]])[ which( names(pca[[1]]) == first_PC) + 1 ]
     xlab <- paste0( first_PC, " (", pca[[2]][ which(names(pca[[1]]) == first_PC  ) ], "%)"  )
@@ -358,7 +369,8 @@ server <- function(input, output, session) {
     pca_plot <- ggplot( pca[[1]], 
                         aes_string(y = first_PC,
                                   x = second_PC, 
-                                  colour = "groups" ) ) + geom_point(size = 60 / nrow(pca[[1]])  ) +
+                                  colour = colour_choice,
+                                  shape = shape_choice) ) + geom_point(size = 60 / nrow(pca[[1]])  ) +
       xlab( xlab ) +
       ylab( ylab ) +
       theme_classic()
