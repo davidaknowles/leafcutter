@@ -6,7 +6,8 @@
 \usage{
 differential_splicing(counts, x, confounders = NULL, max_cluster_size = 10,
   min_samples_per_intron = 5, min_samples_per_group = 4,
-  min_coverage = 20, timeout = 10, robust = F, debug = F)
+  min_coverage = 20, timeout = 10, robust = F, debug = F,
+  init = "smart", ...)
 }
 \arguments{
 \item{counts}{An [introns] x [samples] matrix of counts. The rownames must be of the form chr:start:end:cluid. If the counts file comes from the leafcutter clustering code this should be the case already.}
@@ -28,6 +29,8 @@ differential_splicing(counts, x, confounders = NULL, max_cluster_size = 10,
 \item{robust}{Whether to use the robust model (explicitly models outliers). Generally not required/recommended for differential splicing.}
 
 \item{debug}{If true writes more output}
+
+\item{init}{One of 'smart' (default) or 'random'. If 'random' you can pass an additional arg "seed" for reproducibility.}
 }
 \value{
 A per cluster list of results. Clusters that were not tested will be represented by a string saying why.

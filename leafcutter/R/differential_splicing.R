@@ -59,11 +59,12 @@ leaf_cutter_effect_sizes=function(results) {
 #' @param timeout Maximum time (in seconds) allowed for a single optimization run
 #' @param robust Whether to use the robust model (explicitly models outliers). Generally not required/recommended for differential splicing.
 #' @param debug If true writes more output
+#' @param init One of 'smart' (default) or 'random'. If 'random' you can pass an additional arg "seed" for reproducibility. 
 #' @return A per cluster list of results. Clusters that were not tested will be represented by a string saying why.
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10, robust=F, debug=F) {
+differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10, robust=F, debug=F, init="smart", ...) {
   
   stopifnot(ncol(counts)==length(x))
   
@@ -110,7 +111,7 @@ differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10,
         xNull=cbind(xNull,ch)
     }
     res <- R.utils::evalWithTimeout( { 
-      dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,robust=robust, debug=debug)
+      dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,robust=robust,debug=debug,init=init,...)
     }, timeout=timeout, onTimeout="silent" ) 
     if (is.null(res)) "timeout" else res
   }

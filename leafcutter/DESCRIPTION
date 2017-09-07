@@ -2,7 +2,7 @@ Package: leafcutter
 Type: Package
 Title: Alternative splicing quantification, differential splicing and splicing
     QTL mapping
-Version: 0.2
+Version: 0.2.3
 Date: 2016-11-19
 Authors@R: c(person("David", "Knowles", email = "knowles84@gmail.com", role = c("aut", "cre")),
               person("Yang", "Li", role = c("aut", "cre")),
@@ -16,7 +16,7 @@ Depends:
     R (>= 3.0.2),
     Rcpp (>= 0.11.0),
 Imports:
-    rstan (>= 2.8.1),
+    rstan (>= 2.16.0),
     ggplot2,
     R.utils,
     gridExtra,
@@ -31,7 +31,7 @@ Imports:
 	intervals,
 	shinycssloaders,
 	gtable
-LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.8.1), BH (>= 1.58.0), Rcpp (>=
+LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.16.0), BH (>= 1.58.0), Rcpp (>=
     0.11.0), RcppEigen
 RoxygenNote: 6.0.1
 Suggests: knitr,
