@@ -3,6 +3,7 @@
 #'
 #' @import ggplot2
 #' @import gridExtra
+#' @import intervals
 #' @export 
 make_cluster_plot <- function(
   cluster_to_plot, 
