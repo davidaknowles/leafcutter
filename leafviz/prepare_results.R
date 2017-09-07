@@ -5,13 +5,13 @@
 ## and prepare for visualisation
 
 # # for testing
-# outFolder <- ""
-# iFolder <- "example/"
-# groups_file <- "example/Brain_vs_Heart_meta.txt"
-# annotation_code <- "annotation_codes/gencode_hg19/gencode_hg19"
-# species <- "human"
-# FDR_limit <- 0.05
-# code <- "Brain_vs_Heart"
+ outFolder <- ""
+ iFolder <- "example/"
+ groups_file <- "example/Brain_vs_Heart_meta.txt"
+ annotation_code <- "annotation_codes/gencode_hg19/gencode_hg19"
+ species <- "human"
+ FDR_limit <- 0.05
+ code <- "Brain_vs_Heart"
 
 
 library(optparse)
@@ -84,6 +84,7 @@ library(data.table)
 #library(leafcutter)
 library(stringr)
 library(dplyr)
+library(magrittr)
 
 
 # CHECK BEDTOOLS IS INSTALLED
@@ -98,9 +99,13 @@ if(file.exists(counts_file)){
 
 if(file.exists(groups_file)){
   cat("Loading metadata from",groups_file,"\n")
-  meta <- read.table(groups_file, header=F, stringsAsFactors = F)
+  meta <- read.table(groups_file, header=FALSE, stringsAsFactors = FALSE)
   colnames(meta)=c("sample","group")
-
+  # name covariates
+  if( ncol(meta) > 2){
+    colnames(meta)[3:ncol(meta)] <- paste0("covariate", 1:(ncol(meta) - 2)  )
+  }
+  
   sample_table <- data.frame( group = names(table(meta$group) ), count = as.vector(table(meta$group)) )
 }
 # exon table no longer used for anything - just saved with the Rdata object at the end
@@ -473,8 +478,23 @@ write.table( all.introns, intron_results, quote = FALSE, row.names = FALSE, sep 
 
 # prepare for PCA
 counts <- counts[,meta$sample]
-meta$group <- as.factor(meta$group)
+print( "converting counts to ratios")
+# create per cluster ratios from counts
+ratios <- counts %>% 
+  mutate(clu = str_split_fixed(rownames(counts), ":", 4)[,4]) %>%
+  group_by(clu) %>% 
+  mutate_all( funs( ./sum(.) ) ) %>% 
+  ungroup() %>%
+  as.data.frame() %>% 
+  magrittr::set_rownames(rownames(counts)) %>% 
+  select(-clu)
+ratios <- ratios[rowMeans(is.na(ratios)) <= 0.4,,drop=FALSE ]
+row_means <- rowMeans(ratios, na.rm = TRUE)
+row_means_outer <- outer(row_means, rep(1,ncol(ratios)))
+ratios[is.na(ratios)] <- row_means_outer[is.na(ratios)]
 
+
+meta$group <- as.factor(meta$group)
 
 make_pca <- function(counts,meta){
   dev <- apply( counts, MAR = 1, FUN = sd )
@@ -483,10 +503,15 @@ make_pca <- function(counts,meta){
   pca <- prcomp( t(counts), scale = TRUE )
   importance <- signif( summary(pca)$importance[2,], digits = 2) * 100
   pca <- as.data.frame(pca$x)
-  #names(pca) <- paste0( names(pca), " (", signif( importance, digits =  2) * 100, "%)" )
-  pca$groups <- meta$group[ match( rownames(pca), meta$sample )]
+  pca$sample <- row.names(pca)
+  pca <- merge(pca,meta, by = "sample")
+  row.names(pca) <- pca$sample
+  pca$sample <- NULL
+  
   return(list( pca, importance) )
 }
+print("creating PCA")
+pca <- make_pca(ratios,meta)
 
 # sort out clusters table
 
@@ -567,7 +592,6 @@ intron_summary <- intron_summary(all.introns)
 cluster_summary <- cluster_summary(all.clusters) 
 introns_to_plot <- get_intron_meta(rownames(counts))
 cluster_ids <- introns_to_plot$clu 
-pca <- make_pca(counts,meta)
 
 # save all the objects needed by Leafcutter viz into single Rdata file
 # include the mode variable 
