@@ -55,6 +55,8 @@ These should all have been installed when you installed leafcutter:
 
 * data.table
 * stringr
+* magrittr
+* dplyr
 * ggplot2
 * shiny
 * DT
@@ -69,20 +71,25 @@ These should all have been installed when you installed leafcutter:
 
 This step processes a given GTF to generate lists of exons, introns and splice sites. This step only has to be run once to use a particular GTF file with the app.
 
-**Warning**: this has only been tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files. 
+The recommended way to do this is
 ```
-sh wrangleAnnotation.sh <GTF> <annotation_code>
+./gtf2leafcutter.pl -o <annotation_code> my_transcriptome.gtf[.gz]
 ```
+**my_transcriptome.gtf** - a gene transfer format file, provided by GENCODE, Ensembl, etc.
 
-**GTF** - a gene transfer format file, provided by GENCODE, Ensembl, etc.
 **annotation_code** - the path or folder name with a base name, eg `/path/to/gencode_hg38`
 
+`gtf2leafcutter.pl` can take in a `gzip`ped `gtf` file as long as the file name ends with `.gz`. `gtf2leafcutter.pl` should be more robust to differences in `.gtf` formatting than our old script `wrangleAnnotation.sh` (thanks to [Dalila Pinto](https://pintolab.mssm.edu/) for contributing the new script).
+
 This will create: 
-```<annotation_code>_all_introns.bed.gz
+```
+<annotation_code>_all_introns.bed.gz
 <annotation_code>_threeprime.bed.gz
 <annotation_code>_fiveprime.bed.gz
 <annotation_code>_all_exons.txt.gz
 ```
+
+We've only tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files. If you have problems with other `gtf` files please let us know. 
 
 ### Step 1. Prepare the LeafCutter differential splicing results for visualisation
 

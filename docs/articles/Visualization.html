@@ -108,6 +108,8 @@
 <ul>
 <li>data.table</li>
 <li>stringr</li>
+<li>magrittr</li>
+<li>dplyr</li>
 <li>ggplot2</li>
 <li>shiny</li>
 <li>DT</li>
@@ -123,13 +125,17 @@
 <h3 class="hasAnchor">
 <a href="#step-0--generate-the-annotation-files" class="anchor"></a>Step 0. Generate the annotation files</h3>
 <p>This step processes a given GTF to generate lists of exons, introns and splice sites. This step only has to be run once to use a particular GTF file with the app.</p>
-<p><strong>Warning</strong>: this has only been tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files.</p>
-<pre><code>sh wrangleAnnotation.sh &lt;GTF&gt; &lt;annotation_code&gt;</code></pre>
-<p><strong>GTF</strong> - a gene transfer format file, provided by GENCODE, Ensembl, etc. <strong>annotation_code</strong> - the path or folder name with a base name, eg <code>/path/to/gencode_hg38</code></p>
+<p>The recommended way to do this is</p>
+<pre><code>./gtf2leafcutter.pl -o &lt;annotation_code&gt; my_transcriptome.gtf[.gz]</code></pre>
+<p><strong>my_transcriptome.gtf</strong> - a gene transfer format file, provided by GENCODE, Ensembl, etc.</p>
+<p><strong>annotation_code</strong> - the path or folder name with a base name, eg <code>/path/to/gencode_hg38</code></p>
+<p><code>gtf2leafcutter.pl</code> can take in a <code>gzip</code>ped <code>gtf</code> file as long as the file name ends with <code>.gz</code>. <code>gtf2leafcutter.pl</code> should be more robust to differences in <code>.gtf</code> formatting than our old script <code>wrangleAnnotation.sh</code> (thanks to <a href="https://pintolab.mssm.edu/">Dalila Pinto</a> for contributing the new script).</p>
 <p>This will create:</p>
-<pre class="&lt;annotation_code&gt;_all_introns.bed.gz"><code>&lt;annotation_code&gt;_threeprime.bed.gz
+<pre><code>&lt;annotation_code&gt;_all_introns.bed.gz
+&lt;annotation_code&gt;_threeprime.bed.gz
 &lt;annotation_code&gt;_fiveprime.bed.gz
 &lt;annotation_code&gt;_all_exons.txt.gz</code></pre>
+<p>We’ve only tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files. If you have problems with other <code>gtf</code> files please let us know.</p>
 </div>
 <div id="step-1--prepare-the-leafcutter-differential-splicing-results-for-visualisation" class="section level3">
 <h3 class="hasAnchor">
