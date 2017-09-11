@@ -3,6 +3,7 @@
 import sys
 import gzip
 
+
 by_chrom = {}
 libs, libChroms = {}, {}
 for libl in open(sys.argv[2]):
@@ -52,3 +53,4 @@ for chrom in by_chrom:
     use_chroms.append(chrom)
 
 sys.stderr.write("Using %s\n"%(" ".join(use_chroms)))
+
