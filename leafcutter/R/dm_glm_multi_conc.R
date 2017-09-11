@@ -37,7 +37,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
     }
     beta_raw=sweep(beta_norm,1,beta_scale,"/") + 1/K
     beta_raw=sweep(beta_raw,1,rowSums(beta_raw),"/")
-    init=list(beta_scale=beta_scale, beta_raw=beta_raw, conc=rep(10.0,K))
+    init=list(beta_scale=array(beta_scale), beta_raw=beta_raw, conc=rep(10.0,K))
   }
   
   # fit null model
