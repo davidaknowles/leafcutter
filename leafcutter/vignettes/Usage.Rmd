@@ -36,9 +36,14 @@ The `STAR` index was generated as
 ```
 STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100
 ```
-(alternatively use one of the [prebuilt indices](http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/) ) and alignment itself was run as
+(alternatively use one of the [prebuilt indices](http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/) ) and alignment itself was run (with STAR v2.5.2a) as
 ```
 STAR --genomeDir hg19index/ --twopassMode --outSAMstrandField intronMotif --readFilesCommand zcat --outSAMtype BAM
+```
+
+As of STAR v2.5.3a you may need to do
+```
+STAR --genomeDir hg19index/ --twopassMode Basic --outSAMstrandField intronMotif --readFilesCommand zcat --outSAMtype BAM Unsorted
 ```
 
 #### Choice of 6nt overhang

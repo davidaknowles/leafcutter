@@ -76,20 +76,20 @@
 <div id="example" class="section level4">
 <h4 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h4>
-<p>If you’ve already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the <code>leafviz</code> directory:</p>
-<pre><code>cd leafviz</code></pre>
+<p>If you’ve already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the <code>leafvis</code> directory:</p>
+<pre><code>cd leafvis</code></pre>
 <p>and then download the example data using</p>
 <pre><code>./download_example.sh</code></pre>
 <p>This will download and unzip a folder called <code>example</code>. Now starting the shiny app should be as easy as</p>
-<pre><code>./run_leafviz.R example/Brain_vs_Heart_results.Rdata</code></pre>
-<p>You can even leave out the <code>example/Brain_vs_Heart_results.Rdata</code> part as this is the default dataset <code>run_leafviz.R</code> will try to use.</p>
+<pre><code>./run_leafvis.R example/Brain_vs_Heart_results.Rdata</code></pre>
+<p>You can even leave out the <code>example/Brain_vs_Heart_results.Rdata</code> part as this is the default dataset <code>run_leafvis.R</code> will try to use.</p>
 </div>
 <div id="annotation-code" class="section level4">
 <h4 class="hasAnchor">
 <a href="#annotation-code" class="anchor"></a>Annotation code</h4>
 <p>The Shiny app includes functionality to label detected introns as annotated or cryptic. To do for a new dataset this an “annotation code” is needed, built from a “Gene Transfer Format” file appropriate for your genome. We provide pre-built annotation codes for hg19 and hg38 which can be downloaded by running</p>
 <pre><code>./download_human_annotation_codes.sh</code></pre>
-<p>from the <code>leafviz</code> directory. To build a new annotation code you need:</p>
+<p>from the <code>leafvis</code> directory. To build a new annotation code you need:</p>
 <ul>
 <li>
 <a href="http://bedtools.readthedocs.io/en/latest/">bedtools</a> &gt;= v2.17.0</li>
@@ -158,8 +158,8 @@
 <div id="step-2--visualise-the-results" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-2--visualise-the-results" class="anchor"></a>Step 2. Visualise the results</h3>
-<pre><code>cd leafviz/
-Rscript run_leafviz.R &lt;oFolder&gt;/results/&lt;code&gt;_results.Rdata</code></pre>
+<pre><code>cd leafvis/
+Rscript run_leafvis.R &lt;oFolder&gt;/results/&lt;code&gt;_results.Rdata</code></pre>
 <p>This will load in the Rdata object and run the LeafCutter Visualisation App in your browser.</p>
 </div>
 <div id="features" class="section level3">
