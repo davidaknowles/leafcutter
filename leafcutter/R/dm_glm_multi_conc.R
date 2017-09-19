@@ -13,12 +13,13 @@
 #' @param fit_null Optionally cache the fitted null model to save repeatedly fitting the null for each cis-SNP when sQTL mapping)
 #' @param debug Whether to give verbose output from rstan.
 #' @param init Can be one of {"smart", "random"}. smart uses an method of moments estimator to get a reasonable initialization. The seed for "random" can be set through the ... arguments passed to rstan::optimizing.
-#' @param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS) or the random seed if random initialization is requested. 
+#' @smart_init_regularizer Used to protect against colinear covariates. 
+#' @param #' @param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS) or the random seed if random initialization is requested. 
 #' @importFrom rstan optimizing
 #' @import foreach
 #' @import dplyr
 #' @export
-dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1.01, outlier_prior_b=100, fit_null=NULL, debug=F, init="smart", ...) {
+dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1.01, outlier_prior_b=100, fit_null=NULL, debug=F, init="smart", smart_init_regularizer=0.001, ...) {
   K=ncol(y)
   
   model_to_use=if (robust) stanmodels$dm_glm_robust else stanmodels$dm_glm_multi_conc
@@ -27,7 +28,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
   
   if (init=="smart") {
     y_norm = sweep(y+1,1,rowSums(y+1),"/") %>% log()
-    beta_mm = solve( t(xNull) %*% xNull, t(xNull) %*% y_norm )
+    beta_mm = solve( t(xNull) %*% xNull + smart_init_regularizer * diag(ncol(xNull)), t(xNull) %*% y_norm )
     beta_norm = sweep(beta_mm, 1, rowMeans(beta_mm), "-")
     beta_scale = foreach(i=seq_len(nrow(beta_norm)), .combine = c) %do% {
       beta_row = beta_norm[i,]

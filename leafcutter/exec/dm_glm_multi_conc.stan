@@ -19,7 +19,7 @@ model {
   for (k in 1:K)
     for (p in 1:P)
       beta[k,p] = beta_scale[p] * (beta_raw[p][k] - 1.0 / K);
-
+  
   conc ~ gamma(concShape, concRate);
   for (n in 1:N) {
     vector[K] a; 
