@@ -11,7 +11,6 @@
 #' @param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS).
 #' @importFrom rstan optimizing
 #' @export
-#' @import stats
 betaBinomialGLM=function(ys,ns,xFull,xNull,concShape=1.0001,concRate=1e-4,...) {
   stopifnot(all(xNull==xFull[,1:ncol(xNull)]))
   stopifnot(all(xNull[,1]==1))

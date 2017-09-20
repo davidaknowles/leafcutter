@@ -2,7 +2,7 @@
 #' Make cluster level plot
 #'
 #' @import ggplot2
-#' @import gridExtra
+#' @importFrom gridExtra grid.arrange
 #' @import intervals
 #' @export 
 make_cluster_plot <- function(
