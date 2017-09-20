@@ -4,18 +4,16 @@
 #'
 #' @param results From \code{\link{differential_splicing}}
 #' @return Data.frame with columns status, log likelihood ratio, degrees of freedom, p-value
-#' @importFrom dplyr bind_rows
+#' @import dplyr
 #' @export
 cluster_results_table=function(results) {
-  cluster_table=as.data.frame(cbind(cluster=names(results), foreach(res=results, .combine=bind_rows) %do% { 
+  foreach(res=results, .combine=bind_rows) %dopar% { 
     if ( is.character(res) | ("error" %in% class(res)) ) 
-      data.frame(status=as.character(res), loglr=NA, df=NA, p=NA) else 
-      data.frame(status="Success", loglr=res$loglr, df=res$df, p=res$lrtp) 
-    } ) )
-  # Make sure we strip newlines from any reported errors
-  cluster_table$status   = gsub("\n", "", cluster_table$status) 
-  cluster_table$p.adjust = p.adjust(cluster_table$p, method="fdr")
-  cluster_table
+      data.frame(status=as.character(res), loglr=NA, df=NA, p=NA, stringsAsFactors = F) else 
+      data.frame(status="Success", loglr=res$loglr, df=res$df, p=res$lrtp, stringsAsFactors = F) 
+  } %>% mutate( cluster=names(results),
+                  status   = gsub("\n", "", status),  # strip newlines from any reported errors
+                  p.adjust = p.adjust(p, method="fdr") )
 }
 
 #' Convert K-1 representation of parameters to real
@@ -30,18 +28,23 @@ beta_real=function(r)
 #'
 #' @param results From \code{\link{differential_splicing}}
 #' @return data.frame with a row for every tested intron and columns: intron, log effect size, baseline proportions, proportions in the second condition, and resulting deltaPSI
-#' @importFrom dplyr bind_rows
+#' @import dplyr 
 #' @export
 leaf_cutter_effect_sizes=function(results) {
-  softmax=function(g) exp(g)/sum(exp(g))
-  all_introns=foreach(res=results, .combine = bind_rows) %do% {
+  normalize=function(g) { g/sum(g) }
+  softmax=function(g) normalize(exp(g))
+  to_psi=function(b,conc) { normalize(softmax(b)*conc) }
+  foreach(res=results, .combine = bind_rows) %do% {
     if ( is.character(res) | ("error" %in% class(res)) ) NULL else {
        beta=beta_real( res$fit_full$par )
-       data.frame( intron=colnames(beta), logef=beta[2,], baseline=softmax(beta[1,]), perturbed=softmax(beta[1,]+beta[2,]), stringsAsFactors = F )
+       data.frame( intron=colnames(beta), 
+                   logef=beta[2,], 
+                   baseline=to_psi(beta[1,],res$fit_full$par$conc), 
+                   perturbed=to_psi(beta[1,]+beta[2,],res$fit_full$par$conc), 
+                   stringsAsFactors = F )
     }      
-  } 
-  all_introns$deltapsi=with(all_introns, perturbed-baseline)
-  all_introns
+  } %>% 
+  mutate( deltapsi=perturbed-baseline)
 }
 
 
