@@ -13,8 +13,8 @@
 #' @param fit_null Optionally cache the fitted null model to save repeatedly fitting the null for each cis-SNP when sQTL mapping)
 #' @param debug Whether to give verbose output from rstan.
 #' @param init Can be one of {"smart", "random"}. smart uses an method of moments estimator to get a reasonable initialization. The seed for "random" can be set through the ... arguments passed to rstan::optimizing.
-#' @smart_init_regularizer Used to protect against colinear covariates. 
-#' @param #' @param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS) or the random seed if random initialization is requested. 
+#' @param smart_init_regularizer Used to protect against colinear covariates. 
+#' @param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS) or the random seed if random initialization is requested. 
 #' @importFrom rstan optimizing
 #' @import foreach
 #' @import dplyr
@@ -36,7 +36,7 @@ dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRa
       down=beta_row[which.max(-sign(up)*beta_row)] / (1/K)
       up-down
     }
-    beta_raw=sweep(beta_norm,1,beta_scale,"/") + 1/K
+    beta_raw=sweep(beta_norm,1,beta_scale+1e-20,"/") + 1/K
     beta_raw=sweep(beta_raw,1,rowSums(beta_raw),"/")
     init=list(beta_scale=array(beta_scale), beta_raw=beta_raw, conc=rep(10.0,K))
   }
