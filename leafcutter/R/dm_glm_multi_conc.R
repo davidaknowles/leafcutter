@@ -22,7 +22,7 @@
 dirichlet_multinomial_anova_mc <- function(xFull,xNull,y,concShape=1.0001,concRate=1e-4, robust=T, outlier_prior_a=1.01, outlier_prior_b=100, fit_null=NULL, debug=F, init="smart", smart_init_regularizer=0.001, ...) {
   K=ncol(y)
   
-  model_to_use=if (robust) stanmodels$dm_glm_robust else stanmodels$dm_glm_multi_conc
+  model_to_use=stanmodels$dm_glm_multi_conc
   
   dat_null=list(N=nrow(xNull), K=K, P=ncol(xNull), y=y, x=xNull, concShape=concShape,concRate=concRate, outlier_prior_a=outlier_prior_a, outlier_prior_b=outlier_prior_b)
   
