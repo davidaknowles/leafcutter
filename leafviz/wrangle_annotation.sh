@@ -8,11 +8,10 @@ wrangle_annotation.sh
 finds introns, exons and splice sites in a GTF file
 
 usage 
-sh wrangle_annotation.sh <GTF> <outfile_prefix> <species>
+sh wrangle_annotation.sh <GTF> <outfile_prefix>
 
 GTF can be gzipped
 outfile_prefix can be file name or full path
-species is either human or mouse
 
 WARNING: this has only been tested on GENCODE V26 mouse (mm10) and human (hg19/hg38)
 "
@@ -28,18 +27,10 @@ fi
 # $1 is the file
 # $2 is the prefix code
 CODE=$2
-# $3 is the species , either mouse or human
-# SPECIES=$3
-# if [[ "$SPECIES" == "mouse" ]];then
-# 	SPECIES=3
-# elif [[ "$SPECIES" == "human" ]];then
-# 	SPECIES=4
-# else
-# 	echo "\$3 must be either mouse or human"
-# 	exit 1
-# fi
-# gencode has changed?
+
+# This is the position of the gene_name in the last gtf column
 SPECIES=3
+
 #take a list of exons in a GTF and return the introns
 echo finding introns
 
@@ -145,7 +136,7 @@ gzip ${CODE}_threeprime.bed
 echo creating exon list
 # TODO: also create the exon lists for the graphing step.
 $command $1 | gawk -F '\t'   \
-		-v species=$SPECIES ' # exons have the gene name in a different column to the gene entries. Fuck GTF files so hard.
+		-v species=$SPECIES ' # exons have the gene name in a different column to the gene entries. 
 BEGIN{
 	print "chr start end strand gene_name"
 			} $3 == "exon" {
