@@ -2,8 +2,8 @@ Package: leafcutter
 Type: Package
 Title: Alternative splicing quantification, differential splicing and splicing
     QTL mapping
-Version: 0.2.6
-Date: 2017-09-19
+Version: 0.2.7
+Date: 2017-09-25
 Authors@R: c(person("David", "Knowles", email = "knowles84@gmail.com", role = c("aut", "cre")),
               person("Yang", "Li", role = c("aut", "cre")),
 			  person("Jack", "Humphrey", role = c("aut", "cre")),
@@ -29,6 +29,7 @@ Imports:
     doMC,
     optparse,
 	shiny,
+	shinyjs,
 	DT,
 	intervals,
 	shinycssloaders,
