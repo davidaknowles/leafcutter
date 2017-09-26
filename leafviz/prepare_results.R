@@ -14,34 +14,28 @@ library(magrittr)
 options(echo=TRUE)
 
 option_parser=OptionParser(
+  usage="%prog [options] <name>_perind_numers.counts.gz <name>_cluster_significance.txt <name>_effect_sizes.txt annotation_code \nThe annotation_code should be something like annotation_codes/annotation_codes/gencode_hg19/gencode_hg19.\nresults.RData",
   option_list=list(
-    make_option( c("-i", "--iFolder"), help = "The folder where the LeafCutter differential splicing was run"),
-    make_option( c("-o","--outFolder"), help = "The folder where the results object will be saved" ),
-    make_option( "--support", default=NULL, help="The support file used in the differential splicing analysis. Columns should be file name and condition"),
-    make_option( "--annotation_code", default=NULL, help = "a path to the annotation files of exons, introns and splice sites"),
-    make_option( c("-f","--FDR"), default=0.05, help = "the adjusted p value threshold to use"),
-    make_option( "--code", default=NULL, help = "the same dataset-specific code used throughout the pipeline"))
+    make_option( c("-o","--output"), default="leafviz.RData", help="The output file that will be created ready for loading by run_leafviz.R"),
+    make_option( "--meta_data_file", default=NULL, help="The support file used in the differential splicing analysis. Columns should be file name and condition"),
+  make_option( c("-f","--FDR"), default=0.05, help = "the adjusted p value threshold to use"),
+    make_option( "--code", default="leafcutter_ds", help = "A name for this analysis (will be available in leafviz through the Summary tab."))
 )
 
-#opt <- parse_args(option_parser)
-setwd("~/Dropbox/splicing/leafcutter/example_data/")
-opt <- parse_args(option_parser, args=str_split("-i . -o for_leafviz --support test_diff_intron.txt --annotation_code ../leafviz/annotation_codes/gencode_hg19/gencode_hg19 --code leafcutter -f 0.5"," ")[[1]])
+parsed_args <- parse_args(option_parser,  positional_arguments = 4)
 
-resultsFolder = opt$outFolder
-iFolder <- opt$iFolder
-species <- opt$species
-groups_file <- opt$support
-# counts_file <- opt$counts_file
-annotation_code <- opt$annotation_code
-code <- opt$code
-FDR_limit <- opt$FDR
+counts_file <- parsed_args$args[1]
+cluster_significance_file <- parsed_args$args[2]
+effect.sizes.file <- parsed_args$args[3]
+annotation_code <- parsed_args$args[4]
+
+code <- parsed_args$options$code
+results_file = parsed_args$options$output
+groups_file <- parsed_args$options$meta_data_file
+FDR_limit <- parsed_args$options$FDR
 
 cat("Preparing for visualisation\n")
 
-# results
-effect.sizes.file <- paste0(iFolder,"/",code,"_ds_effect_sizes.txt") 
-results.file <- paste0(iFolder, "/",code,"_ds_cluster_significance.txt")
-counts_file <- paste0(iFolder, "/",code, "_perind_numers.counts.gz")
 # annotation
 exon_file <- paste0(annotation_code, "_all_exons.txt.gz")
 all_introns <- paste0(annotation_code,"_all_introns.bed.gz" )
@@ -51,12 +45,8 @@ fiveprime_file <- paste0( annotation_code,"_fiveprime.bed.gz")
 # CHECK DEPENDENCY FILES
 pass <- TRUE
 errorMessage <- c()
-
-# Dependent on
-# effects sizes and results file, not counts or groups
-
 for( file in 
-  c(effect.sizes.file, results.file, counts_file, groups_file, 
+  c(effect.sizes.file, cluster_significance_file, counts_file, groups_file, 
     all_introns, threeprime_file, fiveprime_file, exon_file
     )){
   if( !file.exists(file)){
@@ -65,18 +55,15 @@ for( file in
   }
 }
 if(!pass){
-  #print(errorMessage)
   stop(errorMessage)
 }
-cat(paste("results to be saved in:",opt$outFolder, "\n") )
-cat(paste("using annotation found in:", annotation_code,"\n") )
+cat("Results to be saved in:",results_file, "\n")
+cat("Using annotation at:", annotation_code,"\n")
 
-if(file.exists(counts_file)){
-  cat("Loading counts from",counts_file,"\n")
-  counts <- read.table(counts_file, check.names=FALSE)
-}
+cat("Loading counts from",counts_file,"\n")
+counts <- read.table(counts_file, check.names=FALSE)
 
-if(file.exists(groups_file)){
+if(file.exists(groups_file)){ # can we run without this?
   cat("Loading metadata from",groups_file,"\n")
   meta <- read.table(groups_file, header=FALSE, stringsAsFactors = FALSE)
   colnames(meta)=c("sample","group")
@@ -84,7 +71,6 @@ if(file.exists(groups_file)){
   if( ncol(meta) > 2){
     colnames(meta)[3:ncol(meta)] <- paste0("covariate", 1:(ncol(meta) - 2)  )
   }
-  
   sample_table <- data.frame( group = names(table(meta$group) ), count = as.vector(table(meta$group)) )
 }
 
@@ -98,26 +84,19 @@ exons_table=if (!is.null( exon_file )) {
   NULL
 }
 
-dir.create(resultsFolder, recursive = T, showWarnings = F)
-
 effectSizes <- fread(effect.sizes.file, data.table=F )
 effectSizesSplit <-  as.data.frame(str_split_fixed(effectSizes$intron, ":", 4), stringsAsFactors = FALSE )
 names(effectSizesSplit) <- c("chr","start","end","clusterID")
 
-print(head(effectSizes))
-print(head(effectSizesSplit))
-
 effectSizes <- cbind( effectSizes, effectSizesSplit)
 effectSizes$cluster <- paste(effectSizesSplit$chr, effectSizesSplit$clusterID, sep = ":")
 
-results <- fread(results.file, data.table=F )
-
+results <- fread(cluster_significance_file, data.table=F )
 results$FDR <- p.adjust( results$p, method = "fdr")
 
 # If there were no significant results, stop here and provide feedback to the user by printing
-# an error message and writing an empty file indicating that no significant clusters were found at this FDR threshold
+# an error message indicating that no significant clusters were found at this FDR threshold
 if( !any(results$FDR < FDR_limit, na.rm=T) ){
-   write.table( data.frame(), file=paste0(resultsFolder,"/no-significant-clusters-found.txt"), col.names=FALSE);
    stop("No significant clusters found\n");
 }
 
@@ -151,8 +130,6 @@ fiveprime_intersect =  all.junctions %>%
 
 # now I have two lists of splice site annotation
 # for testing
-#cluster <- all.introns[ all.introns$clusterID == "clu_4879" , ]
-
 print("Annotating junctions")
 
 verdict.list <- list()
@@ -162,9 +139,6 @@ ensemblID.list <- list()
 transcripts.list <- list()
 constitutive.list <- list()
 classification.list <- list()
-
-# for testing!
-#clu <- "clu_59455"
 
 clusters <- unique( all.introns$clusterID ) 
 for( clu in clusters ){
@@ -196,8 +170,6 @@ for( clu in clusters ){
   if( is.null(cluster_gene) ){
     cluster_gene <- "."
   }
-  
-  #print(cluster_gene)
   
   gene_strand <- NA
   if( cluster_gene != "." ){
@@ -422,13 +394,6 @@ all.clusters$N  <- results$N[ match( all.clusters$clusterID, results$clusterID)]
 # add classification 
 all.clusters$verdict <- unlist(classification.list)[ match(all.clusters$clusterID, names(classification.list))]
 
-# write out 
-cluster_results <- paste0(resultsFolder,"/per_cluster_results.tab")
-intron_results <- paste0(resultsFolder, "/per_intron_results.tab")
-
-write.table( all.clusters, cluster_results, quote = FALSE, row.names = FALSE, sep = "\t" )
-write.table( all.introns, intron_results, quote = FALSE, row.names = FALSE, sep = "\t" )
-
 # prepare for PCA
 counts <- counts[,meta$sample]
 print( "converting counts to ratios")
@@ -467,7 +432,6 @@ print("creating PCA")
 pca <- make_pca(ratios,meta)
 
 # sort out clusters table
-
 fix_clusters <- function(clusters){
   clusters$FDR <- signif( clusters$FDR, digits = 3)
   clusters$coord <- paste0( clusters$chr, ":", clusters$start, "-", clusters$end)
@@ -538,7 +502,6 @@ intron_summary <- function(all.introns){
 }
 
 # create all the objects for visualisation
-
 clusters <- fix_clusters(all.clusters)
 introns <- fix_introns(all.introns)
 intron_summary <- intron_summary(all.introns)
@@ -548,7 +511,6 @@ cluster_ids <- introns_to_plot$clu
 
 # save all the objects needed by Leafcutter viz into single Rdata file
 # include the mode variable 
-
 save( introns, 
       clusters, 
       counts, 
@@ -562,10 +524,6 @@ save( introns,
       sample_table,
       annotation_code,
       code,
-      file = paste0( resultsFolder, "/",code,"_results.Rdata")
+      file = results_file
 )
-
-
-#quit()
-
 
