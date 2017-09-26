@@ -5,21 +5,14 @@
 ## and prepare for visualisation
 
 library(optparse)
-require(leafcutter)
-library(data.table)
-library(stringr)
-library(dplyr)
-library(magrittr)
-
-options(echo=TRUE)
 
 option_parser=OptionParser(
-  usage="%prog [options] <name>_perind_numers.counts.gz <name>_cluster_significance.txt <name>_effect_sizes.txt annotation_code \nThe annotation_code should be something like annotation_codes/annotation_codes/gencode_hg19/gencode_hg19.\nresults.RData",
+  usage="%prog [options] <name>_perind_numers.counts.gz <name>_cluster_significance.txt <name>_effect_sizes.txt annotation_code \nThe annotation_code should be something like annotation_codes/gencode_hg19/gencode_hg19.",
   option_list=list(
-    make_option( c("-o","--output"), default="leafviz.RData", help="The output file that will be created ready for loading by run_leafviz.R"),
-    make_option( "--meta_data_file", default=NULL, help="The support file used in the differential splicing analysis. Columns should be file name and condition"),
-  make_option( c("-f","--FDR"), default=0.05, help = "the adjusted p value threshold to use"),
-    make_option( "--code", default="leafcutter_ds", help = "A name for this analysis (will be available in leafviz through the Summary tab."))
+    make_option( c("-o","--output"), default="leafviz.RData", help="The output file that will be created ready for loading by run_leafviz.R [%default]"),
+    make_option( c("-m","--meta_data_file"), default=NULL, help="The support file used in the differential splicing analysis. Columns should be file name and condition"),
+  make_option( c("-f","--FDR"), default=0.05, help = "the adjusted p value threshold to use [%default]"),
+    make_option( c("-c","--code"), default="leafcutter_ds", help = "A name for this analysis (will be available in leafviz through the Summary tab). [%default]"))
 )
 
 parsed_args <- parse_args(option_parser,  positional_arguments = 4)
@@ -33,6 +26,12 @@ code <- parsed_args$options$code
 results_file = parsed_args$options$output
 groups_file <- parsed_args$options$meta_data_file
 FDR_limit <- parsed_args$options$FDR
+
+require(leafcutter)
+library(data.table)
+library(stringr)
+library(dplyr)
+library(magrittr)
 
 cat("Preparing for visualisation\n")
 

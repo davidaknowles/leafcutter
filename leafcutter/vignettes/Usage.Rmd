@@ -112,7 +112,7 @@ RNA.NA06989_CEU.chr1.bam CEU
 RNA.NA06994_CEU.chr1.bam CEU
 ```
 
-Having made that file we can run DS (this assumes you have successfully installed the `leafcutter` R package as described under Installation above)
+Having made that file we can run DS (this assumes you have successfully installed the `leafcutter` R package as described under [Installation](./Installation.html) above)
 ```
 ../scripts/leafcutter_ds.R --num_threads 4 --exons_file=../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt
 ```

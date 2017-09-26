@@ -59,6 +59,7 @@ These should all have been installed when you installed leafcutter:
 * dplyr
 * ggplot2
 * shiny
+* shinyjs
 * DT
 * intervals
 * reshape2
@@ -93,39 +94,48 @@ We've only tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 G
 
 ### Step 1. Prepare the LeafCutter differential splicing results for visualisation
 
-This step annotates each intron in each cluster at a given false discovery rate.
-
+This step annotates each intron in each cluster at a given false discovery rate and generates a single `.RData` file with everything the shiny app needs to run. 
 ```
-Rscript prepare_results.R --iFolder <iFolder> \
-						 --oFolder <oFolder> \
-                         --support <support> \
-                         --annotation_code <annotation_code> \
-                         --code <code> \
-                         --FDR <FDR> \                       
+./prepare_results.R [options] <name>_perind_numers.counts.gz <name>_cluster_significance.txt <name>_effect_sizes.txt annotation_code 
 ```
+** <name>_perind_numers.counts.gz ** The same counts matrix you gave to `leafcutter_ds.R`. 
+** <name>_cluster_significance.txt ** The cluster significant table output by `leafcutter_ds.R`. 
+**  <name>_effect_sizes.txt ** The per junction effect size table output by `leafcutter_ds.R`. 
+** annotation_code ** will be something like `annotation_codes/gencode_hg19/gencode_hg19` (see above)
 
-**iFolder** - the folder that contains the results of the differential intron excision analysis. The script assumes all results share the same path and **code**.
+Options:
+```
+	-o OUTPUT, --output=OUTPUT
+		The output file that will be created ready for loading by run_leafviz.R [leafviz.RData]
 
-**oFolder** - the folder where the results will be written.
+	-m META_DATA_FILE, --meta_data_file=META_DATA_FILE
+		The support file used in the differential splicing analysis. Columns should be file name and condition
 
-**support** - the same support file as used for the previous analysis. 
+	-f FDR, --FDR=FDR
+		the adjusted p value threshold to use [0.05]
 
-**annotation_code** - as before.
+	-c CODE, --code=CODE
+		A name for this analysis (will be available in leafviz through the Summary tab). [leafcutter_ds]
 
-**code** - the same code used for the rest of the analysis, eg `testYRIvsEU`
+	-h, --help
+		Show this help message and exit
+```
+This will create the Rdata file wherever `--output` is pointed. The file 'prepare_example.sh' shows how this would be done for the example dataset if you wanted to rebuild 'Brain_vs_Heart_results.Rdata'. 
 
-**FDR** - the benjamini-hochberg false discovery rate with which to filter the results.
-
-This will create the Rdata object `<oFolder>/results/<code>_results.Rdata`. The file 'prepare_example.sh' shows how this would be done for the example dataset if you wanted to rebuild 'Brain_vs_Heart_results.Rdata'. 
+As a concrete example, let's assume you just ran the example at [Usage](./Usage.html) and you're currently in the `/example_data` subdirectory, then running
+```
+../leafviz/prepare_results.R --meta_data_file test_diff_intron.txt --code leafcutter testYRIvsEU_perind_numers.counts.gz leafcutter_ds_cluster_significance.txt leafcutter_ds_effect_sizes.txt ../leafviz/annotation_codes/gencode_hg19/gencode_hg19
+```
+should create an `leafviz.RData` file. 
 
 ### Step 2. Visualise the results
 
+From the `example_data` directory. 
 ```
-cd leafvis/
-Rscript run_leafvis.R <oFolder>/results/<code>_results.Rdata
+cd ../leafviz/
+./run_leafviz.R ../example_data/leafviz.Rdata
 ```
-
-This will load in the Rdata object and run the LeafCutter Visualisation App in your browser.
+This will load in the Rdata object and run the LeafCutter Visualisation App in your browser. 
 
 ### Features
 

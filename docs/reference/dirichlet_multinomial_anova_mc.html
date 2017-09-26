@@ -146,8 +146,12 @@
       <td><p>Can be one of "smart", "random". smart uses an method of moments estimator to get a reasonable initialization. The seed for "random" can be set through the ... arguments passed to rstan::optimizing.</p></td>
     </tr>
     <tr>
-      <th>#'</th>
-      <td><p>@param ... will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS) or the random seed if random initialization is requested.</p></td>
+      <th>smart_init_regularizer</th>
+      <td><p>Used to protect against colinear covariates.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>will be passed on the rstan::optimizing, so can be used for example to set the algorithm used (default is LBFGS) or the random seed if random initialization is requested.</p></td>
     </tr>
     </table>
     

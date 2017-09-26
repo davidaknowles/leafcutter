@@ -112,6 +112,7 @@
 <li>dplyr</li>
 <li>ggplot2</li>
 <li>shiny</li>
+<li>shinyjs</li>
 <li>DT</li>
 <li>intervals</li>
 <li>reshape2</li>
@@ -140,26 +141,35 @@
 <div id="step-1--prepare-the-leafcutter-differential-splicing-results-for-visualisation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-1--prepare-the-leafcutter-differential-splicing-results-for-visualisation" class="anchor"></a>Step 1. Prepare the LeafCutter differential splicing results for visualisation</h3>
-<p>This step annotates each intron in each cluster at a given false discovery rate.</p>
-<pre><code>Rscript prepare_results.R --iFolder &lt;iFolder&gt; \
-                         --oFolder &lt;oFolder&gt; \
-                         --support &lt;support&gt; \
-                         --annotation_code &lt;annotation_code&gt; \
-                         --code &lt;code&gt; \
-                         --FDR &lt;FDR&gt; \                       </code></pre>
-<p><strong>iFolder</strong> - the folder that contains the results of the differential intron excision analysis. The script assumes all results share the same path and <strong>code</strong>.</p>
-<p><strong>oFolder</strong> - the folder where the results will be written.</p>
-<p><strong>support</strong> - the same support file as used for the previous analysis.</p>
-<p><strong>annotation_code</strong> - as before.</p>
-<p><strong>code</strong> - the same code used for the rest of the analysis, eg <code>testYRIvsEU</code></p>
-<p><strong>FDR</strong> - the benjamini-hochberg false discovery rate with which to filter the results.</p>
-<p>This will create the Rdata object <code>&lt;oFolder&gt;/results/&lt;code&gt;_results.Rdata</code>. The file ‘prepare_example.sh’ shows how this would be done for the example dataset if you wanted to rebuild ‘Brain_vs_Heart_results.Rdata’.</p>
+<p>This step annotates each intron in each cluster at a given false discovery rate and generates a single <code>.RData</code> file with everything the shiny app needs to run.</p>
+<pre><code>./prepare_results.R [options] &lt;name&gt;_perind_numers.counts.gz &lt;name&gt;_cluster_significance.txt &lt;name&gt;_effect_sizes.txt annotation_code </code></pre>
+<p>** <name>_perind_numers.counts.gz ** The same counts matrix you gave to <code>leafcutter_ds.R</code>. ** <name>_cluster_significance.txt ** The cluster significant table output by <code>leafcutter_ds.R</code>. ** <name>_effect_sizes.txt ** The per junction effect size table output by <code>leafcutter_ds.R</code>. ** annotation_code ** will be something like <code>annotation_codes/gencode_hg19/gencode_hg19</code> (see above)</name></name></name></p>
+<p>Options:</p>
+<pre><code>    -o OUTPUT, --output=OUTPUT
+        The output file that will be created ready for loading by run_leafviz.R [leafviz.RData]
+
+    -m META_DATA_FILE, --meta_data_file=META_DATA_FILE
+        The support file used in the differential splicing analysis. Columns should be file name and condition
+
+    -f FDR, --FDR=FDR
+        the adjusted p value threshold to use [0.05]
+
+    -c CODE, --code=CODE
+        A name for this analysis (will be available in leafviz through the Summary tab). [leafcutter_ds]
+
+    -h, --help
+        Show this help message and exit</code></pre>
+<p>This will create the Rdata file wherever <code>--output</code> is pointed. The file ‘prepare_example.sh’ shows how this would be done for the example dataset if you wanted to rebuild ‘Brain_vs_Heart_results.Rdata’.</p>
+<p>As a concrete example, let’s assume you just ran the example at <a href="./Usage.html">Usage</a> and you’re currently in the <code>/example_data</code> subdirectory, then running</p>
+<pre><code>../leafviz/prepare_results.R --meta_data_file test_diff_intron.txt --code leafcutter testYRIvsEU_perind_numers.counts.gz leafcutter_ds_cluster_significance.txt leafcutter_ds_effect_sizes.txt ../leafviz/annotation_codes/gencode_hg19/gencode_hg19</code></pre>
+<p>should create an <code>leafviz.RData</code> file.</p>
 </div>
 <div id="step-2--visualise-the-results" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-2--visualise-the-results" class="anchor"></a>Step 2. Visualise the results</h3>
-<pre><code>cd leafvis/
-Rscript run_leafvis.R &lt;oFolder&gt;/results/&lt;code&gt;_results.Rdata</code></pre>
+<p>From the <code>example_data</code> directory.</p>
+<pre><code>cd ../leafviz/
+./run_leafviz.R ../example_data/leafviz.Rdata</code></pre>
 <p>This will load in the Rdata object and run the LeafCutter Visualisation App in your browser.</p>
 </div>
 <div id="features" class="section level3">
