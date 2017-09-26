@@ -4,34 +4,30 @@
 ### annotate the output of differential splicing
 ## and prepare for visualisation
 
-# # for testing
- outFolder <- ""
- iFolder <- "example/"
- groups_file <- "example/Brain_vs_Heart_meta.txt"
- annotation_code <- "annotation_codes/gencode_hg19/gencode_hg19"
- species <- "human"
- FDR_limit <- 0.05
- code <- "Brain_vs_Heart"
-
-
 library(optparse)
 require(leafcutter)
+library(data.table)
+library(stringr)
+library(dplyr)
+library(magrittr)
 
 options(echo=TRUE)
 
-opt <- parse_args(
-  OptionParser(
-    option_list=list(
-      make_option( c("-i", "--iFolder"), help = "The folder where the LeafCutter differential splicing was run"),
-      make_option( c("-o","--outFolder"), help = "The folder where the results object will be saved" ),
-      make_option( "--support", default=NULL, help="The support file used in the differential splicing analysis. Columns should be file name and condition"),
-      make_option( "--annotation_code", default=NULL, help = "a path to the annotation files of exons, introns and splice sites"),
-      make_option( c("-f","--FDR"), default=0.05, help = "the adjusted p value threshold to use"),
-      make_option( "--code", default=NULL, help = "the same dataset-specific code used throughout the pipeline"))
-	 )
-  )
+option_parser=OptionParser(
+  option_list=list(
+    make_option( c("-i", "--iFolder"), help = "The folder where the LeafCutter differential splicing was run"),
+    make_option( c("-o","--outFolder"), help = "The folder where the results object will be saved" ),
+    make_option( "--support", default=NULL, help="The support file used in the differential splicing analysis. Columns should be file name and condition"),
+    make_option( "--annotation_code", default=NULL, help = "a path to the annotation files of exons, introns and splice sites"),
+    make_option( c("-f","--FDR"), default=0.05, help = "the adjusted p value threshold to use"),
+    make_option( "--code", default=NULL, help = "the same dataset-specific code used throughout the pipeline"))
+)
 
-outFolder <- opt$outFolder
+opt <- parse_args(option_parser)
+#setwd("~/Dropbox/splicing/leafcutter/example_data/")
+#opt <- parse_args(option_parser, args=str_split("-i . -o for_leafviz --support test_diff_intron.txt --annotation_code ../leafviz/annotation_codes/gencode_hg19/gencode_hg19 --code leafcutter -f 0.5"," ")[[1]])
+
+resultsFolder = opt$outFolder
 iFolder <- opt$iFolder
 species <- opt$species
 groups_file <- opt$support
@@ -39,9 +35,6 @@ groups_file <- opt$support
 annotation_code <- opt$annotation_code
 code <- opt$code
 FDR_limit <- opt$FDR
-
-
-
 
 cat("Preparing for visualisation\n")
 
@@ -54,7 +47,6 @@ exon_file <- paste0(annotation_code, "_all_exons.txt.gz")
 all_introns <- paste0(annotation_code,"_all_introns.bed.gz" )
 threeprime_file <- paste0( annotation_code,"_threeprime.bed.gz")
 fiveprime_file <- paste0( annotation_code,"_fiveprime.bed.gz")
-
 
 # CHECK DEPENDENCY FILES
 pass <- TRUE
@@ -76,21 +68,8 @@ if(!pass){
   #print(errorMessage)
   stop(errorMessage)
 }
-cat(paste("results to be saved in:",outFolder, "\n") )
+cat(paste("results to be saved in:",opt$outFolder, "\n") )
 cat(paste("using annotation found in:", annotation_code,"\n") )
-
-
-library(data.table)
-#library(leafcutter)
-library(stringr)
-library(dplyr)
-library(magrittr)
-
-
-# CHECK BEDTOOLS IS INSTALLED
-if( !file.exists(system("which bedtools", intern=TRUE) )){
-  stop("bedtools is not in your $PATH - have you installed it?")
-}
 
 if(file.exists(counts_file)){
   cat("Loading counts from",counts_file,"\n")
@@ -108,24 +87,20 @@ if(file.exists(groups_file)){
   
   sample_table <- data.frame( group = names(table(meta$group) ), count = as.vector(table(meta$group)) )
 }
-# exon table no longer used for anything - just saved with the Rdata object at the end
 
+# exon table no longer used for anything - just saved with the Rdata object at the end
 exons_table=if (!is.null( exon_file )) {
   cat("Loading exons from",exon_file,"\n")
   #read_table(exon_file)
-  as.data.frame(fread(paste("zless",exon_file)) )
+  as.data.frame(fread(paste("zless",exon_file)), data.table=F )
 } else {
   cat("No exon_file provided.\n")
   NULL
 }
 
-resultsFolder <- outFolder
-if( !dir.exists(resultsFolder)){
-  dir.create(resultsFolder)
-}
+dir.create(resultsFolder, recursive = T, showWarnings = F)
 
-
-effectSizes <- fread(effect.sizes.file, stringsAsFactors = FALSE )
+effectSizes <- fread(effect.sizes.file, data.table=F )
 effectSizesSplit <-  as.data.frame(str_split_fixed(effectSizes$intron, ":", 4), stringsAsFactors = FALSE )
 names(effectSizesSplit) <- c("chr","start","end","clusterID")
 
@@ -135,7 +110,7 @@ print(head(effectSizesSplit))
 effectSizes <- cbind( effectSizes, effectSizesSplit)
 effectSizes$cluster <- paste(effectSizesSplit$chr, effectSizesSplit$clusterID, sep = ":")
 
-results <- fread(results.file, stringsAsFactors = FALSE)
+results <- fread(results.file, data.table=F )
 
 results$FDR <- p.adjust( results$p, method = "fdr")
 
@@ -154,44 +129,25 @@ all.introns <- subset( all.introns, FDR <= FDR_limit )
 all.introns$start <- as.numeric(all.introns$start)
 all.introns$end <- as.numeric(all.introns$end)
 
-
 # for each splice site write out a bed file  
 all.junctions <- dplyr::select(all.introns, chr, start, end, clusterID)
 
-all.fiveprime <- data.frame( chr = all.introns$chr,
-                             start = all.introns$start,
-                             end = as.numeric( as.character(all.introns$start) ) + 1,
-                             clusterID = all.introns$clusterID)
-all.threeprime <- data.frame( chr = all.introns$chr,
-                             start = all.introns$end,
-                             end = as.numeric( as.character(all.introns$end) ) + 1,
-                             clusterID = all.introns$clusterID)
-all.file <- paste0(resultsFolder, "/all_junctions.bed")
-all.fiveprime.file <- paste0(resultsFolder, "/all_fiveprime.bed")
-all.threeprime.file <- paste0(resultsFolder, "/all_threeprime.bed")
+intron_db=fread(paste0("zcat < ", all_introns), data.table = F)
+colnames(intron_db)[1:4]=c("chr","start","end","gene")
+all.introns_intersect = all.junctions %>% 
+  left_join(intron_db, by=c("chr","start","end")) 
 
-write.table( all.junctions, all.file, col.names = FALSE, row.names = FALSE, quote = FALSE, sep = "\t" )
-write.table( all.threeprime, all.threeprime.file, col.names = FALSE, row.names = FALSE, quote = FALSE, sep = "\t" )
-write.table( all.fiveprime, all.fiveprime.file, col.names = FALSE, row.names = FALSE, quote = FALSE, sep = "\t" )
+threeprime_db=fread(paste0("zcat < ", threeprime_file), data.table = F)
+colnames(threeprime_db)[1:7]=c("chr","start","end","gene","gene_id","strand","transcript")
+threeprime_intersect = all.junctions %>% 
+  select(chr, clusterID, start=end) %>% 
+  left_join(threeprime_db, by=c("chr","start")) 
 
-print( "BedTools intersect junctions with list of known splice sites")
-# first match junctions 
-all.introns.cmd <- paste0("bedtools intersect -a ", all.file, " -b ", all_introns, " -wa -wb -loj -f 1" )
-  
-all.introns_intersect <- fread(all.introns.cmd)
-
-# intersect with bedtools to find the annotations of each splice site
-threeprime.cmd <- paste0( "bedtools intersect -a ", all.threeprime.file, " -b ",threeprime_file, " -wa -wb -loj -f 1" )
-
-threeprime_intersect <- fread(threeprime.cmd)
-
-fiveprime.cmd <- paste0( "bedtools intersect -a ", all.fiveprime.file, " -b ", fiveprime_file, " -wa -wb -loj -f 1" )
-
-fiveprime_intersect <- fread(fiveprime.cmd)
-
-# remove temporary files
-rm.cmd <- paste("rm ", all.file, all.fiveprime.file, all.threeprime.file) 
-system(rm.cmd)
+fiveprime_db=fread(paste0("zcat < ", fiveprime_file), data.table = F)
+colnames(fiveprime_db)[1:7]=c("chr","start","end","gene","gene_id","strand","transcript")
+fiveprime_intersect =  all.junctions %>% 
+  select(chr, clusterID, start) %>%  
+  left_join(fiveprime_db, by=c("chr","start")) 
 
 # now I have two lists of splice site annotation
 # for testing
@@ -214,69 +170,47 @@ clusters <- unique( all.introns$clusterID )
 for( clu in clusters ){
   # for each intron in the cluster, check for coverage of both
   # output a vector of string descriptions 
-  cluster <- all.introns[ all.introns$clusterID == clu , ]
+  cluster <- all.introns %>% filter( clusterID == clu )
   
   # first subset the intersected files to speed up later query - this uses the data.tables method
-  fprimeClu <- fiveprime_intersect[ V4 == clu,]
-  tprimeClu <- threeprime_intersect[ V4 == clu,]
-  bothSSClu <- all.introns_intersect[ V4 == clu,]
+  fprimeClu <- fiveprime_intersect %>% filter( clusterID == clu )
+  tprimeClu <- threeprime_intersect %>% filter( clusterID == clu )
+  bothSSClu <- all.introns_intersect %>% filter( clusterID == clu )
   
   # for each intron in the cluster:
   #   create vector of overlapping splice sites, indexed by the row of the intersect
   # five prime splice sites
-  fprime <- apply( cluster, MAR = 1, FUN = function(x) {
-    chr <- which( names(cluster) == "chr" )
-    start <- which( names(cluster) == "start" )
-    fprimeClu[   
-      V1 == x[chr] & 
-      V2 == as.numeric( x[start] ),]
-  } )
+  fprime=cluster %>% left_join(fprimeClu, by=c("chr","start"))
+  
   # three prime splice sites
-  tprime <- apply( cluster, MAR = 1, FUN = function(x) {
-    chr <- which( names(cluster) == "chr" )
-    end <- which( names(cluster) == "end" )
-    tprimeClu[   
-      V1 == x[chr] & 
-      V2 == as.numeric( x[end] ),]
-  } )
-
+  tprime=cluster %>% left_join(tprimeClu, by=c("chr"="chr","end"="start"))
+  
   # both splice sites
-  bothSS <-  apply( cluster, MAR = 1, FUN = function(x) {
-      chr <- which( names(cluster) == "chr" )
-      start <- which(names(cluster) == "start")
-      end <- which( names(cluster) == "end" )
-      bothSSClu[   
-        V6 == as.numeric( x[start] ) &
-        V7 == as.numeric( x[end] ) ,]
-    } )
+  bothSS=cluster %>% left_join(bothSSClu, by=c("chr","start","end"))
 
   # find gene and ensemblID by the most represented gene among all the splice sites - lazy
-  cluster_genes <- names(sort(table(do.call( what = rbind, c(tprime,fprime) )$V8), decreasing = TRUE ))
+  cluster_gene <- names(sort(table(c(tprime$gene,fprime$gene)), decreasing = TRUE ))[1]
 
-  cluster_gene <- cluster_genes[ cluster_genes != "." ][1]
-  # if no cluster gene found then leave as "."
-  if( is.na(cluster_gene) ){
+    # if no cluster gene found then leave as "."
+  if( is.null(cluster_gene) ){
     cluster_gene <- "."
   }
   
   #print(cluster_gene)
   
+  gene_strand <- NA
   if( cluster_gene != "." ){
     # get strand the same way - would prefer to use the strand of the junction
-    strands <- do.call( rbind, c(tprime, fprime))$V10
+    strands <- c(tprime$strand, fprime$strand)
     # hope that all junctions align to the same gene on the same strand
-    strands <- unique( strands[ strands != "." ])
-    if( all(strands == ".") | length(strands) != 1 ){
+    gene_strand <- unique( strands[ strands != "." & !is.na(strands) ])
+    if( all(is.na(gene_strand)) | length(gene_strand) != 1 ){
       gene_strand <- NA
-    }else{
-      gene_strand <- strands
     }
-  }else{
-    gene_strand <- NA
   }
   
   # do the same for EnsemblID
-  cluster_ensemblIDs <- names(sort(table(do.call( what = rbind, c(tprime,fprime) )$V9), decreasing = TRUE ))
+  cluster_ensemblIDs <- names(sort(table( c(tprime$gene_id,fprime$gene_id)), decreasing = TRUE ))
   cluster_ensemblID <- cluster_ensemblIDs[ cluster_ensemblIDs != "." ][1]
   if( length( cluster_ensemblID ) == 0 ){
     cluster_ensemblID == "."
@@ -289,40 +223,49 @@ for( clu in clusters ){
   transcripts <- list() 
   
   for( intron in 1:nrow(cluster) ){
-    coord[intron] <- paste(cluster[intron]$chr,cluster[intron]$start, cluster[intron]$end )
+    coord[intron] <- paste(cluster[intron,]$chr,cluster[intron,]$start, cluster[intron,]$end )
 
     gene[intron] <- cluster_gene
     ensemblID[intron] <- cluster_ensemblID
-
+    
+    fprime_intron=cluster[intron,] %>% left_join(fprime, by=c("chr","start"))
+    tprime_intron=cluster[intron,] %>% left_join(tprime, by=c("chr"="chr","end"="start"))
+    
     # for each intron create vector of all transcripts that contain both splice sites
-    transcripts[[intron]] <- unique( intersect( tprime[[intron]]$V10, fprime[[intron]]$V10 ) ) 
+    transcripts[[intron]] <- intersect( tprime_intron$transcript,fprime_intron$transcript ) 
 
     verdict[intron] <- "error"
-    if( # if neither are annotated
-    all( tprime[[intron]]$V5 == ".") & all( fprime[[intron]]$V5 == "." )
-    ){ verdict[intron] <- "cryptic_unanchored"
-    }
-    if( # if only one is annotated
-    ( all( tprime[[intron]]$V5 == ".") & all( fprime[[intron]]$V5 != "." ) & all(gene_strand == "+") ) |
-    ( all( fprime[[intron]]$V5 == ".") & all( tprime[[intron]]$V5 != "." ) & all(gene_strand == "-") )
-    ){ verdict[intron] <- "cryptic_threeprime"
-    }
-    if(
-    ( all( tprime[[intron]]$V5 != ".") & all( fprime[[intron]]$V5 == "." ) & all(gene_strand == "+") ) |
-    ( all( fprime[[intron]]$V5 != ".") & all( tprime[[intron]]$V5 == "." ) & all(gene_strand == "-") )
-    ){ verdict[intron] <- "cryptic_fiveprime"
-    }
-    if( is.na(gene_strand) & ( all(tprime[[intron]]$V5 != ".") | all(fprime[[intron]]$V5 != "." ) ) ){
-      verdict[intron] <- "cryptic"
-    }
-    if( # if both splice sites are annotated
-      all( tprime[[intron]]$V5 != "." ) & all( fprime[[intron]]$V5 != "." )
-    ){ 
-      # test if the splice sites are paired in a known intron
-      if( all(bothSS[[intron]]$V5 != ".") ){
-        verdict[intron] <- "annotated"
-      }else{ # both are annotated but never in the same junction
-        verdict[intron] <- "novel annotated pair"
+    
+    unknown_3p=all( is.na(tprime_intron$gene) )
+    unknown_5p=all( is.na(fprime_intron$gene) )
+    
+    if (!is.na(gene_strand)) {
+      if( unknown_3p & unknown_5p ){  # if neither are annotated
+        verdict[intron] <- "cryptic_unanchored"
+      }
+      if( # if only one is annotated
+      ( unknown_3p & !unknown_5p & all(gene_strand == "+") ) |
+      ( !unknown_5p & unknown_3p & all(gene_strand == "-") ) )
+        { 
+          verdict[intron] <- "cryptic_threeprime"
+      }
+      if(
+      ( !unknown_3p & unknown_5p & all(gene_strand == "+") ) |
+      ( unknown_3p & !unknown_5p & all(gene_strand == "-") )
+      ){ verdict[intron] <- "cryptic_fiveprime"
+      }
+      if( unknown_3p & unknown_5p ){
+        verdict[intron] <- "cryptic"
+      }
+      if( # if both splice sites are annotated
+        !unknown_3p & !unknown_5p
+      ){ 
+        # test if the splice sites are paired in a known intron
+        if( all(bothSS[[intron]]$gene != ".") ){
+          verdict[intron] <- "annotated"
+        }else{ # both are annotated but never in the same junction
+          verdict[intron] <- "novel annotated pair"
+        }
       }
     }
     verdict.list[[clu]] <- verdict
