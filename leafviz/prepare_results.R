@@ -23,9 +23,9 @@ option_parser=OptionParser(
     make_option( "--code", default=NULL, help = "the same dataset-specific code used throughout the pipeline"))
 )
 
-opt <- parse_args(option_parser)
-#setwd("~/Dropbox/splicing/leafcutter/example_data/")
-#opt <- parse_args(option_parser, args=str_split("-i . -o for_leafviz --support test_diff_intron.txt --annotation_code ../leafviz/annotation_codes/gencode_hg19/gencode_hg19 --code leafcutter -f 0.5"," ")[[1]])
+#opt <- parse_args(option_parser)
+setwd("~/Dropbox/splicing/leafcutter/example_data/")
+opt <- parse_args(option_parser, args=str_split("-i . -o for_leafviz --support test_diff_intron.txt --annotation_code ../leafviz/annotation_codes/gencode_hg19/gencode_hg19 --code leafcutter -f 0.5"," ")[[1]])
 
 resultsFolder = opt$outFolder
 iFolder <- opt$iFolder
@@ -168,6 +168,7 @@ classification.list <- list()
 
 clusters <- unique( all.introns$clusterID ) 
 for( clu in clusters ){
+  
   # for each intron in the cluster, check for coverage of both
   # output a vector of string descriptions 
   cluster <- all.introns %>% filter( clusterID == clu )
@@ -229,7 +230,8 @@ for( clu in clusters ){
     ensemblID[intron] <- cluster_ensemblID
     
     fprime_intron=cluster[intron,] %>% left_join(fprime, by=c("chr","start"))
-    tprime_intron=cluster[intron,] %>% left_join(tprime, by=c("chr"="chr","end"="start"))
+    tprime_intron=cluster[intron,] %>% left_join(tprime, by=c("chr","end"))
+    bothSS_intron=cluster[intron,] %>% left_join(bothSSClu, by=c("chr","start","end"))
     
     # for each intron create vector of all transcripts that contain both splice sites
     transcripts[[intron]] <- intersect( tprime_intron$transcript,fprime_intron$transcript ) 
@@ -239,29 +241,29 @@ for( clu in clusters ){
     unknown_3p=all( is.na(tprime_intron$gene) )
     unknown_5p=all( is.na(fprime_intron$gene) )
     
-    if (!is.na(gene_strand)) {
-      if( unknown_3p & unknown_5p ){  # if neither are annotated
+    if (is.na(gene_strand)) {
+      verdict[intron] <- "unknown_strand"
+    } else {
+      if( all( is.na(tprime_intron$gene )) & all( is.na(fprime_intron$gene ) ) ){ 
         verdict[intron] <- "cryptic_unanchored"
       }
-      if( # if only one is annotated
-      ( unknown_3p & !unknown_5p & all(gene_strand == "+") ) |
-      ( !unknown_5p & unknown_3p & all(gene_strand == "-") ) )
-        { 
-          verdict[intron] <- "cryptic_threeprime"
+      if( (all( is.na(tprime_intron$gene )) & all( !is.na(fprime_intron$gene ) ) & all(gene_strand == "+") ) |
+        ( all( is.na(fprime_intron$gene )) & all( !is.na(tprime_intron$gene ) ) & all(gene_strand == "-") )
+      ){ verdict[intron] <- "cryptic_threeprime"
       }
       if(
-      ( !unknown_3p & unknown_5p & all(gene_strand == "+") ) |
-      ( unknown_3p & !unknown_5p & all(gene_strand == "-") )
+        ( all( !is.na(tprime_intron$gene )) & all( is.na(fprime_intron$gene ) ) & all(gene_strand == "+") ) |
+        ( all( !is.na(fprime_intron$gene )) & all( is.na(tprime_intron$gene ) ) & all(gene_strand == "-") )
       ){ verdict[intron] <- "cryptic_fiveprime"
       }
-      if( unknown_3p & unknown_5p ){
+      if( is.na(gene_strand) & ( all( !is.na(tprime_intron$gene )) | all( !is.na(fprime_intron$gene ) ) ) ){
         verdict[intron] <- "cryptic"
       }
       if( # if both splice sites are annotated
-        !unknown_3p & !unknown_5p
+        all( !is.na(tprime_intron$gene ) ) & all( !is.na(fprime_intron$gene ) )
       ){ 
         # test if the splice sites are paired in a known intron
-        if( all(bothSS[[intron]]$gene != ".") ){
+        if( all( !is.na(bothSS_intron$gene )) ){
           verdict[intron] <- "annotated"
         }else{ # both are annotated but never in the same junction
           verdict[intron] <- "novel annotated pair"
@@ -564,6 +566,6 @@ save( introns,
 )
 
 
-quit()
+#quit()
 
 
