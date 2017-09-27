@@ -20,3 +20,5 @@ For details please see our [bioRxiv preprint](http://www.biorxiv.org/content/ear
 * [SplicingQTL](./articles/sQTL.html)
 
 Check out a demo leafcutter [shiny](https://shiny.rstudio.com/) app [here](https://leafcutter.shinyapps.io/leafviz/): 10 brain vs. 10 heart samples from [GTEx](https://www.gtexportal.org/home/). 
+
+We have a Google group for user questions at <https://groups.google.com/forum/#!forum/leafcutter-users>
