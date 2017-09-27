@@ -14,4 +14,6 @@ For details please see our [bioRxiv preprint](http://www.biorxiv.org/content/ear
 
 Full documentation is available at <http://davidaknowles.github.io/leafcutter/>
 
+If you have usage questions we've setup a Google group here: <https://groups.google.com/forum/#!forum/leafcutter-users>
+
 We've developed a leafcutter [shiny](https://shiny.rstudio.com/) app for visualizing leafcutter results: you can view an example [here](https://leafcutter.shinyapps.io/leafviz/). This shows leafcutter differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from [GTEx](https://www.gtexportal.org/home/). 
