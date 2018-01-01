@@ -82,6 +82,8 @@ def sort_junctions(libl, options):
     chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y'] 
     outPrefix = options.outprefix
     rundir = options.rundir
+    checkchrom = options.checkchrom
+
     if options.cluster == None:
         refined_cluster = "%s/%s_refined"%(rundir,outPrefix)
     else:
@@ -146,7 +148,8 @@ def sort_junctions(libl, options):
                 if int(blockCount) > 2:
                     print ln
                     continue
-                if chrom not in chromLst: continue
+                
+                if checkchrom and (chrom not in chromLst): continue
                 Aoff, Boff = blockSize.split(",")
                 A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
                 chrom = (chrom,strand)
