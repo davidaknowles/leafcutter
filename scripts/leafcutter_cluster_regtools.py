@@ -23,7 +23,8 @@ def pool_junc_reads(flist, options):
     outPrefix = options.outprefix
     rundir = options.rundir
     maxIntronLen = int(options.maxintronlen)
-    
+    checkchrom = options.checkchrom
+
     outFile = "%s/%s_pooled"%(rundir,outPrefix)
     
     chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
@@ -48,7 +49,7 @@ def pool_junc_reads(flist, options):
                 print ln
                 continue
             
-            if chrom not in chromLst: continue
+            if checkchrom and (chrom not in chromLst): continue
             Aoff, Boff = blockSize.split(",")
             A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
             if B-A > int(maxIntronLen): continue
@@ -469,6 +470,9 @@ if __name__ == "__main__":
 
     parser.add_option("-c", "--cluster", dest="cluster", default = None,
                   help="refined cluster file when clusters are already made")
+
+    parser.add_option("-k", "--checkchrom", dest="checkchrom", default = True,
+                  help="check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ...")
 
     (options, args) = parser.parse_args()
 
