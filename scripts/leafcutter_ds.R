@@ -90,6 +90,7 @@ write.table( cluster_table, paste0(opt$output_prefix,"_cluster_significance.txt"
 # Write effect size table
 effect_size_table                = leaf_cutter_effect_sizes(results)
 colnames(effect_size_table)[3:4] = group_names
+effect_size_table$intron = add_chr(effect_size_table$intron)
 write.table( effect_size_table, paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = T, row.names = F, sep="\t")
 
 # Save RData image

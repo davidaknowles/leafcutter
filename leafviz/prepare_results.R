@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-
+#options(echo=TRUE)
 #### Jack Humphrey 2017
 ### annotate the output of differential splicing
 ## and prepare for visualisation
@@ -101,6 +101,11 @@ if( !any(results$FDR < FDR_limit, na.rm=T) ){
 
 # Gather introns meeting the FDR threshold
 all.introns <- merge(x = results, y = effectSizes, by = "cluster")
+
+if( nrow(all.introns) == 0 ){
+  stop("Merging the per-cluster results with the per-junction effect sizes produces an empty table. Please check your input files.")
+}
+
 all.introns <- all.introns[ order(all.introns$FDR),]
 
 all.introns <- subset( all.introns, FDR <= FDR_limit )
@@ -333,6 +338,8 @@ for( clu in clusters ){
   }
   
 }
+
+#save.image(file = "test.Rdata")
 
 print("Preparing results")
 
