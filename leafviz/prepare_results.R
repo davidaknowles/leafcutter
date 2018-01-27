@@ -112,22 +112,27 @@ all.introns <- subset( all.introns, FDR <= FDR_limit )
 all.introns$start <- as.numeric(all.introns$start)
 all.introns$end <- as.numeric(all.introns$end)
 
-# for each splice site write out a bed file  
+# for introns, 5' splice sites and 3 splice sites:
+# add "chr" to chrom name if needed
+## intersect with list of junctions 
 all.junctions <- dplyr::select(all.introns, chr, start, end, clusterID)
 
-intron_db=fread(paste0("zcat < ", all_introns), data.table = F)
+intron_db <- fread(paste0("zcat < ", all_introns), data.table = FALSE)
 colnames(intron_db)[1:4]=c("chr","start","end","gene")
+intron_db$chr <- leafcutter::add_chr(intron_db$chr)
 all.introns_intersect = all.junctions %>% 
   left_join(intron_db, by=c("chr","start","end")) 
 
-threeprime_db=fread(paste0("zcat < ", threeprime_file), data.table = F)
+threeprime_db <- fread(paste0("zcat < ", threeprime_file), data.table = FALSE)
 colnames(threeprime_db)[1:7]=c("chr","start","end","gene","gene_id","strand","transcript")
+threeprime_db$chr <- leafcutter::add_chr(intron_db$chr)
 threeprime_intersect = all.junctions %>% 
   select(chr, clusterID, start=end) %>% 
   left_join(threeprime_db, by=c("chr","start")) 
 
-fiveprime_db=fread(paste0("zcat < ", fiveprime_file), data.table = F)
+fiveprime_db <- fread(paste0("zcat < ", fiveprime_file), data.table = FALSE)
 colnames(fiveprime_db)[1:7]=c("chr","start","end","gene","gene_id","strand","transcript")
+fiveprime_db$chr <- leafcutter::add_chr(fiveprime_db$chr)
 fiveprime_intersect =  all.junctions %>% 
   select(chr, clusterID, start) %>%  
   left_join(fiveprime_db, by=c("chr","start")) 
