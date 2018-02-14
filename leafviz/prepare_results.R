@@ -3,7 +3,6 @@
 #### Jack Humphrey 2017
 ### annotate the output of differential splicing
 ## and prepare for visualisation
-
 library(optparse)
 
 option_parser=OptionParser(
@@ -62,6 +61,9 @@ cat("Using annotation at:", annotation_code,"\n")
 cat("Loading counts from",counts_file,"\n")
 counts <- read.table(counts_file, check.names=FALSE)
 
+#counts <- readr::read_tsv(counts_file)
+
+
 if(file.exists(groups_file)){ # can we run without this?
   cat("Loading metadata from",groups_file,"\n")
   meta <- read.table(groups_file, header=FALSE, stringsAsFactors = FALSE)
@@ -91,6 +93,7 @@ effectSizes <- cbind( effectSizes, effectSizesSplit)
 effectSizes$cluster <- paste(effectSizesSplit$chr, effectSizesSplit$clusterID, sep = ":")
 
 results <- fread(cluster_significance_file, data.table=F )
+#results <- readr::read_delim(cluster_significance_file, delim = " ")
 results$FDR <- p.adjust( results$p, method = "fdr")
 
 # If there were no significant results, stop here and provide feedback to the user by printing
@@ -131,6 +134,7 @@ colnames(fiveprime_db)[1:7]=c("chr","start","end","gene","gene_id","strand","tra
 fiveprime_intersect =  all.junctions %>% 
   select(chr, clusterID, start) %>%  
   left_join(fiveprime_db, by=c("chr","start")) 
+
 
 # now I have two lists of splice site annotation
 # for testing
@@ -366,10 +370,12 @@ all.introns$constitutive.score <- signif(all.introns$constitutive.score, digits 
 # prepare results
 results$clusterID <- str_split_fixed(results$cluster, ":", 2)[,2]
 results$N <- results$df + 1
-sig <- subset(results, FDR < FDR_limit)
+# 14/02/18 - make sure results and all.introns agree
+sig <- subset(results, FDR < FDR_limit & cluster %in% all.introns$cluster)
 sig$clusterID <- str_split_fixed(sig$cluster, ":", 2)[,2]
 
 all.clusters <- lapply(sig$clusterID, FUN = function(clu){
+  print(clu)
   cluster <- all.introns[ all.introns$clusterID == clu, ]
   chr <- unique( cluster$chr )[1] # this should always be one number
   start <- min( cluster$start )
@@ -391,6 +397,7 @@ all.clusters <- lapply(sig$clusterID, FUN = function(clu){
       ensemblID = ensemblID, 
       annotation = annotation ) )
   })
+
 all.clusters <- do.call( what = rbind, args = all.clusters)
 
 all.clusters$FDR  <- results$FDR[ match( all.clusters$clusterID, results$clusterID)]
@@ -403,6 +410,7 @@ all.clusters$verdict <- unlist(classification.list)[ match(all.clusters$clusterI
 # prepare for PCA
 counts <- counts[,meta$sample]
 print( "converting counts to ratios")
+
 # create per cluster ratios from counts
 ratios <- counts %>% 
   mutate(clu = str_split_fixed(rownames(counts), ":", 4)[,4]) %>%
