@@ -88,6 +88,7 @@ def sort_junctions(libl, options):
 
     for ln in open(refined_cluster):
         chrom = ln.split()[0]
+        chrom = tuple(chrom.split(":"))
         cluN += 1
         for exon in ln.split()[1:]:
             A, B, count = exon.split(":")
@@ -166,7 +167,7 @@ def sort_junctions(libl, options):
             
                 chrom, start, end = exon
                 start, end = int(start), int(end)
-                chromID, strand = chrom.split(":")
+                chromID, strand = chrom
                 if chrom not in by_chrom:
                     buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu, strand, tot))
                 elif (start,end) in by_chrom[chrom]:                
