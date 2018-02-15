@@ -19,7 +19,8 @@ def pool_junc_reads(flist, options):
     outPrefix = options.outprefix
     rundir = options.rundir
     maxIntronLen = int(options.maxintronlen)
-    
+    checkchrom = options.checkchrom
+
     outFile = "%s/%s_pooled"%(rundir,outPrefix)
     
     chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
@@ -33,7 +34,9 @@ def pool_junc_reads(flist, options):
         if options.verbose:
             sys.stderr.write("scanning %s...\n"%lib)
 
-        for ln in open(lib):
+        if lib[-3:] == ".gz": F = gzip.open(lib)
+        else: F = open(lib)
+        for ln in F:
             
             lnsplit=ln.split()
             if len(lnsplit)<6: 
@@ -41,14 +44,14 @@ def pool_junc_reads(flist, options):
                 continue
             chrom, A, B, dot, counts, strand = lnsplit
             
-            if chrom not in chromLst: continue
             
+            if checkchrom and (chrom not in chromLst): continue
             A, B = int(A), int(B)+1
             if B-A > int(maxIntronLen): continue
-            try: by_chrom[chrom][(A,B)] = int(counts) + by_chrom[chrom][(A,B)]
+            try: by_chrom[(chrom,strand)][(A,B)] = int(counts) + by_chrom[(chrom, strand)][(A,B)]
             except: 
-                try: by_chrom[chrom][(A,B)] = int(counts)
-                except: by_chrom[chrom] = {(A,B):int(counts)}
+                try: by_chrom[(chrom,strand)][(A,B)] = int(counts)
+                except: by_chrom[(chrom, strand)] = {(A,B):int(counts)}
 
     fout = file(outFile, 'w')
     Ncluster = 0
@@ -56,11 +59,11 @@ def pool_junc_reads(flist, options):
     for chrom in by_chrom:
         read_ks = [k for k,v in by_chrom[chrom].items() if v >= 3] # a junction must have at least 3 reads
         read_ks.sort()
-        sys.stderr.write("%s.."%chrom)
+        sys.stderr.write("%s:%s.."%chrom)
         clu = cluster_intervals(read_ks)[0]
         for cl in clu:
             if len(cl) > 1: # if cluster has more than one intron  
-                buf = '%s '%chrom
+                buf = '%s:%s '%chrom
                 for interval, count in [(x, by_chrom[chrom][x]) for x in cl]:
                     buf += "%d:%d" % interval + ":%d"%count+ " "
                 fout.write(buf+'\n')
@@ -75,6 +78,8 @@ def sort_junctions(libl, options):
     outPrefix = options.outprefix
     rundir = options.rundir
     refined_cluster = "%s/%s_refined"%(rundir,outPrefix)
+    checkchrom = options.checkchrom
+
     runName = "%s/%s"%(rundir, outPrefix)
 
 
@@ -125,15 +130,18 @@ def sort_junctions(libl, options):
         fout.write("chrom %s\n"%libN.split("/")[-1].split(".junc")[0])
 
         for lib in merges[libN]:
-        
-            for ln in open(lib):
+            if lib[-3:] == ".gz": F = gzip.open(lib)
+            else: F = open(lib)
+            for ln in F:
 
                 lnsplit=ln.split()
                 if len(lnsplit)<6: 
                     sys.stderr.write("Error in %s \n" % lib)
                     continue
                 chrom, start, end, dot, count, strand = ln.split()
-                if chrom not in chromLst: continue
+                
+                if checkchrom and (chrom not in chromLst): continue
+                chrom = (chrom, strand)
                 if chrom not in by_chrom:
                     by_chrom[chrom] = {}
                 intron = (int(start), int(end)+1)
@@ -158,12 +166,13 @@ def sort_junctions(libl, options):
             
                 chrom, start, end = exon
                 start, end = int(start), int(end)
+                chromID, strand = chrom.split(":")
                 if chrom not in by_chrom:
-                    buf.append("%s:%d:%d:clu_%d 0/%d\n"%(chrom,start, end,clu, tot))
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu, strand, tot))
                 elif (start,end) in by_chrom[chrom]:                
-                    buf.append("%s:%d:%d:clu_%d %d/%d\n"%(chrom,start, end, clu, by_chrom[chrom][(start,end)], tot))
+                    buf.append("%s:%d:%d:clu_%d_%s %d/%d\n"%(chromID,start, end, clu,strand, by_chrom[chrom][(start,end)], tot))
                 else:
-                    buf.append("%s:%d:%d:clu_%d 0/%d\n"%(chrom,start, end,clu, tot))
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu,strand, tot))
         
             fout.write("".join(buf))
         fout.close()
@@ -449,6 +458,8 @@ if __name__ == "__main__":
 
     parser.add_option("-p", "--mincluratio", dest="mincluratio", default = 0.001,
                   help="minimum fraction of reads in a cluster that support a junction (default 0.001)")
+    parser.add_option("-k", "--checkchrom", dest="checkchrom", default = True,
+                  help="check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ...")
 
     (options, args) = parser.parse_args()
 
