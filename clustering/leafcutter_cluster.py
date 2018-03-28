@@ -459,8 +459,8 @@ if __name__ == "__main__":
 
     parser.add_option("-p", "--mincluratio", dest="mincluratio", default = 0.001,
                   help="minimum fraction of reads in a cluster that support a junction (default 0.001)")
-    parser.add_option("-k", "--checkchrom", dest="checkchrom", default = True,
-                  help="check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ...")
+    parser.add_option("-k", "--checkchrom", dest="checkchrom", default = False,
+                  help="check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ... (default=False)")
 
     (options, args) = parser.parse_args()
 
