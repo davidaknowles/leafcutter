@@ -591,6 +591,8 @@ make_gene_plot <- function(gene_name,
       #return(label_df)
       # LABEL clusters
       #label_max <- c(YLIMN - 0.2*YLIMN)#, YLIMP - 0.2*YLIMP) # how far down the labels should go 
+      # remove strand id so that p values don't overhang
+      label_df$label <- gsub("_[+-]", "", label_df$label)
       label_df$label <- gsub("_", "\n", label_df$label)
       label_df <- label_df[ order(label_df$middle),]
       # alternate labels as up or down
