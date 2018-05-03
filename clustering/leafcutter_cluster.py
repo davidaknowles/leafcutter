@@ -20,6 +20,7 @@ def pool_junc_reads(flist, options):
     rundir = options.rundir
     maxIntronLen = int(options.maxintronlen)
     checkchrom = options.checkchrom
+    useStrand = options.strand
 
     outFile = "%s/%s_pooled"%(rundir,outPrefix)
     
@@ -44,7 +45,8 @@ def pool_junc_reads(flist, options):
                 continue
             chrom, A, B, dot, counts, strand = lnsplit
             
-            
+            if not useStrand:
+                strand = "NA"
             if checkchrom and (chrom not in chromLst): continue
             A, B = int(A), int(B)+1
             if B-A > int(maxIntronLen): continue
@@ -79,7 +81,7 @@ def sort_junctions(libl, options):
     rundir = options.rundir
     refined_cluster = "%s/%s_refined"%(rundir,outPrefix)
     checkchrom = options.checkchrom
-
+    useStrand = options.strand
     runName = "%s/%s"%(rundir, outPrefix)
 
 
@@ -140,7 +142,8 @@ def sort_junctions(libl, options):
                     sys.stderr.write("Error in %s \n" % lib)
                     continue
                 chrom, start, end, dot, count, strand = ln.split()
-                
+                if not useStrand:
+                    strand = "NA"
                 if checkchrom and (chrom not in chromLst): continue
                 chrom = (chrom, strand)
                 if chrom not in by_chrom:
@@ -461,6 +464,9 @@ if __name__ == "__main__":
                   help="minimum fraction of reads in a cluster that support a junction (default 0.001)")
     parser.add_option("-k", "--checkchrom", dest="checkchrom", default = False,
                   help="check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ... (default=False)")
+
+    parser.add_option("-s", "--strand", dest="strand", default = False,
+                  help="use strand info (default=False)")
 
     (options, args) = parser.parse_args()
 
