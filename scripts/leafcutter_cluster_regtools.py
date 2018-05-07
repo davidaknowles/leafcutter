@@ -182,11 +182,11 @@ def sort_junctions(libl, options):
                 chrom = tuple(chrom.split(":"))
                 chromID, strand = chrom
                 if chrom not in by_chrom:
-                    buf.append("%s:%d:%d:clu_%d:%s 0/%d\n"%(chromID,start, end,clu, strand, tot))
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu, strand, tot))
                 elif (start,end) in by_chrom[chrom]:
-                    buf.append("%s:%d:%d:clu_%d:%s %d/%d\n"%(chromID,start, end, clu,strand, by_chrom[chrom][(start,end)], tot))
+                    buf.append("%s:%d:%d:clu_%d_%s %d/%d\n"%(chromID,start, end, clu,strand, by_chrom[chrom][(start,end)], tot))
                 else:
-                    buf.append("%s:%d:%d:clu_%d:%s 0/%d\n"%(chromID,start, end,clu,strand, tot))
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu,strand, tot))
         
             fout.write("".join(buf))
         fout.close()
