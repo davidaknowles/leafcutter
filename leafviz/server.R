@@ -367,8 +367,8 @@ server <- function(input, output, session) {
     ylab <- paste0( second_PC, " (", pca[[2]][ which(names(pca[[1]]) == first_PC ) + 1  ], "%)"  )
     
     pca_plot <- ggplot( pca[[1]], 
-                        aes_string(y = first_PC,
-                                  x = second_PC, 
+                        aes_string(x = first_PC,
+                                  y = second_PC, 
                                   colour = colour_choice,
                                   shape = shape_choice) ) + geom_point(size = 60 / nrow(pca[[1]])  ) +
       xlab( xlab ) +
