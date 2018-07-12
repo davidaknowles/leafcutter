@@ -34,17 +34,18 @@ leaf_cutter_effect_sizes=function(results) {
   normalize=function(g) { g/sum(g) }
   softmax=function(g) normalize(exp(g))
   to_psi=function(b,conc) { normalize(softmax(b)*conc) }
-  foreach(res=results, .combine = bind_rows) %do% {
+  foreach(res=results, .combine = bind_rows) %dopar% {
     if ( is.character(res) | ("error" %in% class(res)) ) NULL else {
        beta=beta_real( res$fit_full$par )
-       data.frame( intron=colnames(beta), 
-                   logef=beta[2,], 
-                   baseline=to_psi(beta[1,],res$fit_full$par$conc), 
-                   perturbed=to_psi(beta[1,]+beta[2,],res$fit_full$par$conc), 
-                   stringsAsFactors = F )
+       dummy_x=factor(1:nrow(beta))
+       ( model.matrix( ~ dummy_x) %*% beta ) %>%
+         apply( 1,softmax) %>% # implicit t() here
+         sweep(1,res$fit_full$par$conc,"*") %>% 
+         apply( 2,normalize) %>% 
+         as.data.frame( stringsAsFactors = F ) %>%
+         mutate(intron=colnames(beta))
     }      
-  } %>% 
-  mutate( deltapsi=perturbed-baseline)
+  } 
 }
 
 
@@ -67,9 +68,11 @@ leaf_cutter_effect_sizes=function(results) {
 #' @import foreach
 #' @importFrom R.utils evalWithTimeout
 #' @export
-differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10, robust=F, debug=F, init="smart", ...) {
+differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10, min_samples_per_intron=5, min_samples_per_group=4, min_coverage=20, timeout=10, robust=F, debug=F, init="smart", checkpoint_dir=NULL, ...) {
   
   stopifnot(ncol(counts)==length(x))
+  
+  if (!is.null(checkpoint_dir)) dir.create(checkpoint_dir,recursive = T,showWarnings = F)
   
   introns=get_intron_meta(rownames(counts))
   cluster_ids=paste(introns$chr,introns$clu,sep = ":")
@@ -78,13 +81,13 @@ differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10,
   clu_names=as.character(cluster_sizes$cluster_ids)
   cluster_sizes=cluster_sizes$Freq
   names(cluster_sizes)=clu_names
-  
-  if (!debug) {
-    zz <- file( "/dev/null", open = "wt")
-    sink(zz)
-    sink(zz, type = "message")
-  }
-  
+  # 
+  # if (!debug) {
+  #   zz <- file( "/dev/null", open = "wt")
+  #   sink(zz)
+  #   sink(zz, type = "message")
+  # }
+  # 
   results=foreach (cluster_name=clu_names, .errorhandling = "pass") %dopar% {
     if (cluster_sizes[cluster_name] > max_cluster_size)
       return("Too many introns in cluster")
@@ -105,7 +108,8 @@ differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10,
     ta=table(x_subset[sample_totals>=min_coverage])
     if (sum(ta >= min_samples_per_group)<2) # at least two groups have this (TODO: continuous x)
       return("Not enough valid samples") 
-    xFull=cbind(1,x_subset)
+    xFull=model.matrix(~ x_subset)
+    #print(xFull)
     xNull=xFull[,1,drop=F]
     if (!is.null(confounders)) {
         ch=confounders[samples_to_use,,drop=F]
@@ -115,15 +119,18 @@ differential_splicing=function(counts, x, confounders=NULL, max_cluster_size=10,
     }
     res <- R.utils::evalWithTimeout( { 
       dirichlet_multinomial_anova_mc(xFull,xNull,cluster_counts,robust=robust,debug=debug,init=init,...)
-    }, timeout=timeout, onTimeout="silent" ) 
+    }, timeout=timeout, onTimeout=if (debug) "silent" else "warning" ) 
+    if (!is.null(res) & !is.null(checkpoint_dir)) {
+      saveRDS(res, paste0(checkpoint_dir,"/",gsub(":","_",cluster_name),".rds"))
+    }
     if (is.null(res)) "timeout" else res
   }
   
-  if (!debug) {
-    sink(type="message")
-    sink()
-  }
-  
+  # if (!debug) {
+  #   sink(type="message")
+  #   sink()
+  # }
+  # 
     names(results)=clu_names
 
     statuses=cluster_results_table(results)$status
