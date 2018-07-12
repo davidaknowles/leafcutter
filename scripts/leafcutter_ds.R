@@ -30,14 +30,6 @@ colnames(meta)[1:2]=c("sample","group")
 
 counts=counts[,meta$sample]
 
-meta$group=as.factor(meta$group)
-group_names=levels(meta$group)
-
-stopifnot(length(group_names)==2)
-
-cat("Encoding as",group_names[1],"=0,",group_names[2],"=1\n")
-numeric_x=as.numeric(meta$group)-1
-
 confounders=NULL
 if (ncol(meta)>2) {
     confounders=meta[,3:ncol(meta),drop=F]
@@ -50,12 +42,6 @@ if (ncol(meta)>2) {
     confounders=confounders[,2:ncol(confounders),drop=F] # remove intercept
 }
 
-minimum_group_size=min(sum(numeric_x==0),sum(numeric_x==1))
-if (minimum_group_size < opt$min_samples_per_intron)
-  stop("The number of samples in the smallest group is less than min_samples_per_intron, which means no clusters are testable. You can reduce min_samples_per_intron using the -i option, but note that we have only carefully checked the calibration of leafcutter p-values down to n=4 samples per group.")
-if (minimum_group_size < opt$min_samples_per_group)
-  stop("The number of samples in the smallest group is less than min_samples_per_group, which means no clusters are testable. You can reduce min_samples_per_intron using the -g option, but note that we have only carefully checked the calibration of leafcutter p-values down to n=4 samples per group.")
-
 require(doMC)
 registerDoMC(opt$num_threads)
 
@@ -63,7 +49,7 @@ cat("Settings:\n")
 print(opt)
 
 cat("Running differential splicing analysis...\n")
-results <- differential_splicing(counts, numeric_x, confounders=confounders, max_cluster_size=opt$max_cluster_size, min_samples_per_intron=opt$min_samples_per_intron, min_samples_per_group=opt$min_samples_per_group, min_coverage=opt$min_coverage, timeout=opt$timeout, init=opt$init, seed=opt$seed ) 
+results <- differential_splicing(counts, meta$group, confounders=confounders, max_cluster_size=opt$max_cluster_size, min_samples_per_intron=opt$min_samples_per_intron, min_samples_per_group=opt$min_samples_per_group, min_coverage=opt$min_coverage, timeout=opt$timeout, init=opt$init, seed=opt$seed ) 
 
 cat("Saving results...\n")
 
@@ -89,7 +75,8 @@ write.table( cluster_table, paste0(opt$output_prefix,"_cluster_significance.txt"
 
 # Write effect size table
 effect_size_table                = leaf_cutter_effect_sizes(results)
-colnames(effect_size_table)[3:4] = group_names
+group_names = levels(meta$group)
+colnames(effect_size_table)[1:length(group_names)] = group_names
 effect_size_table$intron = add_chr(effect_size_table$intron)
 write.table( effect_size_table, paste0(opt$output_prefix,"_effect_sizes.txt"), quote=F, col.names = T, row.names = F, sep="\t")
 
