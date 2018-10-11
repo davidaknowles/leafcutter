@@ -5,8 +5,8 @@
 \title{Make sashimi-esque plot with ggplot2}
 \usage{
 make_differential_splicing_plot(y, x = numeric(nrow(y)) + 1,
-  exons_table = NULL, len = 500, length_transform = function(g) log(g +
-  1), main_title = NA, snp_pos = NA, summary_func = colMeans,
+  exons_table = NULL, len = 500, length_transform = function(g) log(g
+  + 1), main_title = NA, snp_pos = NA, summary_func = colMeans,
   legend_title = "Mean count")
 }
 \arguments{
