@@ -18,13 +18,22 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
-  
-  
+
+
+
+<meta property="og:title" content="Function reference" />
+
+
+
 <!-- mathjax -->
 <script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
@@ -47,8 +56,12 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">leafcutter</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">leafcutter</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.8</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
@@ -76,6 +89,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -83,148 +97,144 @@
       
       </header>
 
-      <div class="row">
-  <div class="col-md-9">
+<div class="row">
+  <div class="contents col-md-9">
     <div class="page-header">
-      <h1>
-        Reference
-        <small>version&nbsp;0.2.6</small>
-      </h1>
+      <h1>Reference</h1>
     </div>
 
-    <div class="contents">
-      <table class="ref-index">
+    <table class="ref-index">
 
-      <colgroup>
-        <col class="alias" />
-        <col class="title" />
-      </colgroup>
+    <colgroup>
+      
+      <col class="alias" />
+      <col class="title" />
+    </colgroup>
 
-      <tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-main-functions" class="hasAnchor"><a href="#section-main-functions" class="anchor"></a>Main functions</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="differential_splicing.html">differential_splicing</a></code> </p>
-          </td>
-          <td><p>Perform pairwise differential splicing analysis.</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="make_differential_splicing_plot.html">make_differential_splicing_plot</a></code> </p>
-          </td>
-          <td><p>Make sashimi-esque plot with ggplot2</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-internal-functions" class="hasAnchor"><a href="#section-internal-functions" class="anchor"></a>Internal functions</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="dirichlet_multinomial_anova_mc.html">dirichlet_multinomial_anova_mc</a></code> </p>
-          </td>
-          <td><p>Dirichlet multinomial GLM likelihood ratio test for a single cluster</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="get_intron_meta.html">get_intron_meta</a></code> </p>
-          </td>
-          <td><p>Make a data.frame of meta data about the introns</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="map_clusters_to_genes.html">map_clusters_to_genes</a></code> </p>
-          </td>
-          <td><p>Work out which gene each cluster belongs to. Note the chromosome names used in the two inputs must match.</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="leaf_cutter_effect_sizes.html">leaf_cutter_effect_sizes</a></code> </p>
-          </td>
-          <td><p>Per intron effect sizes</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="cluster_results_table.html">cluster_results_table</a></code> </p>
-          </td>
-          <td><p>Parse output of differential_splicing</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-helper-functions" class="hasAnchor"><a href="#section-helper-functions" class="anchor"></a>Helper functions</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="add_chr.html">add_chr</a></code> </p>
-          </td>
-          <td><p>Adding "chr" if it's not present</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="beta_real.html">beta_real</a></code> </p>
-          </td>
-          <td><p>Convert K-1 representation of parameters to real</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="bh.html">bh</a></code> </p>
-          </td>
-          <td><p>Benjamini-Hochberg FDR correction</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="logistic.html">logistic</a></code> </p>
-          </td>
-          <td><p>logistic (sigmoid) function</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="multiqq.html">multiqq</a></code> </p>
-          </td>
-          <td><p>Plot multiple qq plot for p-values</p></td>
-        </tr>
-      </tbody><tbody>
-        <tr>
-          <th colspan="2">
-            <h2 id="section-deprecated" class="hasAnchor"><a href="#section-deprecated" class="anchor"></a>Deprecated</h2>
-            <p class="section-desc"></p>
-          </th>
-        </tr>
-        <tr>
-          <!--  -->
-          <td>
-            <p><code><a href="dirichlet_multinomial_anova.html">dirichlet_multinomial_anova</a></code> </p>
-          </td>
-          <td><p>Dirichlet multinomial GLM likelihood ratio test for a single cluster (single overdispersion parameter)</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="dirichlet_multinomial_glm.html">dirichlet_multinomial_glm</a></code> </p>
-          </td>
-          <td><p>Dirichlet multinomial GLM (single overdispersion parameter)</p></td>
-        </tr><tr>
-          <!--  -->
-          <td>
-            <p><code><a href="betaBinomialGLM.html">betaBinomialGLM</a></code> </p>
-          </td>
-          <td><p>Beta binomial GLM likelihood ratio testing</p></td>
-        </tr>
-      </tbody>
-      </table>
-    </div>
+    <tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-main-functions" class="hasAnchor"><a href="#section-main-functions" class="anchor"></a>Main functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        
+        <td>
+          <p><code><a href="differential_splicing.html">differential_splicing()</a></code> </p>
+        </td>
+        <td><p>Perform pairwise differential splicing analysis.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="make_differential_splicing_plot.html">make_differential_splicing_plot()</a></code> </p>
+        </td>
+        <td><p>Make sashimi-esque plot with ggplot2</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-internal-functions" class="hasAnchor"><a href="#section-internal-functions" class="anchor"></a>Internal functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        
+        <td>
+          <p><code><a href="dirichlet_multinomial_anova_mc.html">dirichlet_multinomial_anova_mc()</a></code> </p>
+        </td>
+        <td><p>Dirichlet multinomial GLM likelihood ratio test for a single cluster</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="get_intron_meta.html">get_intron_meta()</a></code> </p>
+        </td>
+        <td><p>Make a data.frame of meta data about the introns</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="map_clusters_to_genes.html">map_clusters_to_genes()</a></code> </p>
+        </td>
+        <td><p>Work out which gene each cluster belongs to. Note the chromosome names used in the two inputs must match.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="leaf_cutter_effect_sizes.html">leaf_cutter_effect_sizes()</a></code> </p>
+        </td>
+        <td><p>Per intron effect sizes</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="cluster_results_table.html">cluster_results_table()</a></code> </p>
+        </td>
+        <td><p>Parse output of differential_splicing</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-helper-functions" class="hasAnchor"><a href="#section-helper-functions" class="anchor"></a>Helper functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        
+        <td>
+          <p><code><a href="add_chr.html">add_chr()</a></code> </p>
+        </td>
+        <td><p>Adding "chr" if it's not present</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="beta_real.html">beta_real()</a></code> </p>
+        </td>
+        <td><p>Convert K-1 representation of parameters to real</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="bh.html">bh()</a></code> </p>
+        </td>
+        <td><p>Benjamini-Hochberg FDR correction</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="logistic.html">logistic()</a></code> </p>
+        </td>
+        <td><p>logistic (sigmoid) function</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="multiqq.html">multiqq()</a></code> </p>
+        </td>
+        <td><p>Plot multiple qq plot for p-values</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-deprecated" class="hasAnchor"><a href="#section-deprecated" class="anchor"></a>Deprecated</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      <tr>
+        
+        <td>
+          <p><code><a href="dirichlet_multinomial_anova.html">dirichlet_multinomial_anova()</a></code> </p>
+        </td>
+        <td><p>Dirichlet multinomial GLM likelihood ratio test for a single cluster (single overdispersion parameter)</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="dirichlet_multinomial_glm.html">dirichlet_multinomial_glm()</a></code> </p>
+        </td>
+        <td><p>Dirichlet multinomial GLM (single overdispersion parameter)</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="betaBinomialGLM.html">betaBinomialGLM()</a></code> </p>
+        </td>
+        <td><p>Beta binomial GLM likelihood ratio testing</p></td>
+      </tr>
+    </tbody>
+    </table>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -244,11 +254,14 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+
