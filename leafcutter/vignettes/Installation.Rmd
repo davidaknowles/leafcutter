@@ -28,6 +28,8 @@ if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-p
 devtools::install_github("davidaknowles/leafcutter/leafcutter")
 ```
 
+We've had a report (thanks to Peter Carbonetto) that it may be necessary to restart R before trying to load `leafcutter` because `dplyr` may get updated during the installation process.
+
 #### From source
 
 Alternatively you can install from source. You'll need to manually install the following R packages: `Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse, shiny, intervals, shinycssloaders, DT, gtables`. Then make sure you're in the `leafcutter` package sub-directory (you should see subdirectories called `src, R, tests` etc) and run
