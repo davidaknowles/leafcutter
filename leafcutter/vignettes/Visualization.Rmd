@@ -15,19 +15,19 @@ The leafcutter shiny app has been tested on `macOS 10.12` and `Ubuntu 14.04`.
 
 #### Example
 
-If you've already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the `leafvis` directory:
+If you've already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the `leafviz` directory:
 ```
-cd leafvis
+cd leafviz
 ```
 and then download the example data using 
 ```
 ./download_example.sh
 ```
-This will download and unzip a folder called `example`. Now starting the shiny app should be as easy as
+This will download and unzip a folder called `leafviz_example`. Now starting the shiny app should be as easy as
 ```
-./run_leafvis.R example/Brain_vs_Heart_results.Rdata
+./run_leafviz.R leafviz_example/Brain_vs_Heart_results.Rdata
 ```
-You can even leave out the `example/Brain_vs_Heart_results.Rdata` part as this is the default dataset `run_leafvis.R` will try to use. 
+You can even leave out the `leafviz_example/Brain_vs_Heart_results.Rdata` part as this is the default dataset `run_leafviz.R` will try to use. 
 
 #### Annotation code
 

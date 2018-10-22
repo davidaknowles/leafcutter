@@ -4,12 +4,13 @@ Title: Alternative splicing quantification, differential splicing and splicing
     QTL mapping
 Version: 0.2.8
 Date: 2018-10-10
-Authors@R: c(person("David", "Knowles", email = "knowles84@gmail.com", role = c("aut", "cre")),
+Authors@R: c(person("David", "Knowles", email = "david.arthur.knowles@gmail.com", role = c("aut", "cre")),
               person("Yang", "Li", role = c("aut", "cre")),
 			  person("Jack", "Humphrey", role = c("aut", "cre")),
               person("Jonathan", "Pritchard", role = "aut"))
 Author: David A. Knowles, Yang Li, Jonathan Pritchard
-Maintainer: David A. Knowles <knowles84@gmail.com>
+Maintainer: David A. Knowles <david.arthur.knowles@gmail.com>
+BugReports: https://github.com/davidaknowles/leafcutter/issues
 Description: Alternative Splicing Quantification, Differential Splicing and Splicing QTL Mapping
 License: GPL (>= 3)
 Depends:
