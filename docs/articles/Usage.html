@@ -81,7 +81,7 @@
     
     
 <p>For a (hopefully) complete example of the complete pipeline, take a look at</p>
-<pre><code>example_data/worked_out_example.sh</code></pre>
+<pre><code>example_data/worked_example.sh</code></pre>
 <p>:warning: The test data download is 4Gb!</p>
 <p>LeafCutter has two main components:</p>
 <ol style="list-style-type: decimal">
@@ -123,8 +123,8 @@
 <a href="#step-1--converting-bams-to-juncs" class="anchor"></a>Step 1. Converting <code>bam</code>s to <code>junc</code>s</h3>
 <p>I’m skipping Step 0 which would be mapping <code>fastq</code> files, e.g. using STAR, to obtain <code>.bam</code> files.</p>
 <p>We provide a helper script <code>scripts/bam2junc.sh</code> to (you guessed it) convert <code>bam</code> files to <code>junc</code> files. This step uses the CIGAR strings in the <code>bam</code> to quantify the usage of each intron. LeafCutter considers a read “problematic” if its mapped cigar string does not follow the pattern ‘xMyNzM’.</p>
-<p><code>example_data/worked_out_example.sh</code> gives you an example of how to do this in batch, assuming your data is in <code>run/geuvadis/</code></p>
-<pre><code>for bamfile in `ls run/geuvadis/*.bam`
+<p><code>example_data/worked_example.sh</code> gives you an example of how to do this in batch, assuming your data is in <code>example_geuvadis/</code></p>
+<pre><code>for bamfile in `ls example_geuvadis/*.bam`
 do
     echo Converting $bamfile to $bamfile.junc
     sh ../scripts/bam2junc.sh $bamfile $bamfile.junc
@@ -152,8 +152,8 @@ chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31</code></pre>
 <div id="step-3--differential-intron-excision-analysis" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-3--differential-intron-excision-analysis" class="anchor"></a>Step 3. Differential intron excision analysis</h3>
-<p>We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need to make a file to specify which samples go in each group. In <code>worked_out_example.sh</code> there’s some code to generate this file, but you can just make it yourself: it’s just a two column tab-separated file where the first column is the sample name (i.e. the filename of the ‘bam’) and the second is the column (what you call these is arbitrary, but note :bug: the command line interface currently only supports two groups).</p>
-<p>For the worked example this file, named <code>test_diff_introns.txt</code> looks like this:</p>
+<p>We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need a file to specify which samples go in each group, a <code>groups_file</code>. This is just a two column tab-separated file where the first column is the sample name (i.e. the filename of the ‘bam’) and the second is the column (what you call these is arbitrary, but note :bug: the command line interface currently only supports two groups).</p>
+<p>For the worked example this file, <code>example_geuvadis/groups_file.txt</code> looks like this:</p>
 <pre><code>RNA.NA18486_YRI.chr1.bam YRI
 RNA.NA18487_YRI.chr1.bam YRI
 RNA.NA18488_YRI.chr1.bam YRI
@@ -165,7 +165,7 @@ RNA.NA06986_CEU.chr1.bam CEU
 RNA.NA06989_CEU.chr1.bam CEU
 RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <p>Having made that file we can run DS (this assumes you have successfully installed the <code>leafcutter</code> R package as described under <a href="./Installation.html">Installation</a> above)</p>
-<pre><code>../scripts/leafcutter_ds.R --num_threads 4 --exon_file=../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt</code></pre>
+<pre><code>../scripts/leafcutter_ds.R --num_threads 4 --exon_file=../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt</code></pre>
 <p>Running <code>../scripts/leafcutter_ds.R -h</code> will give usage info for this script. Here have included an <code>exon_file</code>: this is optional but allows LeafCutter to annotate clusters according to which gene they correspond to. An example exon file for <code>hg19</code> derived from GENCODE v19 is included with LeafCutter. The exons file should have the following columns: chr, start, end, strand, gene_name. We provide a helper script <code>gtf_to_exons.R</code> which will convert a <code>.gtf</code> to the required format. I’m also hosting the exon file for <code>GRCh38</code> GENCODE v.26 <a href="http://web.stanford.edu/~dak33/leafcutter/gencode.v26.exons.txt.gz">here</a>.</p>
 <p>Two tab-separated text files are output:</p>
 <ul>
@@ -193,7 +193,7 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <div id="including-confounders" class="section level4">
 <h4 class="hasAnchor">
 <a href="#including-confounders" class="anchor"></a>Including confounders</h4>
-<p>To control for confounders/covariates (e.g. batch, RIN) in the DS you can include them as additional columns in the test_diff_introns.txt file, after the sample names and two-group factor to be tested. Numeric values will be treated as such, so use non-numeric values if you want a categorical variable/factor, e.g. batch1, batch2 etc.</p>
+<p>To control for confounders/covariates (e.g. batch, RIN) in the DS you can include them as additional columns in the <code>groups_file</code> file, after the sample names and two-group factor to be tested. Numeric values will be treated as such, so use non-numeric values if you want a categorical variable/factor, e.g. batch1, batch2 etc.</p>
 </div>
 <div id="calibration-fdr-and-small-sample-sizes" class="section level4">
 <h4 class="hasAnchor">
@@ -210,8 +210,8 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <h3 class="hasAnchor">
 <a href="#step-4--plotting-splice-junctions" class="anchor"></a>Step 4. Plotting splice junctions</h3>
 <p>This will make a pdf with plots of the differentially spliced clusters detected at an FDR of 5%.</p>
-<pre><code>../scripts/ds_plots.R -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz ../example_data/test_diff_intron.txt leafcutter_ds_cluster_significance.txt -f 0.05</code></pre>
-<p>We now have a LeafCutter shiny app allowing interactive visual interrogation of your results, go to the <a href="./Visualization.html">Visualization</a> tab to learn how to feed the LeafCutter output into the shiny app.</p>
+<pre><code>../scripts/ds_plots.R -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt leafcutter_ds_cluster_significance.txt -f 0.05</code></pre>
+<p>We have a LeafCutter shiny app called <code>leafviz</code> allowing interactive visual interrogation of your results, go to the <a href="./Visualization.html">Visualization</a> tab to learn how to feed the LeafCutter output into the shiny app.</p>
 </div>
   </div>
 
