@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Manually working through the differential splicing pipe. 
+# Manually working through the differential splicing pipeline. 
 
 # wget bam files (4Gb!)
-wget https://www.dropbox.com/s/pni1zq5y6cr4tx5/example_geuvadis.tar.gz?dl=0 -O example_geuvadis.tar.gz
+wget https://www.dropbox.com/s/8mxmkoa09p24k1g/example_geuvadis.tar.gz?dl=0 -O example_geuvadis.tar.gz
 tar -xvf example_geuvadis.tar.gz
 
 # Convert bam to junction files
