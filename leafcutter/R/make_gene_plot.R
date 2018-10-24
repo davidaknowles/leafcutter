@@ -56,6 +56,7 @@ make_gene_plot <- function(gene_name,
   stopifnot( !is.null(introns_to_plot))
   # only get the exons of the gene of interest - no overlapping genes!
   exons <- exons_table[ exons_table$gene_name == gene_name, ]
+  if (debug) cat(nrow(exons), "exons in gene", gene_name, "\nTesting cluster",clusterID,"\n")
 
   gene_start <- min(exons$start)
   gene_end <- max(exons$end)
@@ -73,7 +74,7 @@ make_gene_plot <- function(gene_name,
   cluster_ids <- myclusters$clu
 
   #return(list(myclusters,cluster_ids))
-  if (debug & nrow( myclusters) == 0) cat("No clusters found. Number clusters on chromosome ", myChr, ":", sum(introns_to_plot$chr == myChr ),"\n")
+  if (debug) cat( nrow(myclusters), "junctions found. Num junctions on chromosome ", myChr, ":", sum(introns_to_plot$chr == myChr ),"\n")
   stopifnot( nrow( myclusters) > 0 ) # flagged by asaferali - myclusters has 0 rows but neither exons table nor introns_to_plot are not null
 
   if( !is.null(clusterID)){
@@ -479,20 +480,52 @@ make_gene_plot <- function(gene_name,
 
       # cluster junctions - if FDR is available then colour
       if( !is.null(cluster_list)){
-        plots <- plots + geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
-                 curvature=curv,lineend="round", colour = junction_colour ) +
-        geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
-                 curvature=-curv,lineend="round",  colour = junction_colour )
-        if( nrow(  allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,]) > 0  ){
+
+        allEdgesP = allEdgesP %>% left_join(label_df %>% select(clu, FDR), by="clu")
+        allEdgesP_significant = allEdgesP %>% dplyr::filter(FDR != ".")
+
+        if (nrow(allEdgesP_significant) > 0)
+          plots <- plots + geom_curve(data=allEdgesP_significant,
+                                      aes(x = start,
+                                          xend = end,
+                                          y = 0,
+                                          yend = 0,
+                                          group = Group,
+                                          color=clu,
+                                          size = curveMax ),
+                 curvature=curv,
+                 lineend="round",
+                 colour = junction_colour )
+
+        allEdges = allEdges %>% left_join(label_df %>% select(clu, FDR), by="clu")
+        allEdges_significant = allEdgesP %>% dplyr::filter(FDR != ".")
+
+        if (nrow(allEdges_significant) > 0)
+          plots <- plots + geom_curve(data=allEdges_significant,
+                                      aes(x = start,
+                                          xend = end,
+                                          y = 0,
+                                          yend = 0,
+                                          group = Group,
+                                          color=clu,
+                                          size = curveMax),
+                 curvature=-curv,
+                 lineend="round",
+                 colour = junction_colour )
+
+        allEdgesP_nonsignificant = allEdgesP %>% dplyr::filter(FDR == ".")
+        if( nrow(  allEdgesP_nonsignificant ) > 0  ){
           # if there are non-significant clusters, then colour  grey
           plots <- plots +
-            geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] == "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
+            geom_curve(data=allEdgesP_nonsignificant, aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax ),
                        curvature=curv,lineend="round", colour = "gray" )
         }
 
-        if( nrow(  allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] == "." ,]) > 0  ){
+        allEdges_nonsignificant = allEdges %>% dplyr::filter(FDR == ".")
+        if( nrow(  allEdges_nonsignificant ) > 0  ){
           plots <- plots +
-            geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] == "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
+            geom_curve(data=allEdges_nonsignificant,
+                       aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=clu, size = curveMax),
                        curvature=-curv,lineend="round",  colour = "gray" )
         }
       }else{
@@ -519,9 +552,9 @@ make_gene_plot <- function(gene_name,
 
       if( !is.null(introns) & !is.null(cluster_list)){
         plots <- plots +
-          geom_curve(data=allEdgesP[ label_df$FDR[ match(allEdgesP$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=as.factor(deltaPSI > 0) , size = curveMax ),
+          geom_curve(data=allEdgesP_significant, aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=as.factor(deltaPSI > 0) , size = curveMax ),
                      curvature=curv,lineend="round") +
-          geom_curve(data=allEdges[ label_df$FDR[ match(allEdges$clu, label_df$clu)] != "." ,], aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=as.factor(deltaPSI > 0), size = curveMax),
+          geom_curve(data=allEdges_significant, aes(x = start, xend = end, y = 0, yend = 0, group = Group, color=as.factor(deltaPSI > 0), size = curveMax),
                      curvature=-curv,lineend="round" ) +
           #scale_colour_discrete("dPSI",labels = c("down","up") )
           scale_colour_manual("dPSI",labels = c("down","up"), values = c("darkturquoise", "firebrick2") )

@@ -207,7 +207,7 @@ server <- function(input, output, session) {
   observeEvent(values$default,{
     output$select_gene_plot <- renderPlot({
     suppressWarnings( print(
-      make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = mydata()$cluster, introns_to_plot = introns_to_plot, debug=F)
+      make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = mydata()$clusterID, introns_to_plot = introns_to_plot, debug=F)
       )
     )
     }, width = mydata()$width, height = "auto", res = 90 # try changing height param
