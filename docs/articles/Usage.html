@@ -152,7 +152,7 @@ chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31</code></pre>
 <div id="step-3--differential-intron-excision-analysis" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-3--differential-intron-excision-analysis" class="anchor"></a>Step 3. Differential intron excision analysis</h3>
-<p>We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need a file to specify which samples go in each group, a <code>groups_file</code>. This is just a two column tab-separated file where the first column is the sample name (i.e. the filename of the ‘bam’) and the second is the column (what you call these is arbitrary, but note :bug: the command line interface currently only supports two groups).</p>
+<p>We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need a file to specify which samples go in each group, a <code>groups_file</code>. This is just a two column tab-separated file where the first column is the sample name (i.e. the filename of the ‘bam’) and the second is the grouping variable. These can be called anything: whichever occurs first will be considered as the baseline (unless the groups are numeric e.g. 0/1, in which case that order will be used, i.e. 0 will represent baseline). The command line interface currently only supports two groups.</p>
 <p>For the worked example this file, <code>example_geuvadis/groups_file.txt</code> looks like this:</p>
 <pre><code>RNA.NA18486_YRI.chr1.bam YRI
 RNA.NA18487_YRI.chr1.bam YRI

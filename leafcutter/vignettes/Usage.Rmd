@@ -96,7 +96,7 @@ Each column corresponds to a different sample (original bam file) and each row t
 
 ### Step 3. Differential intron excision analysis
 
-We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need a file to specify which samples go in each group, a `groups_file`. This is just a two column tab-separated file where the first column is the sample name (i.e. the filename of the 'bam') and the second is the column (what you call these is arbitrary, but note :bug: the command line interface currently only supports two groups). 
+We can now use our nice intron count file to do differential splicing (DS) analysis, but first we need a file to specify which samples go in each group, a `groups_file`. This is just a two column tab-separated file where the first column is the sample name (i.e. the filename of the 'bam') and the second is the grouping variable. These can be called anything: whichever occurs first will be considered as the baseline (unless the groups are numeric e.g. 0/1, in which case that order will be used, i.e. 0 will represent baseline). The command line interface currently only supports two groups. 
 
 For the worked example this file, `example_geuvadis/groups_file.txt` looks like this: 
 ```
