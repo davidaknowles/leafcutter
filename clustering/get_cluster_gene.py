@@ -36,10 +36,10 @@ def get_feature(fname, feature = "exon"):
 
 ss2gene = get_feature(sys.argv[1], "exon")
 
-W = file("%s.clu2gene.txt"%sys.argv[2].split("_perind")[0],'w')
+W = open("%s.clu2gene.txt"%sys.argv[2].split("_perind")[0],'w')
 for ln in gzip.open(sys.argv[2]):
     if "chrom" in ln: continue
-    
+
     if len(ln.split()[0].split(":")) == 5:
         chrom, A, B, clu, strand = ln.split()[0].split(":")
     else:
@@ -52,7 +52,7 @@ for ln in gzip.open(sys.argv[2]):
     if (chrom, int(B)) in ss2gene:
         gs.append(ss2gene[(chrom, int(B))])
 
-    
+
     if len(gs) > 0:
         W.write("%s %s %s %s %s %.2f %.2f %.2f %.2f\n"%(clu,chrom, A,B, gs[0], mean, median, minAS, maxAS))
     else:

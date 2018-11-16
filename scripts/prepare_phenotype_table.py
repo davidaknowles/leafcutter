@@ -7,7 +7,7 @@ import scipy as sc
 import pickle
 
 from optparse import OptionParser
-    
+
 from sklearn.decomposition import PCA
 from sklearn import preprocessing
 from sklearn import linear_model
@@ -36,17 +36,17 @@ def stream_table(f, ss = ''):
         yield attr
 
 def main(ratio_file, pcs=50):
-    
+
     dic_pop, fout = {}, {}
     try: open(ratio_file)
-    except: 
+    except:
         sys.stderr.write("Can't find %s..exiting\n"%(ratio_file))
         return
 
     sys.stderr.write("Starting...\n")
     for i in range(1,23):
-        fout[i] = file(ratio_file+".phen_chr%d"%i,'w')
-        fout_ave = file(ratio_file+".ave",'w')
+        fout[i] = open(ratio_file+".phen_chr%d"%i,'w')
+        fout_ave = open(ratio_file+".ave",'w')
     valRows, valRowsnn, geneRows = [], [], []
     finished = False
     header = gzip.open(ratio_file).readline().split()[1:]
@@ -67,7 +67,7 @@ def main(ratio_file, pcs=50):
         for sample in header:
 
             try: count = dic[sample]
-            except: print chrom, len(dic)
+            except: print(chrom, len(dic))
             num, denom = count.split('/')
             if float(denom) < 1:
                 count = "NA"
@@ -76,7 +76,7 @@ def main(ratio_file, pcs=50):
             else:
                 # add a 0.5 pseudocount
                 count = (float(num)+0.5)/((float(denom))+0.5)
-                tmpvalRow.append(count) 
+                tmpvalRow.append(count)
                 aveReads.append(count)
 
 
@@ -95,46 +95,46 @@ def main(ratio_file, pcs=50):
         if np.std(valRow) < 0.005: continue
 
         chr_, s, e, clu = chrom.split(":")
-        if len(valRow) > 0:                
+        if len(valRow) > 0:
             chrom_int = int(chr_)
             fout[chrom_int].write("\t".join([chr_,s,e,chrom]+[str(x) for x in valRow])+'\n')
             fout_ave.write(" ".join(["%s"%chrom]+[str(min(aveReads)), str(max(aveReads)), str(np.mean(aveReads))])+'\n')
 
             # scale normalize
-            valRowsnn.append(valRow)                
+            valRowsnn.append(valRow)
             valRow = preprocessing.scale(valRow)
 
             valRows.append(valRow)
             geneRows.append("\t".join([chr_,s,e,chrom]))
             if len(geneRows) % 1000 == 0:
                 sys.stderr.write("Parsed %s introns...\n"%len(geneRows))
-                
+
     for i in fout:
         fout[i].close()
 
     # qqnorms on the columns
     matrix = np.array(valRows)
-    for i in xrange(len(matrix[0,:])):
+    for i in range(len(matrix[0,:])):
         matrix[:,i] = qqnorm(matrix[:,i])
-        
+
     # write the corrected tables
     fout = {}
     for i in range(1,23):
         fn="%s.qqnorm_chr%d"%(ratio_file,i)
-        print("Outputting: " + fn)
-        fout[i] = file(fn,'w')
+        print(("Outputting: " + fn))
+        fout[i] = open(fn,'w')
         fout[i].write("\t".join(['#Chr','start','end','ID'] + header)+'\n')
     lst = []
-    for i in xrange(len(matrix)):
+    for i in range(len(matrix)):
         chrom, s = geneRows[i].split()[:2]
-        
+
         lst.append((int(chrom.replace("chr","")), int(s), "\t".join([geneRows[i]] + [str(x) for x in  matrix[i]])+'\n'))
 
     lst.sort()
     for ln in lst:
         fout[ln[0]].write(ln[2])
-        
-    fout_run = file("%s_prepare.sh"%ratio_file,'w')
+
+    fout_run = open("%s_prepare.sh"%ratio_file,'w')
 
     for i in fout:
         fout[i].close()
@@ -147,14 +147,14 @@ def main(ratio_file, pcs=50):
     if pcs>0:
         #matrix = np.transpose(matrix) # important bug fix (removed as of Jan 1 2018)
         pcs = min([len(header), pcs])
-        pca = PCA(n_components=pcs)                                                                                                                                                                            
-        pca.fit(matrix)  
+        pca = PCA(n_components=pcs)
+        pca.fit(matrix)
         pca_fn=ratio_file+".PCs"
-        print("Outputting PCs: " + pca_fn)
-        pcafile = file(pca_fn,'w')  
+        print(("Outputting PCs: " + pca_fn))
+        pcafile = open(pca_fn,'w')
         pcafile.write("\t".join(['id']+header)+'\n')
         pcacomp = list(pca.components_)
-    
+
         for i in range(len(pcacomp)):
             pcafile.write("\t".join([str(i+1)]+[str(x) for x in pcacomp[i]])+'\n')
 
@@ -169,4 +169,3 @@ if __name__ == "__main__":
         sys.stderr.write("Error: no ratio file provided... (e.g. python leafcutter/scripts/prepare_phenotype_table.py input_perind.counts.gz\n")
         exit(0)
     main(args[0], int(options.npcs) )
-    
