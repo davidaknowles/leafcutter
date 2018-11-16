@@ -55,7 +55,7 @@ def pool_junc_reads(flist, options):
                 try: by_chrom[(chrom,strand)][(A,B)] = int(counts)
                 except: by_chrom[(chrom, strand)] = {(A,B):int(counts)}
 
-    fout = file(outFile, 'w')
+    fout = open(outFile, 'w')
     Ncluster = 0
     sys.stderr.write("Parsing...\n")
     for chrom in by_chrom:
@@ -112,7 +112,7 @@ def sort_junctions(libl, options):
             merges[libN] = []
         merges[libN].append(lib)
 
-    fout_runlibs = file(runName+"_sortedlibs",'w')
+    fout_runlibs = open(runName+"_sortedlibs",'w')
 
     for libN in merges:
         libName = "%s/%s"%(rundir,libN.split('/')[-1])
@@ -192,7 +192,7 @@ def refine_clusters(options):
     inFile = "%s/%s_pooled"%(rundir,outPrefix)
     outFile = "%s/%s_refined"%(rundir,outPrefix)
 
-    fout = file(outFile,'w')
+    fout = open(outFile,'w')
     Ncl = 0
     for ln in open(inFile):
         clu = []
