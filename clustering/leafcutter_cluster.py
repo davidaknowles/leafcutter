@@ -241,7 +241,7 @@ def merge_junctions(options):
     while len(lsts) > 1:
         clst = []
 
-        for i in range(0,(len(lsts)/N)+1):
+        for i in range(0,(len(lsts)//N)+1):
             lst = lsts[N*i:N*(i+1)]
             if len(lst) > 0:
                 clst.append(lst)
