@@ -130,7 +130,7 @@ def sort_junctions(libl, options):
             pass
         fout = gzip.open(foutName,'w')
 
-        fout.write("chrom {junc}\n".format(libN.split("/")[-1].split(".junc")[0]).encode())
+        fout.write("chrom {junc}\n".format(junc=libN.split("/")[-1].split(".junc")[0]).encode())
 
         for lib in merges[libN]:
             if lib[-3:] == ".gz": F = gzip.open(lib)
