@@ -405,6 +405,8 @@ all.clusters$N  <- results$N[ match( all.clusters$clusterID, results$clusterID)]
 all.clusters$verdict <- unlist(classification.list)[ match(all.clusters$clusterID, names(classification.list))]
 
 # prepare for PCA
+print(colnames(counts))
+print(meta$sample)
 counts <- counts[,meta$sample]
 print( "converting counts to ratios")
 # create per cluster ratios from counts
