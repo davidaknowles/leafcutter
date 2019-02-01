@@ -184,6 +184,7 @@ results_summary <-
   group_by(verdict) %>%
   summarise(n = n() ) %>%
   mutate( prop = n / sum(.$n)) %>%
+  mutate( prop = signif(prop, digits = 2)) %>%
   arrange(desc(n))
 
 print(results_summary)
