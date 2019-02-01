@@ -14,9 +14,6 @@ option_parser=OptionParser(
     make_option( c("-o","--output"), 
                  default="clusters", 
                  help="The name and path of where to output the classified clusters [%default]")#,
-   # make_option( c("-m","--meta_data_file"), default=NULL, help="The support file used in the differential splicing analysis. Columns should be file name and condition"),
-  #make_option( c("-f","--FDR"), default=0.05, help = "the adjusted p value threshold to use [%default]"),
-  #  make_option( c("-c","--code"), default="leafcutter_ds", help = "A name for this analysis (will be available in leafviz through the Summary tab). [%default]"))
   )
 )
 
@@ -24,17 +21,7 @@ parsed_args <- parse_args(option_parser,  positional_arguments = 1)
 
 leafviz_data <- parsed_args$args[1]
 
-#code <- parsed_args$options$code
 results_base = parsed_args$options$output
-#groups_file <- parsed_args$options$meta_data_file
-#FDR_limit <- parsed_args$options$FDR
-
-#require(leafcutter)
-#library(data.table)
-
-#library(stringr)
-#library(dplyr)
-#library(magrittr)
 
 # load in data
 
@@ -115,8 +102,6 @@ classifyClusters <- function(clu, full_output = FALSE){
     direction <- "skipped"
   }
   
-  
-  # 
   # junction annotation 
   # provide separate columns for skipping and inclusion junctions
   # for inclusion junctions - if both are annotated then its annotated; 
@@ -137,7 +122,6 @@ classifyClusters <- function(clu, full_output = FALSE){
     anno_include <- "novel"
   }
   
-  
   # Exon annotation
   # if cassette is annotated, check that there is annotation to support an exon joining the two junctions
   anno_exon <- "novel"
@@ -151,8 +135,6 @@ classifyClusters <- function(clu, full_output = FALSE){
     anno_exon <- "annotated"
   }
   
-  
-
 
   # return verdict - what people want
   # if both junctions and exon are annotated it is a cassette exon with a direction
@@ -219,7 +201,3 @@ write.table( results_summary,
              quote = FALSE, 
              sep = "\t",
              row.names = FALSE )
-
-
-
-
