@@ -83,6 +83,9 @@ exons_table=if (!is.null( exon_file )) {
   NULL
 }
 
+# in case the exons table lacks "chr" on the chr column
+exons_table$chr <- leafcutter::add_chr(exons_table$chr)
+
 effectSizes <- fread(effect.sizes.file, data.table=F )
 effectSizesSplit <-  as.data.frame(str_split_fixed(effectSizes$intron, ":", 4), stringsAsFactors = FALSE )
 names(effectSizesSplit) <- c("chr","start","end","clusterID")
