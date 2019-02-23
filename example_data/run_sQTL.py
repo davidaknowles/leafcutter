@@ -23,12 +23,12 @@ def run(cmd, max_minutes = 6000):
         e += file_stderr.read()
     r += file_stdout.read()
     e += file_stderr.read()
-    
+
     file_stdin.close()
     #lines = file_stdout.read()
     lines_stderr = file_stderr.read()
     exit_code = file_stdout.close()
-    
+
     file_stdout.close()
     file_stderr.close()
     return (r, e, exit_code)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     parser.add_option("-d", "--leafdir", dest="leafd", default='./',
                       help="Top-level LeafCutter directory")
-    
+
     parser.add_option("-l", "--maxintronlen", dest="maxintronlen", default = 100000,
                   help="Maximum intron length in bp (default 100,000bp)")
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     parser.add_option("-b", "--bams", dest="bam",
                   help="Text file listing bam files to quantify")
-    
+
     (options, args) = parser.parse_args()
 
     try: open(options.leafd+"/clustering/leafcutter_cluster.py")
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # (should check if samtools are installed)
 
     sys.stderr.write("processing bam files...\n")
-    fout = file("%s/junction_files.txt"%options.tmpdir,'w')
+    fout = open("%s/junction_files.txt"%options.tmpdir,'w')
     for bam in bams:
         bam = bam.strip()
         bedfile = "%s/%s.bed"%(options.tmpdir,bam.split('/')[-1])
@@ -96,19 +96,19 @@ if __name__ == "__main__":
         else:
             sys.stderr.write("%s exists..skipping\n"%juncfile)
             continue
-        print run("samtools view %s | python %s/scripts/filter_cs.py | %s/scripts/sam2bed.pl --use-RNA-strand - %s"%(bam, options.leafd, options.leafd,bedfile))[1]
-        print run("%s/scripts/bed2junc.pl %s %s; rm %s"%(options.leafd,bedfile,juncfile, bedfile))[1]
-        
+        print(run("samtools view %s | python %s/scripts/filter_cs.py | %s/scripts/sam2bed.pl --use-RNA-strand - %s"%(bam, options.leafd, options.leafd,bedfile))[1])
+        print(run("%s/scripts/bed2junc.pl %s %s; rm %s"%(options.leafd,bedfile,juncfile, bedfile))[1])
+
     fout.close()
-    
-    print run("python %s/clustering/leafcutter_cluster.py -j %s/junction_files.txt -m %s -o %s -l %s -r %s -p %s"%(options.leafd,options.tmpdir,options.minclureads, options.outprefix,str(options.maxintronlen), options.tmpdir,str(options.mincluratio)))[1]
+
+    print(run("python %s/clustering/leafcutter_cluster.py -j %s/junction_files.txt -m %s -o %s -l %s -r %s -p %s"%(options.leafd,options.tmpdir,options.minclureads, options.outprefix,str(options.maxintronlen), options.tmpdir,str(options.mincluratio)))[1])
 
     if options.annotation != None:
-        print run("python %s/clustering/get_cluster_gene.py %s %s/%s_perind.counts.gz"%(options.leafd,options.annotation, options.tmpdir,options.outprefix))[1]
+        print(run("python %s/clustering/get_cluster_gene.py %s %s/%s_perind.counts.gz"%(options.leafd,options.annotation, options.tmpdir,options.outprefix))[1])
         pass
-    
 
-    print run("python %s/scripts/prepare_phenotype_table.py %s/%s_perind.counts.gz"%(options.leafd,options.tmpdir,options.outprefix))
+
+    print(run("python %s/scripts/prepare_phenotype_table.py %s/%s_perind.counts.gz"%(options.leafd,options.tmpdir,options.outprefix)))
 
     sys.stdout.write("\n*******fastQTL instructions (also see http://fastqtl.sourceforge.net/) *******\n")
     sys.stdout.write("\n(1) Prepare phenotypes: Use `sh %s/%s_perind.counts.gz_prepare.sh' to create index for fastQTL (requires tabix and bgzip).\n"%(options.tmpdir,options.outprefix))

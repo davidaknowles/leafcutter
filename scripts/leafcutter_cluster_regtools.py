@@ -9,11 +9,11 @@ import gzip
 import shutil
 
 def main(options,libl):
-    
+
     if options.cluster == None:
         pool_junc_reads(libl, options)
         refine_clusters(options)
-        
+
     sort_junctions(libl, options)
     merge_junctions(options)
     get_numers(options)
@@ -26,11 +26,11 @@ def pool_junc_reads(flist, options):
     checkchrom = options.checkchrom
 
     outFile = "%s/%s_pooled"%(rundir,outPrefix)
-    
+
     chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
     by_chrom = {}
     for libl in flist:
-        
+
         lib = libl.strip()
         if not os.path.isfile(lib):
             continue
@@ -39,35 +39,35 @@ def pool_junc_reads(flist, options):
             sys.stderr.write("scanning %s...\n"%lib)
 
         for ln in open(lib):
-            
+
             lnsplit=ln.split()
-            if len(lnsplit)<6: 
+            if len(lnsplit)<6:
                 sys.stderr.write("Error in %s \n" % lib)
                 continue
             chrom, A, B, dot, counts, strand, rA,rb, rgb, blockCount, blockSize, blockStarts = lnsplit
             if int(blockCount) > 2:
-                print ln
+                print(ln)
                 continue
-            
+
             if checkchrom and (chrom not in chromLst): continue
             Aoff, Boff = blockSize.split(",")
             A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
             if B-A > int(maxIntronLen): continue
             try: by_chrom[(chrom,strand)][(A,B)] = int(counts) + by_chrom[(chrom,strand)][(A,B)]
-            except: 
+            except:
                 try: by_chrom[(chrom,strand)][(A,B)] = int(counts)
                 except: by_chrom[(chrom,strand)] = {(A,B):int(counts)}
 
-    fout = file(outFile, 'w')
+    fout = open(outFile, 'w')
     Ncluster = 0
     sys.stderr.write("Parsing...\n")
     for chrom in by_chrom:
-        read_ks = [k for k,v in by_chrom[chrom].items() if v >= 3] # a junction must have at least 3 reads
+        read_ks = [k for k,v in list(by_chrom[chrom].items()) if v >= 3] # a junction must have at least 3 reads
         read_ks.sort()
         sys.stderr.write("%s:%s.."%chrom)
         clu = cluster_intervals(read_ks)[0]
         for cl in clu:
-            if len(cl) > 1: # if cluster has more than one intron  
+            if len(cl) > 1: # if cluster has more than one intron
                 buf = '%s:%s '%chrom
                 for interval, count in [(x, by_chrom[chrom][x]) for x in cl]:
                     buf += "%d:%d" % interval + ":%d"%count+ " "
@@ -79,7 +79,7 @@ def pool_junc_reads(flist, options):
 
 def sort_junctions(libl, options):
 
-    chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y'] 
+    chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
     outPrefix = options.outprefix
     rundir = options.rundir
     checkchrom = options.checkchrom
@@ -116,7 +116,7 @@ def sort_junctions(libl, options):
             merges[libN] = []
         merges[libN].append(lib)
 
-    fout_runlibs = file(runName+"_sortedlibs",'w')
+    fout_runlibs = open(runName+"_sortedlibs",'w')
 
     for libN in merges:
         libName = "%s/%s"%(rundir,libN.split('/')[-1])
@@ -125,10 +125,10 @@ def sort_junctions(libl, options):
 
         fout_runlibs.write(foutName+'\n')
 
-        if options.verbose:   
+        if options.verbose:
             sys.stderr.write("Sorting %s..\n"%libN)
         if len(merges[libN]) > 1:
-            if options.verbose:   
+            if options.verbose:
                 sys.stderr.write("merging %s...\n"%(" ".join(merges[libN])))
         else:
             pass
@@ -137,18 +137,18 @@ def sort_junctions(libl, options):
         fout.write("chrom %s\n"%libN.split("/")[-1].split(".junc")[0])
 
         for lib in merges[libN]:
-        
+
             for ln in open(lib):
 
                 lnsplit=ln.split()
-                if len(lnsplit)<6: 
+                if len(lnsplit)<6:
                     sys.stderr.write("Error in %s \n" % lib)
                     continue
                 chrom, A, B, dot, count, strand, rA,rb, rgb, blockCount, blockSize, blockStarts = lnsplit
                 if int(blockCount) > 2:
-                    print ln
+                    print(ln)
                     continue
-                
+
                 if checkchrom and (chrom not in chromLst): continue
                 Aoff, Boff = blockSize.split(",")
                 A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
@@ -156,12 +156,12 @@ def sort_junctions(libl, options):
                 if chrom not in by_chrom:
                     by_chrom[chrom] = {}
                 intron = (A, B)
-                
+
                 if intron in by_chrom[chrom]:
                     by_chrom[chrom][intron] += int(count)
                 else:
                     by_chrom[chrom][intron] = int(count)
-                
+
         for clu in cluExons:
             buf = []
             ks = cluExons[clu]
@@ -176,7 +176,7 @@ def sort_junctions(libl, options):
                 elif (start,end) in by_chrom[chrom]:
                     tot += by_chrom[chrom][(start,end)]
             for exon in ks:
-            
+
                 chrom, start, end = exon
                 start, end = int(start), int(end)
                 chrom = tuple(chrom.split(":"))
@@ -187,13 +187,13 @@ def sort_junctions(libl, options):
                     buf.append("%s:%d:%d:clu_%d_%s %d/%d\n"%(chromID,start, end, clu,strand, by_chrom[chrom][(start,end)], tot))
                 else:
                     buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu,strand, tot))
-        
+
             fout.write("".join(buf))
         fout.close()
     fout_runlibs.close()
 
 def refine_clusters(options):
-    
+
     outPrefix = options.outprefix
     rundir = options.rundir
     minratio = float(options.mincluratio)
@@ -202,7 +202,7 @@ def refine_clusters(options):
     inFile = "%s/%s_pooled"%(rundir,outPrefix)
     outFile = "%s/%s_refined"%(rundir,outPrefix)
 
-    fout = file(outFile,'w')
+    fout = open(outFile,'w')
     Ncl = 0
     for ln in open(inFile):
         clu = []
@@ -216,7 +216,7 @@ def refine_clusters(options):
         #print "CLU",clu
         #print "linked",refine_linked(clu)
         #print '\n\n'
-    
+
         for cl in refine_linked(clu):
             rc = refine_cluster(cl,minratio, minreads)
             if len(rc) > 0:
@@ -230,45 +230,45 @@ def refine_clusters(options):
     fout.close()
 
 
-def merge_junctions(options):    
+def merge_junctions(options):
     ''' function to merge junctions '''
 
     outPrefix = options.outprefix
     rundir = options.rundir
     fnameout = "%s/%s"%(rundir,outPrefix)
     flist = "%s/%s_sortedlibs"%(rundir, outPrefix)
-    
+
     lsts = []
     for ln in open(flist):
         lsts.append(ln.strip())
     if options.verbose:
         sys.stderr.write("merging %d junction files...\n"%(len(lsts)))
-    
+
     # Change 300 if max open file is < 300
     N = min([300, max([100, int(len(lsts)**(0.5))])])
 
     tmpfiles = []
-    while len(lsts) > 1:    
+    while len(lsts) > 1:
         clst = []
-        
-        for i in range(0,(len(lsts)/N)+1): 
+
+        for i in range(0,(len(lsts)/N)+1):
             lst = lsts[N*i:N*(i+1)]
             if len(lst) > 0:
                 clst.append(lst)
         lsts = []
-    
+
         for lst in clst:
             if len(lst) == 0: continue
             tmpfile = tempfile.mktemp()
             os.mkdir(tmpfile)
             foutname = tmpfile+"/tmpmerge.gz"
             fout = gzip.open(foutname,'w')
-            
+
             merge_files(lst, fout, options)
             lsts.append(foutname)
             tmpfiles.append(foutname)
             fout.close()
-    
+
     shutil.move(lsts[0], fnameout+"_perind.counts.gz")
 
 def merge_files(fnames, fout, options):
@@ -284,12 +284,12 @@ def merge_files(fnames, fout, options):
     N = 0
     while not finished:
         N += 1
-        if N % 50000 == 0: 
+        if N % 50000 == 0:
             sys.stderr.write(".")
         buf = []
         for f in fopen:
             ln = f.readline().split()
-            if len(ln) == 0: 
+            if len(ln) == 0:
                 finished = True
                 break
             chrom = ln[0]
@@ -328,10 +328,10 @@ def cluster_intervals(E):
         i += 1
 
     if len(cluster) > 0:
-        
+
         Eclusters.append(cluster)
 
-    
+
     return Eclusters, E
 
 def overlaps(A,B):
@@ -351,7 +351,7 @@ def refine_linked(clusters):
     newClusters = []
     while len(unassigned) > 0:
         finished = False
-    
+
         while not finished:
             finished = True
             torm = []
@@ -378,7 +378,7 @@ def refine_linked(clusters):
 def refine_cluster(clu, cutoff, readcutoff):
     ''' for each exon in the cluster compute the ratio of reads, if smaller than cutoff,
     remove and recluster '''
-    
+
     remove = []
     dic = {}
     intervals = []
@@ -395,7 +395,7 @@ def refine_cluster(clu, cutoff, readcutoff):
         else:
             reCLU = True
     if len(intervals) == 0: return []
-    
+
     # This makes sure that after trimming, the clusters are still good
     Atmp, B = cluster_intervals(intervals)
     A = []
@@ -403,7 +403,7 @@ def refine_cluster(clu, cutoff, readcutoff):
         for c in refine_linked([(x,0) for x in cl]):
             if len(c) > 0:
                 A.append([x[0] for x in c])
-    
+
     if len(A) == 1:
         rc = [(x, dic[x]) for x in A[0]]
         if len(rc) > 1:
@@ -429,7 +429,7 @@ def get_numers(options):
     input_file=gzip.open(fname, 'rb')
     fout = gzip.open(fnameout,'w')
     first_line=True
-    
+
     for l in input_file:
         if first_line:
             fout.write(" ".join(l.strip().split(" ")[1:])+'\n') # print the sample names
@@ -437,7 +437,7 @@ def get_numers(options):
         else:
             l=l.strip()
             words=l.split(" ")
-            
+
             fout.write(words[0]+ " "+ " ".join( [ g.split("/")[0] for g in words[1:] ] ) +'\n')
 
     input_file.close()
@@ -461,7 +461,7 @@ if __name__ == "__main__":
 
     parser.add_option("-r", "--rundir", dest="rundir", default='./',
                   help="write to directory (default ./)")
-    
+
     parser.add_option("-l", "--maxintronlen", dest="maxintronlen", default = 100000,
                   help="maximum intron length in bp (default 100,000bp)")
 
@@ -482,14 +482,14 @@ if __name__ == "__main__":
     if options.juncfiles == None:
         sys.stderr.write("Error: no junction file provided...\n")
         exit(0)
-    
+
     # Get the junction file list
     libl = []
     for junc in open(options.juncfiles):
         junc = junc.strip()
         try:
             open(junc)
-        except: 
+        except:
             sys.stderr.write("%s does not exist... check your junction files.\n"%junc)
             exit(0)
         libl.append(junc)

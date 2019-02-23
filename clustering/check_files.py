@@ -29,7 +29,7 @@ for libl in open(sys.argv[2]):
     sys.stderr.write("%d junctions\n"%libs[lib])
 
 failed_junc = []
-threshold=max([len(x) for x in libChroms.values()])/1
+threshold=max([len(x) for x in list(libChroms.values())])/1
 for lib in libChroms:
     if len(libChroms[lib]) < threshold:
         failed_junc.append("rm "+lib)
