@@ -187,7 +187,8 @@ def refine_clusters(options):
     outPrefix = options.outprefix
     rundir = options.rundir
     minratio = float(options.mincluratio)
-    minreads = int(options.minclureads)
+    minclureads = int(options.minclureads)
+    minreads = nt(options.minreads)
 
     inFile = "%s/%s_pooled"%(rundir,outPrefix)
     outFile = "%s/%s_refined"%(rundir,outPrefix)
@@ -202,11 +203,8 @@ def refine_clusters(options):
             A, B, N = ex.split(":")
             clu.append(((int(A),int(B)), int(N)))
             totN += int(N)
-        if totN < minreads: continue
-        #print "CLU",clu
-        #print "linked",refine_linked(clu)
-        #print '\n\n'
-    
+        if totN < minclureads: continue
+       
         for cl in refine_linked(clu):
             rc = refine_cluster(cl,minratio, minreads)
             if len(rc) > 0:
@@ -459,6 +457,9 @@ if __name__ == "__main__":
 
     parser.add_option("-m", "--minclureads", dest="minclureads", default = 30,
                   help="minimum reads in a cluster (default 30 reads)")
+
+    parser.add_option("-M", "--minreads", dest="minreads", default = 5,
+                  help="minimum reads for an intron (default 5 reads)")
 
     parser.add_option("-p", "--mincluratio", dest="mincluratio", default = 0.001,
                   help="minimum fraction of reads in a cluster that support a junction (default 0.001)")
