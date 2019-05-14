@@ -35,7 +35,34 @@ def stream_table(f, ss = ''):
             except: break
         yield attr
 
-def main(ratio_file, pcs=50):
+def get_chromosomes(ratio_file):
+    """Get chromosomes from table. Returns set of chromosome names"""
+    try: open(ratio_file)
+    except:
+        sys.stderr.write("Can't find %s..exiting\n"%(ratio_file))
+        return
+    sys.stderr.write("Parsing chromosome names...\n")
+    chromosomes = set()
+    with gzip.open(ratio_file, 'rt') as f:
+            f.readline()
+            for line in f:
+                chromosomes.add(line.split(":")[0])
+    return(chromosomes)
+
+def get_blacklist_chromosomes(chromosome_blacklist_file):
+    """
+    Get list of chromosomes to ignore from a file with one blacklisted
+    chromosome per line. Returns list. eg. ['X', 'Y', 'MT']
+    """
+    if chromosome_blacklist_file:
+        with open(chromosome_blacklist_file, 'r') as f:
+            return(f.read().splitlines())
+    else:
+        return(["X", "Y"])
+
+
+
+def main(ratio_file, chroms, blacklist_chroms, pcs=50):
     
     dic_pop, fout = {}, {}
     try: open(ratio_file)
@@ -44,8 +71,8 @@ def main(ratio_file, pcs=50):
         return
 
     sys.stderr.write("Starting...\n")
-    for i in range(1,23):
-        fout[i] = file(ratio_file+".phen_chr%d"%i,'w')
+    for i in chroms:
+        fout[i] = file(ratio_file+".phen_chr"+i,'w')
         fout_ave = file(ratio_file+".ave",'w')
     valRows, valRowsnn, geneRows = [], [], []
     finished = False
@@ -59,7 +86,7 @@ def main(ratio_file, pcs=50):
 
         chrom = dic['chrom'].replace("chr",'')
         chr_ = chrom.split(":")[0]
-        if chr_ in 'XY': continue
+        if chr_ in blacklist_chroms: continue
         NA_indices, valRow, aveReads = [], [], []
         tmpvalRow = []
 
@@ -96,8 +123,7 @@ def main(ratio_file, pcs=50):
 
         chr_, s, e, clu = chrom.split(":")
         if len(valRow) > 0:                
-            chrom_int = int(chr_)
-            fout[chrom_int].write("\t".join([chr_,s,e,chrom]+[str(x) for x in valRow])+'\n')
+            fout[chr_].write("\t".join([chr_,s,e,chrom]+[str(x) for x in valRow])+'\n')
             fout_ave.write(" ".join(["%s"%chrom]+[str(min(aveReads)), str(max(aveReads)), str(np.mean(aveReads))])+'\n')
 
             # scale normalize
@@ -119,8 +145,8 @@ def main(ratio_file, pcs=50):
         
     # write the corrected tables
     fout = {}
-    for i in range(1,23):
-        fn="%s.qqnorm_chr%d"%(ratio_file,i)
+    for i in chroms:
+        fn="%s.qqnorm_chr%s"%(ratio_file,i)
         print("Outputting: " + fn)
         fout[i] = file(fn,'w')
         fout[i].write("\t".join(['#Chr','start','end','ID'] + header)+'\n')
@@ -128,7 +154,7 @@ def main(ratio_file, pcs=50):
     for i in xrange(len(matrix)):
         chrom, s = geneRows[i].split()[:2]
         
-        lst.append((int(chrom.replace("chr","")), int(s), "\t".join([geneRows[i]] + [str(x) for x in  matrix[i]])+'\n'))
+        lst.append((chrom.replace("chr",""), int(s), "\t".join([geneRows[i]] + [str(x) for x in  matrix[i]])+'\n'))
 
     lst.sort()
     for ln in lst:
@@ -138,8 +164,8 @@ def main(ratio_file, pcs=50):
 
     for i in fout:
         fout[i].close()
-        fout_run.write("bgzip -f %s.qqnorm_chr%d\n"%(ratio_file, i))
-        fout_run.write("tabix -p bed %s.qqnorm_chr%d.gz\n"%(ratio_file, i))
+        fout_run.write("bgzip -f %s.qqnorm_chr%s\n"%(ratio_file, i))
+        fout_run.write("tabix -p bed %s.qqnorm_chr%s.gz\n"%(ratio_file, i))
     fout_run.close()
 
     sys.stdout.write("Use `sh %s_prepare.sh' to create index for fastQTL (requires tabix and bgzip).\n"%ratio_file)
@@ -164,9 +190,10 @@ if __name__ == "__main__":
 
     parser = OptionParser(usage="usage: %prog [-p num_PCs] input_perind.counts.gz")
     parser.add_option("-p", "--pcs", dest="npcs", default = 50, help="number of PCs output")
+    parser.add_option("--ChromosomeBlackList", dest="cbl", default="", help="file of blacklisted chromosomes to exclude from analysis, one per line. If none is provided, will default to blacklisting X and Y")
     (options, args) = parser.parse_args()
     if len(args)==0:
         sys.stderr.write("Error: no ratio file provided... (e.g. python leafcutter/scripts/prepare_phenotype_table.py input_perind.counts.gz\n")
         exit(0)
-    main(args[0], int(options.npcs) )
+    main(args[0], get_chromosomes(args[0]), get_blacklist_chromosomes(options.cbl), int(options.npcs) )
     
