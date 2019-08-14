@@ -42,6 +42,7 @@ For now we also need a version of `rstantools` (2.0.0) that is not yet on CRAN, 
 if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-project.org')
 devtools::install_github("stan-dev/rstantools")
 ```
+You can use `remotes` instead of `devtools` if you don't want to wait on the long `devtools` install. 
 
 #### Using devtools (recommended)
 
