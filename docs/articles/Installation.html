@@ -107,6 +107,7 @@ CXX14=g++</code></pre>
 <p>For now we also need a version of <code>rstantools</code> (2.0.0) that is not yet on CRAN, so do:</p>
 <pre><code>if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-project.org')
 devtools::install_github("stan-dev/rstantools")</code></pre>
+<p>You can use <code>remotes</code> instead of <code>devtools</code> if you don’t want to wait on the long <code>devtools</code> install.</p>
 </div>
 <div id="using-devtools-recommended" class="section level4">
 <h4 class="hasAnchor">
