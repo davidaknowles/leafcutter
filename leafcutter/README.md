@@ -2,7 +2,7 @@
 
 <img src="./logo.png" width="200"> 
 
-[Yang I. Li](http://web.stanford.edu/~yangili/index.html)<sup>1</sup>, [David A. Knowles](http://cs.stanford.edu/people/davidknowles/)<sup>1</sup>, Jack Humphrey, Alvaro N. Barbeira, Scott P. Dickinson, Hae Kyung Im, [Jonathan K. Pritchard](http://web.stanford.edu/group/pritchardlab/home.html)
+[Yang I. Li](https://ggsb.uchicago.edu/program/faculty/yang-li)<sup>1</sup>, [David A. Knowles](https://daklab.github.io/)<sup>1</sup>, Jack Humphrey, Alvaro N. Barbeira, Scott P. Dickinson, Hae Kyung Im, [Jonathan K. Pritchard](http://web.stanford.edu/group/pritchardlab/home.html)
 
 <sup>1</sup>*Equal contribution*
 
@@ -12,7 +12,7 @@ Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The 
 * avoiding the challenge of isoform abundance estimation
 * simple, computationally efficient algorithms scaling to 100s or even 1000s of samples
 
-For details please see our [bioRxiv preprint](http://www.biorxiv.org/content/early/2017/09/07/044107)
+For details please see our [bioRxiv preprint](http://www.biorxiv.org/content/early/2017/09/07/044107) or [paper](https://www.nature.com/articles/s41588-017-0004-9). 
 
 * [Installation](./articles/Installation.html)
 * [Differential splicing](./articles/Installation.html)

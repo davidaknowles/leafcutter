@@ -25,6 +25,7 @@ git clone https://github.com/davidaknowles/leafcutter
 To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required R package dependencies for you). Fire up R and run:
 ```
 if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-project.org')
+devtools::install_github("stan-dev/rstantools") # we need this until rstantools v2.0.0 gets onto CRAN :/ 
 devtools::install_github("davidaknowles/leafcutter/leafcutter")
 ```
 
