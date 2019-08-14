@@ -18,14 +18,35 @@ To download the code (you'll need this for the leafcutter scripts)
 git clone https://github.com/davidaknowles/leafcutter
 ```
 
+If you just want to get leafcutter quantifications (junction counts for each splicing cluster) e.g. for sQTL analysis, then you just need the python scripts in `scripts` and `clustering`. 
+
+If you want to do differential splicing analysis and visualization you'll need to install the leafcutter R package. 
+
 ### Installing the R package
+
+#### Installing rstan
+
+Leafcutter relies on [stan](https://mc-stan.org/) and its R interface `rstan`. Installing this can be tricky. If you're lucky 
+```
+install.packages("rstan")
+```
+will just work for you. If not, there are [instructions](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started) that should help you. On Linux I seem to need
+```
+CXX14FLAGS=-O3 -march=native -mtune=native -fPIC
+CXX14=g++
+```
+in `~/.R/Makevars`. 
+
+For now we also need a version of `rstantools` (2.0.0) that is not yet on CRAN, so do:
+```
+if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-project.org')
+devtools::install_github("stan-dev/rstantools")
+```
 
 #### Using devtools (recommended)
 
-To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required R package dependencies for you). Fire up R and run:
+To compile the R package to perform differential splicing analysis and make junction plots we recommend you install using devtools (this should install the required R package dependencies for you). 
 ```
-if (!require("devtools")) install.packages("devtools", repos='http://cran.us.r-project.org')
-devtools::install_github("stan-dev/rstantools") # we need this until rstantools v2.0.0 gets onto CRAN :/ 
 devtools::install_github("davidaknowles/leafcutter/leafcutter")
 ```
 
