@@ -7,7 +7,8 @@
 make_gene_plot(gene_name, clusterID = NULL, cluster_list = NULL,
   introns = NULL, introns_to_plot = NULL, counts, exons_table = NULL,
   len = 500, min_exon_length = 0.5, main_title = NA, snp_pos = NA,
-  snp = NA, summary_func = colSums, legend_title = "Mean counts")
+  snp = NA, summary_func = colSums, legend_title = "Mean counts",
+  debug = F)
 }
 \description{
 Take a gene name or ID, search the counts matrix for all clusters that fall within that gene's boundaries (found from the exon table).

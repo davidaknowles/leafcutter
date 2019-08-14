@@ -45,8 +45,8 @@ LinkingTo:
     BH (>= 1.66.0), 
     Rcpp (>= 0.12.0), 
     RcppEigen (>= 0.3.3.3.0)
-RoxygenNote: 6.1.0
-Encoding: UTF-8 
+RoxygenNote: 6.1.1
+Encoding: UTF-8
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
