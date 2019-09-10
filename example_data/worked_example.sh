@@ -2,6 +2,8 @@
 
 # Manually working through the differential splicing pipeline.
 
+# Update (2019): using regtools 0.5.1
+
 # wget bam files (4Gb!)
 wget https://www.dropbox.com/s/pni1zq5y6cr4tx5/example_geuvadis.tar.gz?dl=0 -O example_geuvadis.tar.gz
 tar -xvf example_geuvadis.tar.gz
@@ -9,14 +11,15 @@ tar -xvf example_geuvadis.tar.gz
 # Convert bam to junction files
 if [ -e test_juncfiles.txt ]; then rm test_juncfiles.txt; fi
 
-for bamfile in `ls example_geuvadis/*chr1.bam`; do
+for bamfile in `ls run/geuvadis/*chr1.bam`; do
     echo Converting $bamfile to $bamfile.junc
-    sh ../scripts/bam2junc.sh $bamfile $bamfile.junc
+    samtools index $bamfile
+    regtools junctions extract -a 8 -m 50 -M 500000 $bamfile -o $bamfile.junc
     echo $bamfile.junc >> test_juncfiles.txt
 done
 
 # Finds intron clusters and quantifies junction usage within them.
-python ../clustering/leafcutter_cluster.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000
+python ../clustering/leafcutter_cluster_regtools.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000
 
 # Differential splicing analysis.
 ../scripts/leafcutter_ds.R --num_threads 4 ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt
