@@ -2,21 +2,26 @@ Package: leafcutter
 Type: Package
 Title: Alternative splicing quantification, differential splicing and splicing
     QTL mapping
-Version: 0.2.7
-Date: 2017-09-25
-Authors@R: c(person("David", "Knowles", email = "knowles84@gmail.com", role = c("aut", "cre")),
+Version: 0.2.8
+Date: 2019-07-23
+Authors@R: c(person("David", "Knowles", email = "dak2173@columbia.edu", role = c("aut", "cre")),
               person("Yang", "Li", role = c("aut", "cre")),
-			  person("Jack", "Humphrey", role = c("aut", "cre")),
+              person("Jack", "Humphrey", role = c("aut", "cre")),
               person("Jonathan", "Pritchard", role = "aut"))
 Author: David A. Knowles, Yang Li, Jonathan Pritchard
-Maintainer: David A. Knowles <knowles84@gmail.com>
+Maintainer: David A. Knowles <david.arthur.knowles@gmail.com>
+BugReports: https://github.com/davidaknowles/leafcutter/issues
 Description: Alternative Splicing Quantification, Differential Splicing and Splicing QTL Mapping
 License: GPL (>= 3)
+LazyData: true
+Biarch: true
 Depends:
-    R (>= 3.0.2),
-    Rcpp (>= 0.11.0),
+    R (>= 3.4.0),
+    Rcpp (>= 0.12.0),
+    methods
 Imports:
-    rstan (>= 2.16.0),
+    rstan (>= 2.18.1),
+    rstantools (>= 2.0.0),
     ggplot2,
     R.utils,
     gridExtra,
@@ -28,15 +33,22 @@ Imports:
     stringr,
     doMC,
     optparse,
-	shiny,
-	shinyjs,
-	DT,
-	intervals,
-	shinycssloaders,
-	gtable
-LinkingTo: StanHeaders (>= 2.8.0), rstan (>= 2.16.0), BH (>= 1.58.0), Rcpp (>=
-    0.11.0), RcppEigen
-RoxygenNote: 6.0.1
+    shiny,
+    shinyjs,
+    DT,
+    intervals,
+    shinycssloaders,
+    gtable
+LinkingTo: 
+    StanHeaders (>= 2.18.0), 
+    rstan (>= 2.18.1), 
+    BH (>= 1.66.0), 
+    Rcpp (>= 0.12.0), 
+    RcppEigen (>= 0.3.3.3.0)
+RoxygenNote: 6.1.1
+Encoding: UTF-8
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
+NeedsCompilation: yes
+SystemRequirements: GNU make

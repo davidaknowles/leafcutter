@@ -19,14 +19,14 @@ library(ggrepel)
 #load("example/Brain_vs_Heart_results.Rdata")
 #source("../leafcutter/R/make_gene_plot.R")
 #make_gene_plot("MICAL3", counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = "clu_36585", introns_to_plot = introns_to_plot)
-#make_gene_plot("MICAL3",counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot) 
+#make_gene_plot("MICAL3",counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot)
 #source("../leafcutter/R/make_cluster_plot.R")
 #make_cluster_plot( "clu_8845",main_title = c("RILP1", "clu_8845"), meta = meta, cluster_ids = cluster_ids, exons_table = exons_table, counts = counts,introns = introns)
 
 
 filter_intron_table <- function(introns, clu, toSave=FALSE){
-  d <- dplyr::filter(introns, clusterID == clu) %>% 
-    dplyr::select( -clusterID, -gene, -ensemblID, -transcripts) %>% 
+  d <- dplyr::filter(introns, clusterID == clu) %>%
+    dplyr::select( -clusterID, -gene, -ensemblID, -transcripts) %>%
     arrange( desc(abs(deltapsi)))
   if( !toSave ){
     d <- rename(d, "ΔPSI" = deltapsi )
@@ -71,7 +71,7 @@ if (!exists("introns")){
   # for testing - simulate data aligned to genome without "chr" in chr name
   #introns_to_plot$chr <- gsub("chr","", introns_to_plot$chr)
   #row.names(counts) <- gsub("chr", "", row.names(counts))
-  
+
 }else{
   defaultValue <- NULL
 }
@@ -84,20 +84,20 @@ server <- function(input, output, session) {
   output$logo <- renderImage({
     list( src = leafcutter_logo, alt = "", width = "15%", height = "15%" )
   }, deleteFile = FALSE)
-  
+
   output$all_clusters <- DT::renderDataTable({
     datatable( clusters[,c("gene","coord","N","FDR","annotation")],
               escape = FALSE,
               rownames = FALSE,
               colnames = c('Genomic location'='coord','Gene'='gene','N'='N','Annotation'='annotation','q'='FDR'),
-              selection = 'single', 
+              selection = 'single',
               caption = "Click on a row to plot the corresponding visualization. N: number of introns within a cluster. q: Benjamini–Hochberg q-value.",
               fillContainer = FALSE,
               options = list(
                 pageLength = 15,
                 columnDefs = list(list(className = 'dt-center', targets = 0:4) )
               )
-              ) 
+              )
   })
   output$sample_table <- DT::renderDataTable({
     datatable(sample_table,
@@ -107,23 +107,23 @@ server <- function(input, output, session) {
               options <- list( searching = FALSE, paging = FALSE, info = FALSE )
               )
   })
-  
+
   # observeEvent(input$toggleInstruct, {
   #   renderUI()
   # })
 
   onclick("welcome", toggle(id = "popupInstruct", anim = TRUE) )
-  
+
   observeEvent( input$aboutLink, {
     updateTabsetPanel(session, "navBarPage", selected = "About")
   })
-  
+
   observeEvent( input$aboutLink2, {
     updateTabsetPanel(session, "navBarPage", selected = "About")
   })
-  
+
   # SUMMARY - does this need to be in server and not just UI?
-  
+
   output$experimentCode <- renderText({
     paste("Experiment code:", code )
   })
@@ -138,7 +138,7 @@ server <- function(input, output, session) {
               options <- list( searching = FALSE, paging = FALSE, info = FALSE )
               )
   })
-  
+
   output$intron_summary <- DT::renderDataTable({
     datatable(intron_summary,
               escape = FALSE,
@@ -147,9 +147,9 @@ server <- function(input, output, session) {
               options <- list( searching = FALSE, paging = FALSE, info = FALSE )
               )
   })
-  
+
   # TABLES
-  
+
   output$cluster_view = DT::renderDataTable({
     clu <- mydata()$cluster
     if(!is.null(clu)){
@@ -162,11 +162,11 @@ server <- function(input, output, session) {
     }else{
       print("no cluster selected!")
     }
-    
+
   })
-  
+
   # SET REACTIVE VALUE WITH A DEFAULT
-  
+
   values <- reactiveValues(default = defaultValue) # RBFOX1 in the Brain vs Heart dataset
   # REACTIVE VALUE IS UPDATED BY INPUT
   observeEvent(input$all_clusters_rows_selected,{
@@ -174,9 +174,9 @@ server <- function(input, output, session) {
     values$default <- input$all_clusters_rows_selected # if all_clusters_rows_selected changes then update value - this sets everything!
     #print(paste0("VALUE: ", values$default ))
   })
-  
+
   # USE REACTIVE VALUE TO GENERATE ALL VARIABLES NEEDED
-  
+
   mydata <- eventReactive(values$default,{
     sel <- values$default
     gene  <- clusters[ sel, ]$gene
@@ -186,10 +186,10 @@ server <- function(input, output, session) {
     coord <- clusters[ sel, ]$coord
     return(list(gene = gene, width = width, cluster = clusterID, coord = coord) )
   })
-  
-  
+
+
   # PLOTTING
-  
+
   output$select_cluster_plot <- renderPlot({
     plotTitle <- c(mydata()$gene, as.character(mydata()$cluster) )
     suppressWarnings( print(
@@ -204,33 +204,33 @@ server <- function(input, output, session) {
   }, width = "auto", height = "auto",  res = 90
   )
 
-  observeEvent(values$default,{ 
+  observeEvent(values$default,{
     output$select_gene_plot <- renderPlot({
-    suppressWarnings( print( 
-      make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = mydata()$cluster, introns_to_plot = introns_to_plot)
+    suppressWarnings( print(
+      make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = mydata()$clusterID, introns_to_plot = introns_to_plot, debug=F)
       )
     )
     }, width = mydata()$width, height = "auto", res = 90 # try changing height param
    )
   })
-  
+
   # TITLES
-  
+
   output$gene_title <- renderText({
-    return( as.character( mydata()$gene )  ) 
+    return( as.character( mydata()$gene )  )
   })
 
   output$cluster_title <- renderText({
     return( as.character(mydata()$cluster))
   })
-  
+
   # DOWNLOAD HANDLING
-  
+
   output$downloadClusterPlot <- downloadHandler(
     filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '.pdf') },
     content = function(file) {
       plotTitle <- c(mydata()$gene, as.character(mydata()$cluster) )
-      ggsave(file, 
+      ggsave(file,
              plot = make_cluster_plot( mydata()$cluster,
                                   main_title = plotTitle,
                                   meta = meta,
@@ -241,7 +241,7 @@ server <- function(input, output, session) {
              device = "pdf", width = 10, height = 5 )
     }
   )
-  
+
   output$downloadClusterPlotWithTable <- downloadHandler(
     filename = function() { paste0(mydata()$gene,"_", mydata()$cluster, '_table.pdf') },
     content = function(file) {
@@ -259,9 +259,9 @@ server <- function(input, output, session) {
         ),
         colhead=list(fg_params=list(col="black", fontface="bold"),
                      bg_params = list(fill="white")),
-        rowhead=list(fg_params=list(col="black"), 
+        rowhead=list(fg_params=list(col="black"),
                      bg_params = list(fill=c("white", "whitesmoke"))))
-      
+
       mytable <- tableGrob(filter_intron_table(introns, mydata()$cluster, toSave=TRUE), theme = tableTheme )
       mycols <- ncol(mytable)
       mytable$widths <- unit( c( 1/(3*mycols), rep(1/mycols, mycols-1) ), "npc")
@@ -292,12 +292,12 @@ server <- function(input, output, session) {
   output$downloadGenePlot <- downloadHandler(
     filename = function() { paste( mydata()$gene,"_","allClusters", '.pdf', sep='') },
     content = function(file) {
-      ggsave(file, 
-             plot = make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot), 
+      ggsave(file,
+             plot = make_gene_plot(mydata()$gene, counts = counts, introns = introns, exons_table = exons_table, cluster_list = clusters, clusterID = NULL, introns_to_plot = introns_to_plot),
              device = "pdf", width = ifelse( mydata()$width == "auto", yes = 10, no = mydata()$width / 100 ), height = 6, units = "in", limitsize = FALSE)
     }
   )
-  
+
   # UCSC LINKS
   output$viewClusterUCSC <- renderUI({
     coord <- mydata()$coord
@@ -322,7 +322,7 @@ server <- function(input, output, session) {
     url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?", orgChoice, "&db=",db,"&position=", coord )
     return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default", id = "UCSC" ) )
     })
-  
+
   output$viewGeneUCSC <- renderUI({
     db <- strsplit(basename(annotation_code), split = "_")[[1]][2]
     org <- NULL
@@ -337,7 +337,7 @@ server <- function(input, output, session) {
     url <- paste0( "http://genome.ucsc.edu/cgi-bin/hgTracks?",orgChoice,"&db=",db,"&singleSearch=knownCanonical&position=", gene)
     return(tags$a(href = url, "view on UCSC", target = "_blank", class = "btn btn_default", id = "UCSC" ) )
   })
-  
+
   #### PCA
   #names(pca[[1]]) <- gsub(" ", "_", names(pca[[1]]))
   output$pca_choices <- renderUI({
@@ -352,8 +352,8 @@ server <- function(input, output, session) {
     choices <- names(pca[[1]])[ !grepl("^PC[0-9]", names(pca[[1]])) ]
     selectInput( inputId = "shape_choice", label = "Shape points by", choices = choices, selected = choices[1]  )
   })
-  
-  
+
+
   createPCAPlot <- function(){
     if( is.null(input$first_PC) ){
       return(NULL)
@@ -365,20 +365,20 @@ server <- function(input, output, session) {
     second_PC <- names(pca[[1]])[ which( names(pca[[1]]) == first_PC) + 1 ]
     xlab <- paste0( first_PC, " (", pca[[2]][ which(names(pca[[1]]) == first_PC  ) ], "%)"  )
     ylab <- paste0( second_PC, " (", pca[[2]][ which(names(pca[[1]]) == first_PC ) + 1  ], "%)"  )
-    
-    pca_plot <- ggplot( pca[[1]], 
-                        aes_string(y = first_PC,
-                                  x = second_PC, 
+
+    pca_plot <- ggplot( pca[[1]],
+                        aes_string(x = first_PC,
+                                  y = second_PC,
                                   colour = colour_choice,
                                   shape = shape_choice) ) + geom_point(size = 60 / nrow(pca[[1]])  ) +
       xlab( xlab ) +
       ylab( ylab ) +
       theme_classic()
-    
+
     pca_plot
     }
   }
-  
+
   output$pca_plot <- renderPlot({
     if( ! is.null( input$first_PC)){
       createPCAPlot()

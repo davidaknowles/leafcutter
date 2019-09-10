@@ -44,8 +44,8 @@ fiveprime_file <- paste0( annotation_code,"_fiveprime.bed.gz")
 # CHECK DEPENDENCY FILES
 pass <- TRUE
 errorMessage <- c()
-for( file in 
-  c(effect.sizes.file, cluster_significance_file, counts_file, groups_file, 
+for( file in
+  c(effect.sizes.file, cluster_significance_file, counts_file, groups_file,
     all_introns, threeprime_file, fiveprime_file, exon_file
     )){
   if( !file.exists(file)){
@@ -83,6 +83,9 @@ exons_table=if (!is.null( exon_file )) {
   NULL
 }
 
+# in case the exons table lacks "chr" on the chr column
+exons_table$chr <- leafcutter::add_chr(exons_table$chr)
+
 effectSizes <- fread(effect.sizes.file, data.table=F )
 effectSizesSplit <-  as.data.frame(str_split_fixed(effectSizes$intron, ":", 4), stringsAsFactors = FALSE )
 names(effectSizesSplit) <- c("chr","start","end","clusterID")
@@ -114,28 +117,28 @@ all.introns$end <- as.numeric(all.introns$end)
 
 # for introns, 5' splice sites and 3 splice sites:
 # add "chr" to chrom name if needed
-## intersect with list of junctions 
+## intersect with list of junctions
 all.junctions <- dplyr::select(all.introns, chr, start, end, clusterID)
 
 intron_db <- fread(paste0("zcat < ", all_introns), data.table = FALSE)
 colnames(intron_db)[1:4]=c("chr","start","end","gene")
 intron_db$chr <- leafcutter::add_chr(intron_db$chr)
-all.introns_intersect = all.junctions %>% 
-  left_join(intron_db, by=c("chr","start","end")) 
+all.introns_intersect = all.junctions %>%
+  left_join(intron_db, by=c("chr","start","end"))
 
 threeprime_db <- fread(paste0("zcat < ", threeprime_file), data.table = FALSE)
 colnames(threeprime_db)[1:7]=c("chr","start","end","gene","gene_id","strand","transcript")
 threeprime_db$chr <- leafcutter::add_chr(intron_db$chr)
-threeprime_intersect = all.junctions %>% 
-  select(chr, clusterID, start=end) %>% 
-  left_join(threeprime_db, by=c("chr","start")) 
+threeprime_intersect = all.junctions %>%
+  select(chr, clusterID, start=end) %>%
+  left_join(threeprime_db, by=c("chr","start"))
 
 fiveprime_db <- fread(paste0("zcat < ", fiveprime_file), data.table = FALSE)
 colnames(fiveprime_db)[1:7]=c("chr","start","end","gene","gene_id","strand","transcript")
 fiveprime_db$chr <- leafcutter::add_chr(fiveprime_db$chr)
-fiveprime_intersect =  all.junctions %>% 
-  select(chr, clusterID, start) %>%  
-  left_join(fiveprime_db, by=c("chr","start")) 
+fiveprime_intersect =  all.junctions %>%
+  select(chr, clusterID, start) %>%
+  left_join(fiveprime_db, by=c("chr","start"))
 
 # now I have two lists of splice site annotation
 # for testing
@@ -149,26 +152,26 @@ transcripts.list <- list()
 constitutive.list <- list()
 classification.list <- list()
 
-clusters <- unique( all.introns$clusterID ) 
+clusters <- unique( all.introns$clusterID )
 for( clu in clusters ){
-  
+
   # for each intron in the cluster, check for coverage of both
-  # output a vector of string descriptions 
+  # output a vector of string descriptions
   cluster <- all.introns %>% filter( clusterID == clu )
-  
+
   # first subset the intersected files to speed up later query - this uses the data.tables method
   fprimeClu <- fiveprime_intersect %>% filter( clusterID == clu )
   tprimeClu <- threeprime_intersect %>% filter( clusterID == clu )
   bothSSClu <- all.introns_intersect %>% filter( clusterID == clu )
-  
+
   # for each intron in the cluster:
   #   create vector of overlapping splice sites, indexed by the row of the intersect
   # five prime splice sites
   fprime=cluster %>% left_join(fprimeClu, by=c("chr","start"))
-  
+
   # three prime splice sites
   tprime=cluster %>% left_join(tprimeClu, by=c("chr"="chr","end"="start"))
-  
+
   # both splice sites
   bothSS=cluster %>% left_join(bothSSClu, by=c("chr","start","end"))
 
@@ -179,7 +182,7 @@ for( clu in clusters ){
   if( is.null(cluster_gene) ){
     cluster_gene <- "."
   }
-  
+
   gene_strand <- NA
   if( cluster_gene != "." ){
     # get strand the same way - would prefer to use the strand of the junction
@@ -190,7 +193,7 @@ for( clu in clusters ){
       gene_strand <- NA
     }
   }
-  
+
   # do the same for EnsemblID
   cluster_ensemblIDs <- names(sort(table( c(tprime$gene_id,fprime$gene_id)), decreasing = TRUE ))
   cluster_ensemblID <- cluster_ensemblIDs[ cluster_ensemblIDs != "." ][1]
@@ -202,30 +205,30 @@ for( clu in clusters ){
   coord <- c()
   gene <- c()
   ensemblID <- c()
-  transcripts <- list() 
-  
+  transcripts <- list()
+
   for( intron in 1:nrow(cluster) ){
     coord[intron] <- paste(cluster[intron,]$chr,cluster[intron,]$start, cluster[intron,]$end )
 
     gene[intron] <- cluster_gene
     ensemblID[intron] <- cluster_ensemblID
-    
+
     fprime_intron=cluster[intron,] %>% left_join(fprime, by=c("chr","start"))
     tprime_intron=cluster[intron,] %>% left_join(tprime, by=c("chr","end"))
     bothSS_intron=cluster[intron,] %>% left_join(bothSSClu, by=c("chr","start","end"))
-    
+
     # for each intron create vector of all transcripts that contain both splice sites
-    transcripts[[intron]] <- intersect( tprime_intron$transcript,fprime_intron$transcript ) 
+    transcripts[[intron]] <- intersect( tprime_intron$transcript,fprime_intron$transcript )
 
     verdict[intron] <- "error"
-    
+
     unknown_3p=all( is.na(tprime_intron$gene) )
     unknown_5p=all( is.na(fprime_intron$gene) )
-    
+
     if (is.na(gene_strand)) {
       verdict[intron] <- "unknown_strand"
     } else {
-      if( all( is.na(tprime_intron$gene )) & all( is.na(fprime_intron$gene ) ) ){ 
+      if( all( is.na(tprime_intron$gene )) & all( is.na(fprime_intron$gene ) ) ){
         verdict[intron] <- "cryptic_unanchored"
       }
       if( (all( is.na(tprime_intron$gene )) & all( !is.na(fprime_intron$gene ) ) & all(gene_strand == "+") ) |
@@ -242,7 +245,7 @@ for( clu in clusters ){
       }
       if( # if both splice sites are annotated
         all( !is.na(tprime_intron$gene ) ) & all( !is.na(fprime_intron$gene ) )
-      ){ 
+      ){
         # test if the splice sites are paired in a known intron
         if( all( !is.na(bothSS_intron$gene )) ){
           verdict[intron] <- "annotated"
@@ -257,13 +260,13 @@ for( clu in clusters ){
     ensemblID.list[[clu]] <- ensemblID
     #transcripts.list[[clu]] <- transcripts
 
-    # once all the transcripts for all the introns are found, go back and work out how many constitutive each junction is. Does the junction appear in every transcript? 
+    # once all the transcripts for all the introns are found, go back and work out how many constitutive each junction is. Does the junction appear in every transcript?
 
     if( intron == nrow(cluster)){ # only on final intron
       all_transcripts <- unique( unlist( transcripts ) )
       # remove "." - non-existent transcripts
       all_transcripts <- all_transcripts[ all_transcripts != "." ]
- 
+
       constitutive <- lapply( transcripts, FUN = function(x) {
         # for each intron how many transcripts is it seen in?
         x <- x[ x != "." ]
@@ -283,14 +286,14 @@ for( clu in clusters ){
   # predicting the event type from the shape of the junctions
   #print(clu)
 
-  if( nrow(cluster) != 3){ 
-    classification.list[[clu]] <- "." 
+  if( nrow(cluster) != 3){
+    classification.list[[clu]] <- "."
     next
   }else{
     classification.list[[clu]] <- "."
 
     tab <- select(cluster, start, end)
-    
+
     # the junctions are sorted by start and end coordinates
 
     # check for the presence of a junction that spans the entire length of the cluster
@@ -299,10 +302,10 @@ for( clu in clusters ){
       next
     }
 
-    # therefore for a cassette exon arrangement the longest junction always comes second 
+    # therefore for a cassette exon arrangement the longest junction always comes second
     if( which( tab$start ==  min(tab$start) & tab$end == max(tab$end ) ) != 2 ){
-     classification.list[[clu]] <- "." 
-     next 
+     classification.list[[clu]] <- "."
+     next
     }
 
     # now we know that junction 2 is the parent, junction 1 is the left most child and junction 3 is the right most
@@ -341,7 +344,7 @@ for( clu in clusters ){
     }
 
   }
-  
+
 }
 
 #save.image(file = "test.Rdata")
@@ -361,12 +364,11 @@ all.introns$constitutive.score <-  unlist( constitutive.list )[ match( paste( al
 
 #all.introns$prediction <-  unlist( classification.list )[ match( paste( all.introns$chr, all.introns$start, all.introns$end ), unlist(coord.list)) ]
 
-# replace NA values with "."
-all.introns$gene[ is.na( all.introns$gene) ] <- "."
-all.introns$ensemblID[ is.na( all.introns$ensemblID) ] <- "."
-# replace missing transcripts with "."
-all.introns[ all.introns$transcripts == "", ]$transcripts <- "."
-all.introns$constitutive.score <- signif(all.introns$constitutive.score, digits = 2)
+# replace NA values/missing transcripts with "."
+all.introns %<>% mutate( gene=ifelse(is.na(gene), ".", gene),
+                         ensemblID=ifelse(is.na(ensemblID), ".", ensemblID),
+                         transcripts=ifelse(transcripts == "", ".", transcripts),
+                         constitutive.score=signif(constitutive.score, digits = 2))
 
 # prepare results
 results$clusterID <- str_split_fixed(results$cluster, ":", 2)[,2]
@@ -385,15 +387,15 @@ all.clusters <- lapply(sig$clusterID, FUN = function(clu){
   annotation <- "annotated"
   if( any(grepl( "cryptic", cluster$verdict)) | any( grepl("novel annotated pair", cluster$verdict)) ){
     annotation <- "cryptic"
-  }  
-  return( 
-    data.frame( 
-      clusterID = clu, 
-      chr = chr, 
-      start = start, 
-      end = end, 
-      gene = gene, 
-      ensemblID = ensemblID, 
+  }
+  return(
+    data.frame(
+      clusterID = clu,
+      chr = chr,
+      start = start,
+      end = end,
+      gene = gene,
+      ensemblID = ensemblID,
       annotation = annotation ) )
   })
 all.clusters <- do.call( what = rbind, args = all.clusters)
@@ -402,20 +404,20 @@ all.clusters$FDR  <- results$FDR[ match( all.clusters$clusterID, results$cluster
 all.clusters$FDR <- signif( all.clusters$FDR, digits = 3)
 all.clusters$N  <- results$N[ match( all.clusters$clusterID, results$clusterID)]
 
-# add classification 
+# add classification
 all.clusters$verdict <- unlist(classification.list)[ match(all.clusters$clusterID, names(classification.list))]
 
 # prepare for PCA
 counts <- counts[,meta$sample]
 print( "converting counts to ratios")
 # create per cluster ratios from counts
-ratios <- counts %>% 
+ratios <- counts %>%
   mutate(clu = str_split_fixed(rownames(counts), ":", 4)[,4]) %>%
-  group_by(clu) %>% 
-  mutate_all( funs( ./sum(.) ) ) %>% 
+  group_by(clu) %>%
+  mutate_all( funs( ./sum(.) ) ) %>%
   ungroup() %>%
-  as.data.frame() %>% 
-  magrittr::set_rownames(rownames(counts)) %>% 
+  as.data.frame() %>%
+  magrittr::set_rownames(rownames(counts)) %>%
   select(-clu)
 ratios <- ratios[rowMeans(is.na(ratios)) <= 0.4,,drop=FALSE ]
 row_means <- rowMeans(ratios, na.rm = TRUE)
@@ -436,7 +438,7 @@ make_pca <- function(counts,meta){
   pca <- merge(pca,meta, by = "sample")
   row.names(pca) <- pca$sample
   pca$sample <- NULL
-  
+
   return(list( pca, importance) )
 }
 print("creating PCA")
@@ -449,13 +451,13 @@ fix_clusters <- function(clusters){
   clusters <- clusters[ order(clusters$FDR, decreasing = FALSE),]
   # removed ensemblID - this could be an option?
   #clusters <- select( clusters, clusterID, N, coord, gene, annotation, FDR, verdict)
-  clusters <- select( 
-    clusters, 
-    clusterID, 
-    N, 
-    coord, 
-    gene, 
-    annotation, 
+  clusters <- select(
+    clusters,
+    clusterID,
+    N,
+    coord,
+    gene,
+    annotation,
     FDR)
   clusters$gene <- paste0("<i>",clusters$gene,"</i>")
 return(clusters)
@@ -463,16 +465,16 @@ return(clusters)
 
 # use on all.introns
 fix_introns <- function(introns){
-  introns <- select(introns, 
-    clusterID, 
-    gene, 
-    ensemblID, 
-    chr, 
-    start, 
-    end, 
-    verdict, 
-    deltapsi, 
-    #constitutive.score, 
+  introns <- select(introns,
+    clusterID,
+    gene,
+    ensemblID,
+    chr,
+    start,
+    end,
+    verdict,
+    deltapsi,
+    #constitutive.score,
     transcripts)
   #introns$constitutive.score <- signif(introns$constitutive.score, digits = 3)
   introns$deltapsi<- round(introns$deltapsi, digits = 3)
@@ -481,24 +483,24 @@ return(introns)
 
 
 cluster_summary <- function(clusters){
-  summary <- data.frame( 
+  summary <- data.frame(
               Results = c(
-                paste0("Number of differentially spliced clusters at FDR = ", FDR_limit) , 
+                paste0("Number of differentially spliced clusters at FDR = ", FDR_limit) ,
                         "Fully annotated",
                         "Contain unannotated junctions"),
                 n = c( nrow(clusters),
                        nrow( clusters[ clusters$annotation == "annotated", ]),
-                       nrow( clusters[ clusters$annotation == "cryptic", ]) 
-                       ) 
+                       nrow( clusters[ clusters$annotation == "cryptic", ])
+                       )
                 )
   return(summary)
 }
 
 intron_summary <- function(all.introns){
-    summary <- data.frame( 
+    summary <- data.frame(
                 Results = c( "Number of fully annotated junctions",
-                             "Number of junctions with cryptic 5' splice site", 
-                              "Number of junctions with cryptic 3' splice site",  
+                             "Number of junctions with cryptic 5' splice site",
+                              "Number of junctions with cryptic 3' splice site",
                               "Number of junctions with two cryptic splice sites",
                               "Number of novel junctions that connect two annotated splice sites"),
 
@@ -506,7 +508,7 @@ intron_summary <- function(all.introns){
                          nrow(all.introns[ all.introns$verdict == "cryptic_fiveprime",]),
                          nrow(all.introns[ all.introns$verdict == "cryptic_threeprime",]),
                          nrow(all.introns[ all.introns$verdict == "cryptic_unanchored",]),
-                         nrow(all.introns[ all.introns$verdict == "novel annotated pair",])  
+                         nrow(all.introns[ all.introns$verdict == "novel annotated pair",])
                   )
                 )
     return( summary )
@@ -516,20 +518,20 @@ intron_summary <- function(all.introns){
 clusters <- fix_clusters(all.clusters)
 introns <- fix_introns(all.introns)
 intron_summary <- intron_summary(all.introns)
-cluster_summary <- cluster_summary(all.clusters) 
+cluster_summary <- cluster_summary(all.clusters)
 introns_to_plot <- get_intron_meta(rownames(counts))
-cluster_ids <- introns_to_plot$clu 
+cluster_ids <- introns_to_plot$clu
 
 # save all the objects needed by Leafcutter viz into single Rdata file
-# include the mode variable 
-save( introns, 
-      clusters, 
-      counts, 
-      meta, 
-      exons_table, 
-      pca, 
-      intron_summary, 
-      cluster_summary, 
+# include the mode variable
+save( introns,
+      clusters,
+      counts,
+      meta,
+      exons_table,
+      pca,
+      intron_summary,
+      cluster_summary,
       introns_to_plot,
       cluster_ids,
       sample_table,

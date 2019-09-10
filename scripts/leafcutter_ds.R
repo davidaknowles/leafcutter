@@ -30,8 +30,9 @@ colnames(meta)[1:2]=c("sample","group")
 
 counts=counts[,meta$sample]
 
-meta$group=as.factor(meta$group)
-group_names=levels(meta$group)
+group_names=unique(meta$group) # keep order from groups_file unless numeric
+if (is.numeric(meta$group)) group_names=sort(group_names)
+meta$group=factor(meta$group, group_names)
 
 stopifnot(length(group_names)==2)
 

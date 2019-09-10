@@ -15,19 +15,19 @@ The leafcutter shiny app has been tested on `macOS 10.12` and `Ubuntu 14.04`.
 
 #### Example
 
-If you've already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the `leafvis` directory:
+If you've already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the `leafviz` directory:
 ```
-cd leafvis
+cd leafviz
 ```
 and then download the example data using 
 ```
 ./download_example.sh
 ```
-This will download and unzip a folder called `example`. Now starting the shiny app should be as easy as
+This will download and unzip a folder called `leafviz_example`. Now starting the shiny app should be as easy as
 ```
-./run_leafvis.R example/Brain_vs_Heart_results.Rdata
+./run_leafviz.R leafviz_example/Brain_vs_Heart_results.Rdata
 ```
-You can even leave out the `example/Brain_vs_Heart_results.Rdata` part as this is the default dataset `run_leafvis.R` will try to use. 
+You can even leave out the `leafviz_example/Brain_vs_Heart_results.Rdata` part as this is the default dataset `run_leafviz.R` will try to use. 
 
 #### Annotation code
 
@@ -124,7 +124,7 @@ This will create the Rdata file wherever `--output` is pointed. The file 'prepar
 
 As a concrete example, let's assume you just ran the example at [Usage](./Usage.html) and you're currently in the `/example_data` subdirectory, then running
 ```
-../leafviz/prepare_results.R --meta_data_file test_diff_intron.txt --code leafcutter testYRIvsEU_perind_numers.counts.gz leafcutter_ds_cluster_significance.txt leafcutter_ds_effect_sizes.txt ../leafviz/annotation_codes/gencode_hg19/gencode_hg19
+../leafviz/prepare_results.R --meta_data_file example_geuvadis/groups_file.txt --code leafcutter testYRIvsEU_perind_numers.counts.gz leafcutter_ds_cluster_significance.txt leafcutter_ds_effect_sizes.txt ../leafviz/annotation_codes/gencode_hg19/gencode_hg19
 ```
 should create an `leafviz.RData` file. 
 

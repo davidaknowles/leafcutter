@@ -4,8 +4,8 @@
 \alias{betaBinomialGLM}
 \title{Beta binomial GLM likelihood ratio testing}
 \usage{
-betaBinomialGLM(ys, ns, xFull, xNull, concShape = 1.0001, concRate = 1e-04,
-  ...)
+betaBinomialGLM(ys, ns, xFull, xNull, concShape = 1.0001,
+  concRate = 1e-04, ...)
 }
 \arguments{
 \item{ys}{numerator counts}
