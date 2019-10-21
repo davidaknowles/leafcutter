@@ -10,6 +10,7 @@ using namespace Rcpp;
 RcppExport SEXP _rcpp_module_boot_stan_fit4bb_glm_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4bb_glm_fix_conc_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4dm_glm_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4dm_glm_mc_psi_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4dm_glm_multi_conc_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4dm_glm_robust_mod();
 
@@ -17,6 +18,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4bb_glm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4bb_glm_mod, 0},
     {"_rcpp_module_boot_stan_fit4bb_glm_fix_conc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4bb_glm_fix_conc_mod, 0},
     {"_rcpp_module_boot_stan_fit4dm_glm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dm_glm_mod, 0},
+    {"_rcpp_module_boot_stan_fit4dm_glm_mc_psi_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dm_glm_mc_psi_mod, 0},
     {"_rcpp_module_boot_stan_fit4dm_glm_multi_conc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dm_glm_multi_conc_mod, 0},
     {"_rcpp_module_boot_stan_fit4dm_glm_robust_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dm_glm_robust_mod, 0},
     {NULL, NULL, 0}

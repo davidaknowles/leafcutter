@@ -37,7 +37,7 @@ quantify_psi_one_cluster <- function(cluster_counts,x,protected,concShape=1.0001
     beta_raw=sweep(beta_raw,1,rowSums(beta_raw),"/")
     init=list(beta_scale=array(beta_scale), beta_raw=beta_raw, conc=rep(10.0,K))
   }
-  
+ ##model_to_use <- stanmodels$dm_glm_mc_psi
   fit=optimizing(model_to_use, data=dat_null, init=init, as_vector=F, verbose=debug, ...)
 
   dimnames(fit$par$beta_raw)=list(colnames(x),colnames(cluster_counts))
@@ -45,9 +45,7 @@ quantify_psi_one_cluster <- function(cluster_counts,x,protected,concShape=1.0001
   dat_null$beta=t(beta_real(fit$par))
   dat_null$conc=fit$par$conc
   dat_null$residual_sigma=residual_sigma
-  
   fit_psi=optimizing(stanmodels$dm_glm_mc_psi, data=dat_null, init=0, as_vector=F, verbose=debug, ...)
-  
   normalize=function(g) { g/sum(g) }
   softmax=function(g) normalize(exp(g))
   
@@ -57,8 +55,8 @@ quantify_psi_one_cluster <- function(cluster_counts,x,protected,concShape=1.0001
     apply( 1,softmax) %>% # implicit t() here
     sweep(1,fit$par$conc,"*") %>% 
     apply( 2,normalize) %>% 
-    set_rownames(colnames(cluster_counts)) %>%
-    set_colnames(rownames(cluster_counts))
+    magrittr::set_rownames(colnames(cluster_counts)) %>%
+    magrittr::set_colnames(rownames(cluster_counts))
 }
 
 #' Confounder removal and PSI quantification

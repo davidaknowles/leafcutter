@@ -47,7 +47,7 @@ print(opt)
 
 cat("Running PSI quantification\n")
 x=cbind(intercept=1,confounders)
-psi_matrix <- quantify_psi(counts, x, protected=1, timeout=opt$timeout, init=opt$init, seed=opt$seed , debug = TRUE) 
+psi_matrix <- quantify_psi(counts, x, protected=1, timeout=opt$timeout, init=opt$init, seed=opt$seed , debug = FALSE) 
 
 stopifnot(!is.null(psi_matrix))
 
