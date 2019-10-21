@@ -71,7 +71,7 @@ quantify_psi_one_cluster <- function(cluster_counts,x,protected,concShape=1.0001
 #' @param init One of 'smart' (default) or 'random'. If 'random' you can pass an additional arg "seed" for reproducibility. 
 #' @return A per cluster list of results. Clusters that were not tested will be represented by a string saying why.
 #' @import foreach
-#' @importFrom R.utils WithTimeout
+#' @importFrom R.utils withTimeout
 #' @export
 quantify_psi=function(counts, x, protected, timeout=10, debug=F, init="smart", ...) {
   
@@ -90,7 +90,7 @@ quantify_psi=function(counts, x, protected, timeout=10, debug=F, init="smart", .
   tryCatch( {
   psi_matrix=do.call(rbind, foreach (cluster_name=clu_names, .errorhandling = if (debug) "stop" else "pass") %dopar% {
     cluster_counts=t(counts[ cluster_ids==cluster_name, ])
-    WithTimeout( { 
+    withTimeout( { 
       quantify_psi_one_cluster(cluster_counts, x, protected, debug=debug, init=init,...)
     }, timeout=timeout, onTimeout=if (debug) "silent" else "warning" ) 
   } )
