@@ -15,7 +15,7 @@ LeafCutterMD has two main components:
 2. `R` code to 
    * perform outlier splicing (here, outlier intron excision) analysis
 
-Note, for illustrative purposes (and reduced example file sizes) we use the same data as in the [differential splicing example](./Usage.html), but this data is not a rare disease cohort and thus the final results have little meaning. 
+Note, for illustrative purposes (and reduced example file sizes) we use the same data as in the [differential splicing example](./Usage.html), but this data is not a rare disease cohort and thus the final results generated in this vignette are not expected to be indicative of disease causality. 
    
 ### Step 0. Alignment
 
@@ -47,8 +47,6 @@ We chose 6nt as the default overhang required by LeafCutter. By chance we would 
 
 ### Step 1. Converting `bam`s to `junc`s
 
-I'm skipping Step 0 which would be mapping `fastq` files, e.g. using STAR, to obtain `.bam` files. 
-
 We provide a helper script `scripts/bam2junc.sh` to (you guessed it) convert `bam` files to `junc` files. This step uses the CIGAR strings in the `bam` to quantify the usage of each intron. LeafCutter considers a read "problematic" if its mapped cigar string does not follow the pattern 'xMyNzM'.
 
 `example_data/worked_example.sh` gives you an example of how to do this in batch, assuming your data is in `example_geuvadis/`
@@ -71,7 +69,7 @@ Next we need to define intron clusters using the `leafcutter_cluster.py` script.
 python ../clustering/leafcutter_cluster.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000
 ```
 
-This will cluster together the introns fond in the `junc` files listed in `test_juncfiles.txt`, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The predix `testYRIvsEU` means the output will be called `testYRIvsEU_perind_numers.counts.gz` (perind meaning these are the *per individual* counts). 
+This will cluster together the introns fond in the `junc` files listed in `test_juncfiles.txt`, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The prefix `testYRIvsEU` means the output will be called `testYRIvsEU_perind_numers.counts.gz` (perind meaning these are the *per individual* counts). 
 
 You can quickly check what's in that file with 
 ```
@@ -91,7 +89,7 @@ Each column corresponds to a different sample (original bam file) and each row t
 
 ### Step 3. Outlier intron excision analysis
 
-We can now use our nice intron count file to do outlier splicing analysis (this assumes you have successfully installed the `leafcutter` R package as described under [Installation](./Installation.html) above)
+We can now use our intron count file to do outlier splicing analysis (this assumes you have successfully installed the `leafcutter` R package as described under [Installation](./Installation.html) above)
 ```
 ../scripts/leafcutterMD.R --num_threads 8 ../example_data/testYRIvsEU_perind_numers.counts.gz 
 ```

@@ -101,7 +101,7 @@
 <ul>
 <li>perform outlier splicing (here, outlier intron excision) analysis</li>
 </ul>
-<p>Note, for illustrative purposes (and reduced example file sizes) we use the same data as in the <a href="./Usage.html">differential splicing example</a>, but this data is not a rare disease cohort and thus the final results have little meaning.</p>
+<p>Note, for illustrative purposes (and reduced example file sizes) we use the same data as in the <a href="./Usage.html">differential splicing example</a>, but this data is not a rare disease cohort and thus the final results generated in this vignette are not expected to be indicative of disease causality.</p>
 <div id="step-0--alignment" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-0--alignment" class="anchor"></a>Step 0. Alignment</h3>
@@ -124,7 +124,6 @@
 <div id="step-1--converting-bams-to-juncs" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-1--converting-bams-to-juncs" class="anchor"></a>Step 1. Converting <code>bam</code>s to <code>junc</code>s</h3>
-<p>I’m skipping Step 0 which would be mapping <code>fastq</code> files, e.g. using STAR, to obtain <code>.bam</code> files.</p>
 <p>We provide a helper script <code>scripts/bam2junc.sh</code> to (you guessed it) convert <code>bam</code> files to <code>junc</code> files. This step uses the CIGAR strings in the <code>bam</code> to quantify the usage of each intron. LeafCutter considers a read “problematic” if its mapped cigar string does not follow the pattern ‘xMyNzM’.</p>
 <p><code>example_data/worked_example.sh</code> gives you an example of how to do this in batch, assuming your data is in <code>example_geuvadis/</code></p>
 <pre><code>for bamfile in `ls example_geuvadis/*.bam`
@@ -140,7 +139,7 @@ done</code></pre>
 <a href="#step-2--intron-clustering" class="anchor"></a>Step 2. Intron clustering</h3>
 <p>Next we need to define intron clusters using the <code>leafcutter_cluster.py</code> script. For example:</p>
 <pre><code>python ../clustering/leafcutter_cluster.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000</code></pre>
-<p>This will cluster together the introns fond in the <code>junc</code> files listed in <code>test_juncfiles.txt</code>, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The predix <code>testYRIvsEU</code> means the output will be called <code>testYRIvsEU_perind_numers.counts.gz</code> (perind meaning these are the <em>per individual</em> counts).</p>
+<p>This will cluster together the introns fond in the <code>junc</code> files listed in <code>test_juncfiles.txt</code>, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The prefix <code>testYRIvsEU</code> means the output will be called <code>testYRIvsEU_perind_numers.counts.gz</code> (perind meaning these are the <em>per individual</em> counts).</p>
 <p>You can quickly check what’s in that file with</p>
 <pre><code>zcat testYRIvsEU_perind_numers.counts.gz | more </code></pre>
 <p>which should look something like this:</p>
@@ -155,7 +154,7 @@ chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31</code></pre>
 <div id="step-3--outlier-intron-excision-analysis" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-3--outlier-intron-excision-analysis" class="anchor"></a>Step 3. Outlier intron excision analysis</h3>
-<p>We can now use our nice intron count file to do outlier splicing analysis (this assumes you have successfully installed the <code>leafcutter</code> R package as described under <a href="./Installation.html">Installation</a> above)</p>
+<p>We can now use our intron count file to do outlier splicing analysis (this assumes you have successfully installed the <code>leafcutter</code> R package as described under <a href="./Installation.html">Installation</a> above)</p>
 <pre><code>../scripts/leafcutterMD.R --num_threads 8 ../example_data/testYRIvsEU_perind_numers.counts.gz </code></pre>
 <p>Running <code>../scripts/leafcutterMD.R -h</code> will give usage info for this script.</p>
 <p>Three tab-separated text files are output:</p>
