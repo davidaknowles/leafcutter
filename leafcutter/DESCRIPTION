@@ -1,17 +1,18 @@
 Package: leafcutter
 Type: Package
-Title: Alternative splicing quantification, differential splicing and splicing
-    QTL mapping
-Version: 0.2.8
-Date: 2019-07-23
+Title: Alternative splicing quantification, differential splicing, 
+    outlier splicing detection, and splicing QTL mapping
+Version: 0.2.9
+Date: 2020-04-15
 Authors@R: c(person("David", "Knowles", email = "dak2173@columbia.edu", role = c("aut", "cre")),
               person("Yang", "Li", role = c("aut", "cre")),
               person("Jack", "Humphrey", role = c("aut", "cre")),
-              person("Jonathan", "Pritchard", role = "aut"))
+              person("Jonathan", "Pritchard", role = "aut"),
+              person("Garrett", "Jenkinson",rol="aut"))
 Author: David A. Knowles, Yang Li, Jonathan Pritchard
 Maintainer: David A. Knowles <david.arthur.knowles@gmail.com>
 BugReports: https://github.com/davidaknowles/leafcutter/issues
-Description: Alternative Splicing Quantification, Differential Splicing and Splicing QTL Mapping
+Description: Alternative Splicing Quantification, Differential Splicing, Outlier Splicing Detection, and Splicing QTL Mapping
 License: GPL (>= 3)
 LazyData: true
 Biarch: true
@@ -38,7 +39,9 @@ Imports:
     DT,
     intervals,
     shinycssloaders,
-    gtable
+    gtable,
+    DirichletMultinomial,
+    TailRank
 LinkingTo: 
     StanHeaders (>= 2.18.0), 
     rstan (>= 2.18.1), 

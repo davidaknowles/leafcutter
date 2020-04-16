@@ -1,0 +1,104 @@
+---
+title: "Outlier Splicing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+LeafCutterMD has two main components: 
+
+1. Python code to 
+   - generate intron excision counts from `junc` files (which can be obtained easily from `.bam` files)
+   - group introns into clusters
+2. `R` code to 
+   * perform outlier splicing (here, outlier intron excision) analysis
+
+Note, for illustrative purposes (and reduced example file sizes) we use the same data as in the [differential splicing example](./Usage.html), but this data is not a rare disease cohort and thus the final results generated in this vignette are not expected to be indicative of disease causality. 
+   
+### Step 0. Alignment
+
+Of course the real "Step 0" is running QC on your RNA-seq samples using e.g. [MultiQC](http://multiqc.info/). Assuming they look good you need to align reads. For the analysis in the LeafCutter paper we used either [OLego](https://zhanglab.c2b2.columbia.edu/index.php/OLego), which is designed to be particularly sensitive for finding de novo junctions, or [STAR](https://github.com/alexdobin/STAR), which is fast as long as you have enough RAM. 
+
+For `OLego` we used the command
+```
+olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa
+```
+where `-j` provides a [custom junction file](https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA), and `-e` specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see [Li et al. 2005](http://genome.cshlp.org/content/25/1/1.full). 
+
+The `STAR` index was generated as
+```
+STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100
+```
+(alternatively use one of the [prebuilt indices](http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/) ) and alignment itself was run (with STAR v2.5.2a) as
+```
+STAR --genomeDir hg19index/ --twopassMode --outSAMstrandField intronMotif --readFilesCommand zcat --outSAMtype BAM
+```
+
+As of STAR v2.5.3a you may need to do
+```
+STAR --genomeDir hg19index/ --twopassMode Basic --outSAMstrandField intronMotif --readFilesCommand zcat --outSAMtype BAM Unsorted
+```
+
+#### Choice of 6nt overhang
+
+We chose 6nt as the default overhang required by LeafCutter. By chance we would expect one match every 4^6^bp, or 4096bp, which appears to be quite likely for any given intron. However, RNA-seq mappers already deal with this problem by 1) assuring that the junction has already been previously annotated or is supported by reads with longer overhang (e.g. in STAR two-pass mode) 2) penalizing non-canonical junctions (i.e. non GT-AG junctions). The effect of the latter is that we would only expect one match every 4^8^bp, or 65,536bp (just one or two every 100kb, the max size allowed for our introns). However, our most restrictive filter is the requirement that reads considered be uniquely mapped. Therefore, even when the overhang is just 6bp, there is no ambiguity in mapping. Moreover, junctions are rarely only supported by reads that have an overhang of 6, when the size of the overhang goes up to 7, 8, or 9nt, the probability that we see these by chance goes down to one in over 4 million bp (for 9nt).
+
+### Step 1. Converting `bam`s to `junc`s
+
+We provide a helper script `scripts/bam2junc.sh` to (you guessed it) convert `bam` files to `junc` files. This step uses the CIGAR strings in the `bam` to quantify the usage of each intron. LeafCutter considers a read "problematic" if its mapped cigar string does not follow the pattern 'xMyNzM'.
+
+`example_data/worked_example.sh` gives you an example of how to do this in batch, assuming your data is in `example_geuvadis/`
+```
+for bamfile in `ls example_geuvadis/*.bam`
+do
+    echo Converting $bamfile to $bamfile.junc
+    sh ../scripts/bam2junc.sh $bamfile $bamfile.junc
+    echo $bamfile.junc >> test_juncfiles.txt
+done
+```
+
+This step is pretty fast (e.g. a couple of minutes per bam) but if you have samples numbering in the 100s you might want to do this on a cluster. Note that we also make a list of the generated `junc` files in `test_juncfiles.txt`. 
+
+### Step 2. Intron clustering
+
+Next we need to define intron clusters using the `leafcutter_cluster.py` script. For example: 
+
+```
+python ../clustering/leafcutter_cluster.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000
+```
+
+This will cluster together the introns fond in the `junc` files listed in `test_juncfiles.txt`, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The prefix `testYRIvsEU` means the output will be called `testYRIvsEU_perind_numers.counts.gz` (perind meaning these are the *per individual* counts). 
+
+You can quickly check what's in that file with 
+```
+zcat testYRIvsEU_perind_numers.counts.gz | more 
+```
+which should look something like this: 
+```
+RNA.NA06986_CEU.chr1.bam RNA.NA06994_CEU.chr1.bam RNA.NA18486_YRI.chr1.bam RNA.NA06985_CEU.chr1.bam RNA.NA18487_YRI.chr1.bam RNA.NA06989_CEU.chr1.bam RNA.NA06984_CEU.chr1.bam RNA.NA18488_YRI.chr1.bam RNA.NA18489_YRI.chr1.bam RNA.NA18498_YRI.chr1.bam
+chr1:17055:17233:clu_1 21 13 18 20 17 12 11 8 15 25
+chr1:17055:17606:clu_1 4 11 12 7 2 0 5 2 4 4
+chr1:17368:17606:clu_1 127 132 128 55 93 90 68 43 112 137
+chr1:668593:668687:clu_2 3 11 1 3 4 4 8 1 5 16
+chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31
+```
+
+Each column corresponds to a different sample (original bam file) and each row to an intron, which are identified as chromosome:intron_start:intron_end:cluster_id. 
+
+### Step 3. Outlier intron excision analysis
+
+We can now use our intron count file to do outlier splicing analysis (this assumes you have successfully installed the `leafcutter` R package as described under [Installation](./Installation.html) above)
+```
+../scripts/leafcutterMD.R --num_threads 8 ../example_data/testYRIvsEU_perind_numers.counts.gz 
+```
+Running `../scripts/leafcutterMD.R -h` will give usage info for this script.  
+
+Three tab-separated text files are output:
+
+* `leafcutter_outlier_pVals.txt`. This file has introns as rows and samples as columns with entries that are `p`-values (unadjusted) for there being outlier intron excision in the corresponding sample/intron.
+
+* `leafcutter_outlier_clusterPvals.txt`. This file has clusters as rows and samples as columns with entries that are `p`-values (unadjusted) for there being outlier intron excision in the corresponding sample/cluster.
+
+* `leafcutter_outlier_cluster_effSize.txt`. This file has introns as rows and samples as columns with entries that are the effect sizes (i.e., estimated difference in fractional usage of the intron compared to the average in the population) in the corresponding sample/intron.

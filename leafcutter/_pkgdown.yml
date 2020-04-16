@@ -9,6 +9,8 @@ navbar:
       href: articles/Installation.html
     - text: "Differential splicing"
       href: articles/Usage.html
+    - text: "Outlier splicing"
+      href: articles/UsageLeafcutterMD.html
     - text: "Visualization"
       href: articles/Visualization.html
     - text: "SplicingQTL"
