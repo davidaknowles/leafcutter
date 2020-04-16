@@ -12,10 +12,13 @@ Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The 
 * avoiding the challenge of isoform abundance estimation
 * simple, computationally efficient algorithms scaling to 100s or even 1000s of samples
 
-For details please see our [bioRxiv preprint](http://www.biorxiv.org/content/early/2017/09/07/044107) or [paper](https://www.nature.com/articles/s41588-017-0004-9). 
+For details please see our [bioRxiv preprint](http://www.biorxiv.org/content/early/2017/09/07/044107) and corresponding [Nature Genetics publication](https://www.nature.com/articles/s41588-017-0004-9).
+
+Additionally, for full details on the leafcutter for Mendelian Diseases (leafcutterMD) method that performs outlier splicing detection, see our [Bioinformatics publication](http://dx.doi.org/10.1093/bioinformatics/btaa259).
 
 * [Installation](./articles/Installation.html)
-* [Differential splicing](./articles/Installation.html)
+* [Differential splicing](./articles/Usage.html)
+* [Outlier splicing](./articles/UsageLeafcutterMD.html)
 * [Visualization](./articles/Visualization.html)
 * [SplicingQTL](./articles/sQTL.html)
 

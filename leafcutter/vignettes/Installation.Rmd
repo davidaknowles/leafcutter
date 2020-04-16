@@ -55,7 +55,7 @@ We've had a report (thanks to Peter Carbonetto) that it may be necessary to rest
 
 #### From source
 
-Alternatively you can install from source. You'll need to manually install the following R packages: `Rcpp, rstan, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse, shiny, intervals, shinycssloaders, DT, gtables`. Then make sure you're in the `leafcutter` package sub-directory (you should see subdirectories called `src, R, tests` etc) and run
+Alternatively you can install from source. You'll need to manually install the following R packages: `Rcpp, rstan, rstantools, foreach, ggplot2, R.utils, gridExtra, reshape2, Hmisc, dplyr, doMC, optparse, shiny, intervals, shinycssloaders, DT, gtable, shinyjs, DirichletMultinomial, TailRank, magrittr, stringr`. Then make sure you're in the `leafcutter` package sub-directory (you should see subdirectories called `src, R, tests` etc) and run
 ```
 R CMD INSTALL --build .
 ```
