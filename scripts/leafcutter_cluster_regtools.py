@@ -389,7 +389,7 @@ def refine_cluster(clu, cutoff, readcutoff):
     for inter, count in clu:
         totN += count
     for inter, count in clu:
-        if (count/float(totN) >= cutoff and count >= readcutoff):
+        if (count/float(totN) >= cutoff and totN >= readcutoff):
             intervals.append(inter)
             dic[inter] = count
         else:
