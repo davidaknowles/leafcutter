@@ -32,4 +32,10 @@ if(length(results_filename) == 0){
 print(paste0("Loading results from ",results_filename))
 load(results_filename)
 
+# option for Windows Subsystem for Linux
+if (getOption("browser") == ""){
+print("setting browser option to firefox")
+options(browser = "firefox")
+}
+
 shiny::runApp( launch.browser=TRUE ) 
