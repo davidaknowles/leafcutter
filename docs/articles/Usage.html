@@ -91,27 +91,26 @@
 <p>:warning: The test data download is 4Gb!</p>
 <p>LeafCutter has two main components:</p>
 <ol style="list-style-type: decimal">
-<li>Python code to</li>
-</ol>
+<li>Python code to
 <ul>
-<li>generate intron excision counts from <code>junc</code> files (which can be obtained easily from <code>.bam</code> files)</li>
 <li>group introns into clusters</li>
 </ul>
-<ol start="2" style="list-style-type: decimal">
+</li>
 <li>
-<code>R</code> code to</li>
-</ol>
+<code>R</code> code to
 <ul>
 <li>perform differential splicing (here, differential intron excision) analysis</li>
 <li>plot (differentially spliced) clusters</li>
 </ul>
+</li>
+</ol>
 <div id="step-0--alignment" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-0--alignment" class="anchor"></a>Step 0. Alignment</h3>
 <p>Of course the real “Step 0” is running QC on your RNA-seq samples using e.g. <a href="http://multiqc.info/">MultiQC</a>. Assuming they look good you need to align reads. For the analysis in the LeafCutter paper we used either <a href="https://zhanglab.c2b2.columbia.edu/index.php/OLego">OLego</a>, which is designed to be particularly sensitive for finding de novo junctions, or <a href="https://github.com/alexdobin/STAR">STAR</a>, which is fast as long as you have enough RAM.</p>
 <p>For <code>OLego</code> we used the command</p>
 <pre><code>olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa</code></pre>
-<p>where <code>-j</code> provides a <a href="https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA">custom junction file</a>, and <code>-e</code> specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see <a href="http://genome.cshlp.org/content/25/1/1.full">Li et al. 2005</a>.</p>
+<p>where <code>-j</code> provides a <a href="https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA">custom junction file</a>, and <code>-e</code> specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see <a href="http://genome.cshlp.org/content/25/1/1.full">Li et al. 2005</a>.</p>
 <p>The <code>STAR</code> index was generated as</p>
 <pre><code>STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100</code></pre>
 <p>(alternatively use one of the <a href="http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/">prebuilt indices</a> ) and alignment itself was run (with STAR v2.5.2a) as</p>
@@ -127,22 +126,24 @@
 <div id="step-1--converting-bams-to-juncs" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-1--converting-bams-to-juncs" class="anchor"></a>Step 1. Converting <code>bam</code>s to <code>junc</code>s</h3>
-<p>I’m skipping Step 0 which would be mapping <code>fastq</code> files, e.g. using STAR, to obtain <code>.bam</code> files.</p>
-<p>We provide a helper script <code>scripts/bam2junc.sh</code> to (you guessed it) convert <code>bam</code> files to <code>junc</code> files. This step uses the CIGAR strings in the <code>bam</code> to quantify the usage of each intron. LeafCutter considers a read “problematic” if its mapped cigar string does not follow the pattern ‘xMyNzM’.</p>
+<p>We now advise that users create junction files using the <a href="https://regtools.readthedocs.io/en/latest/#installation">regtools</a> software as it much faster than our own implementation.</p>
+<p><a href="https://regtools.readthedocs.io/en/latest/commands/junctions-extract/">regtools junctions extract</a> uses the CIGAR strings in each <code>bam</code> file to quantify the usage of each intron.</p>
+<p>For a discussion of the fine-grained details between regtools and our previous implementation see <a href="https://github.com/davidaknowles/leafcutter/issues/127">here</a>.</p>
 <p><code>example_data/worked_example.sh</code> gives you an example of how to do this in batch, assuming your data is in <code>example_geuvadis/</code></p>
-<pre><code>for bamfile in `ls example_geuvadis/*.bam`
-do
+<pre><code>for bamfile in `ls run/geuvadis/*chr1.bam`; do
     echo Converting $bamfile to $bamfile.junc
-    sh ../scripts/bam2junc.sh $bamfile $bamfile.junc
+    samtools index $bamfile
+    regtools junctions extract -a 8 -m 50 -M 500000 $bamfile -o $bamfile.junc
     echo $bamfile.junc &gt;&gt; test_juncfiles.txt
 done</code></pre>
+<p>Here <code>-a 8</code> refers to the anchor length and <code>-m</code> and <code>-M</code> refer to the minimum and maximum intron lengths, respectively.</p>
 <p>This step is pretty fast (e.g. a couple of minutes per bam) but if you have samples numbering in the 100s you might want to do this on a cluster. Note that we also make a list of the generated <code>junc</code> files in <code>test_juncfiles.txt</code>.</p>
 </div>
 <div id="step-2--intron-clustering" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-2--intron-clustering" class="anchor"></a>Step 2. Intron clustering</h3>
-<p>Next we need to define intron clusters using the <code>leafcutter_cluster.py</code> script. For example:</p>
-<pre><code>python ../clustering/leafcutter_cluster.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000</code></pre>
+<p>Next we need to define intron clusters using the <code>leafcutter_cluster_regtools.py</code> script. For example:</p>
+<pre><code>python ../clustering/leafcutter_cluster_regtools.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000</code></pre>
 <p>This will cluster together the introns fond in the <code>junc</code> files listed in <code>test_juncfiles.txt</code>, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The predix <code>testYRIvsEU</code> means the output will be called <code>testYRIvsEU_perind_numers.counts.gz</code> (perind meaning these are the <em>per individual</em> counts).</p>
 <p>You can quickly check what’s in that file with</p>
 <pre><code>zcat testYRIvsEU_perind_numers.counts.gz | more </code></pre>
@@ -154,6 +155,7 @@ chr1:17368:17606:clu_1 127 132 128 55 93 90 68 43 112 137
 chr1:668593:668687:clu_2 3 11 1 3 4 4 8 1 5 16
 chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31</code></pre>
 <p>Each column corresponds to a different sample (original bam file) and each row to an intron, which are identified as chromosome:intron_start:intron_end:cluster_id.</p>
+<p>If you find this step is failing it could be due to non-standard chromosome names in your junction files. If this occurs then try adding the –checkchrom flag to the clustering command, which will remove any chromosomes not in the 1,2,3,4 or chr1,chr2,chr3,chr4 form.</p>
 </div>
 <div id="step-3--differential-intron-excision-analysis" class="section level3">
 <h3 class="hasAnchor">
@@ -171,13 +173,12 @@ RNA.NA06986_CEU.chr1.bam CEU
 RNA.NA06989_CEU.chr1.bam CEU
 RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <p>Having made that file we can run DS (this assumes you have successfully installed the <code>leafcutter</code> R package as described under <a href="./Installation.html">Installation</a> above)</p>
-<pre><code>../scripts/leafcutter_ds.R --num_threads 4 --exon_file=../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt</code></pre>
+<pre><code>../scripts/leafcutter_ds.R --num_threads 4 ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt</code></pre>
 <p>Running <code>../scripts/leafcutter_ds.R -h</code> will give usage info for this script. Here have included an <code>exon_file</code>: this is optional but allows LeafCutter to annotate clusters according to which gene they correspond to. An example exon file for <code>hg19</code> derived from GENCODE v19 is included with LeafCutter. The exons file should have the following columns: chr, start, end, strand, gene_name. We provide a helper script <code>gtf_to_exons.R</code> which will convert a <code>.gtf</code> to the required format. I’m also hosting the exon file for <code>GRCh38</code> GENCODE v.31 <a href="https://www.dropbox.com/s/osmtksukti9gv7o/gencode.v31.exons.txt.gz?dl=0">here</a>.</p>
 <p>Two tab-separated text files are output:</p>
 <ul>
 <li>
-<code>leafcutter_ds_cluster_significance.txt</code>. This shows per cluster <code>p</code>-values for there being differential intron excision between the two groups tested. The columns are</li>
-</ul>
+<code>leafcutter_ds_cluster_significance.txt</code>. This shows per cluster <code>p</code>-values for there being differential intron excision between the two groups tested. The columns are
 <ol style="list-style-type: decimal">
 <li>cluster: the cluster id</li>
 <li>Status: whether this cluster was a) successfully tested b) not tested for some reason (e.g. too many introns) c) there was an error during testing - this should be rare.</li>
@@ -185,10 +186,9 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <li>df: degrees of freedom, equal to the number of introns in the cluster minus one (assuming two groups)</li>
 <li>p: the resulting (unadjusted!) p-value under the asymptotic Chi-squared distribution. We just use <code><a href="https://rdrr.io/r/stats/p.adjust.html">p.adjust( ..., method="fdr")</a></code> in R to control FDR based on these.</li>
 </ol>
-<ul>
+</li>
 <li>
-<code>leafcutter_ds_effect_sizes.txt</code>. This shows per intron effect sizes between the groups, with columns:</li>
-</ul>
+<code>leafcutter_ds_effect_sizes.txt</code>. This shows per intron effect sizes between the groups, with columns:
 <ol style="list-style-type: decimal">
 <li>intron: this has the form chromosome:intron_start:intron_end:cluster_id</li>
 <li>log effect size (as fitted by LeafCutter).</li>
@@ -196,6 +196,8 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <li>Fitted usage proportion in condition 2.</li>
 <li>DeltaPSI: the difference in usage proprotion (condition 2 - condition 1). Note that in general this will have the same sign as the log effect size but in some cases the sign may change as a result of larger changes for other introns in the cluster.</li>
 </ol>
+</li>
+</ul>
 <div id="including-confounders" class="section level4">
 <h4 class="hasAnchor">
 <a href="#including-confounders" class="anchor"></a>Including confounders</h4>
@@ -205,9 +207,7 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <h4 class="hasAnchor">
 <a href="#calibration-fdr-and-small-sample-sizes" class="anchor"></a>Calibration, FDR and small sample sizes</h4>
 <p>The Benjamini-Hochberg FDR control we use assumes p-values are well-calibrated, i.e. under the null hypothesis of no difference between conditions p-values are truly uniformly distributed. Our experiments suggest that at least down to 4 vs. 4 comparisons LeafCutter remains well calibrated. For example, the qq plot for 4 brain vs 4 muscle from the LeafCutter paper:</p>
-<div class="figure">
-<img src="./calibration_4v4.png">
-</div>
+<p><img src="./calibration_4v4.png"></p>
 <p>Proceed with caution if you have fewer than 4 samples per group. Such analyses can be performed changing the <code>-i</code> (minimum samples per intron) and <code>-g</code> (minimum samples per group) options in <code>leafcutter_ds.R</code>, e.g. <code>-i 4 -g 2</code> for 2 versus 2 comparisons (default is currently <code>-i 5 -g 3</code>). In principle you could even do 1 vs. 1 comparisons, further discussion <a href="https://github.com/davidaknowles/leafcutter/issues/5">here</a>.</p>
 <p>If the precision of the FDR estimates are particularly important for your application it may be worth considering performing a permutation analysis. Currently you need to do this manually (e.g. by permuting the labeling in your groups_file) but if there is demand we’ll consider implementing permutations as a built-in feature. Note that in general permutation analysis doesn’t allow you to include confounders.</p>
 </div>
@@ -217,7 +217,7 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 <a href="#step-4--plotting-splice-junctions" class="anchor"></a>Step 4. Plotting splice junctions</h3>
 <p>This will make a pdf with plots of the differentially spliced clusters detected at an FDR of 5%.</p>
 <pre><code>../scripts/ds_plots.R -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt leafcutter_ds_cluster_significance.txt -f 0.05</code></pre>
-<p>We have a LeafCutter shiny app called <code>leafviz</code> allowing interactive visual interrogation of your results, go to the <a href="./Visualization.html">Visualization</a> tab to learn how to feed the LeafCutter output into the shiny app.</p>
+<p>However, we find these plots somewhat hard to interpret. As a solution we provide a LeafCutter shiny app called <code>leafviz</code> allowing interactive visual interrogation of your results. Go to the <a href="./Visualization.html">Visualization</a> tab to learn how to feed the LeafCutter output into the shiny app.</p>
 </div>
   </div>
 
@@ -234,7 +234,7 @@ RNA.NA06994_CEU.chr1.bam CEU</code></pre>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -13,62 +13,42 @@ To see an example of the `leafcutter` shiny app in action without installing any
 
 The leafcutter shiny app has been tested on `macOS 10.12` and `Ubuntu 14.04`. 
 
-#### Example
+#### Installation
 
-If you've already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the `leafviz` directory:
+**UPDATE** As of September 2020, LeafViz is now a standalone app. The original version of the app is still within the Leafcutter repository but will eventually be deprecated as all further maintenance and development will be to the standalone version.
+
 ```
-cd leafviz
+## in R:
+install.packages("remotes")
+remotes::install_github("jackhump/leafviz")
+
+## on the command line:
+git clone https://github.com/jackhump/leafviz.git
 ```
-and then download the example data using 
+
+
+#### Run Example
+
+Once you've installed leafviz and downloaded the github repo then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the `leafviz` directory:
 ```
-./download_example.sh
+cd leafviz/scripts
 ```
-This will download and unzip a folder called `leafviz_example`. Now starting the shiny app should be as easy as
+
+Now starting the shiny app should be as easy as
 ```
-./run_leafviz.R leafviz_example/Brain_vs_Heart_results.Rdata
+./run_leafviz.R example/Brain_vs_Heart_results.Rdata
 ```
+
 You can even leave out the `leafviz_example/Brain_vs_Heart_results.Rdata` part as this is the default dataset `run_leafviz.R` will try to use. 
 
-#### Annotation code
+#### Prerequisites: Annotation data
 
 The Shiny app includes functionality to label detected introns as annotated or cryptic. To do for a new dataset this an "annotation code" is needed, built from a "Gene Transfer Format" file appropriate for your genome. We provide pre-built annotation codes for hg19 and hg38 which can be downloaded by running
+
 ```
 ./download_human_annotation_codes.sh
 ```
-from the `leafvis` directory. To build a new annotation code you need: 
-
-* [bedtools](http://bedtools.readthedocs.io/en/latest/) >= v2.17.0
-* a GTF transcript file of your choice - we recommend [GENCODE](https://www.gencodegenes.org/).
-* GNU Awk (gawk) >= 3.1; 
-
-On Mac you can install `bedtools` and `GNU Awk` using [homebrew](https://brew.sh/):
-
-`brew install gawk; brew install bedtools`
-
-Most Linuxes will have `gawk` already. On Ubuntu `bedtools` can be installed using
-
-`sudo apt-get install bedtools`
-
-#### Required R packages
-
-These should all have been installed when you installed leafcutter: 
-
-* data.table
-* stringr
-* magrittr
-* dplyr
-* ggplot2
-* shiny
-* shinyjs
-* DT
-* intervals
-* reshape2
-* gridExtra
-* foreach
-* shinycssloaders
-* gtables
-
-### Step 0. Generate the annotation files
+from the `leafviz` directory. To build a new annotation code requires `perl`.
 
 This step processes a given GTF to generate lists of exons, introns and splice sites. This step only has to be run once to use a particular GTF file with the app.
 
@@ -80,7 +60,9 @@ The recommended way to do this is
 
 **annotation_code** - the path or folder name with a base name, eg `/path/to/gencode_hg38`
 
-`gtf2leafcutter.pl` can take in a `gzip`ped `gtf` file as long as the file name ends with `.gz`. `gtf2leafcutter.pl` should be more robust to differences in `.gtf` formatting than our old script `wrangleAnnotation.sh` (thanks to [Dalila Pinto](https://pintolab.mssm.edu/) for contributing the new script).
+`gtf2leafcutter.pl` can take in a `gzip`ped `gtf` file as long as the file name ends with `.gz`.
+
+(thanks to [Dalila Pinto](https://pintolab.mssm.edu/) for contributing the new script).
 
 This will create: 
 ```
@@ -90,13 +72,14 @@ This will create:
 <annotation_code>_all_exons.txt.gz
 ```
 
-We've only tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files. If you have problems with other `gtf` files please let us know. 
+We've only tested with the GENCODE human GRCh37/GRCh38 and mouse GTF files. If you have problems with other `gtf` files please let us know. 
+
 
 ### Step 1. Prepare the LeafCutter differential splicing results for visualisation
 
 This step annotates each intron in each cluster at a given false discovery rate and generates a single `.RData` file with everything the shiny app needs to run. 
 ```
-./prepare_results.R [options] <name>_perind_numers.counts.gz <name>_cluster_significance.txt <name>_effect_sizes.txt annotation_code 
+leafcutter/leafviz/prepare_results.R [options] <name>_perind_numers.counts.gz <name>_cluster_significance.txt <name>_effect_sizes.txt annotation_code 
 ```
 ** <name>_perind_numers.counts.gz ** The same counts matrix you gave to `leafcutter_ds.R`. 
 ** <name>_cluster_significance.txt ** The cluster significant table output by `leafcutter_ds.R`. 
@@ -122,18 +105,26 @@ Options:
 ```
 This will create the Rdata file wherever `--output` is pointed. The file 'prepare_example.sh' shows how this would be done for the example dataset if you wanted to rebuild 'Brain_vs_Heart_results.Rdata'. 
 
-As a concrete example, let's assume you just ran the example at [Usage](./Usage.html) and you're currently in the `/example_data` subdirectory, then running
+As a concrete example, let's assume you just ran the example at [Usage](./Usage.html) and you're within the `leafcutter/` top directory .
+
 ```
-../leafviz/prepare_results.R --meta_data_file example_geuvadis/groups_file.txt --code leafcutter testYRIvsEU_perind_numers.counts.gz leafcutter_ds_cluster_significance.txt leafcutter_ds_effect_sizes.txt ../leafviz/annotation_codes/gencode_hg19/gencode_hg19
+cd leafviz/
+./prepare_results.R --meta_data_file ../example_data/example_geuvadis/groups_file.txt \
+  --code leafcutter ../example_data/testYRIvsEU_perind_numers.counts.gz \
+  ../example_data/leafcutter_ds_cluster_significance.txt \
+  ../example_data/leafcutter_ds_effect_sizes.txt \
+  annotation_codes/gencode_hg19/gencode_hg19 \
+  -o testYRIvsEU.RData
 ```
-should create an `leafviz.RData` file. 
+should create an `testYRIvsEU.RData` file. 
 
 ### Step 2. Visualise the results
 
 From the `example_data` directory. 
+
 ```
-cd ../leafviz/
-./run_leafviz.R ../example_data/leafviz.Rdata
+cd <leafviz repo>/scripts/
+./run_leafviz.R testYRIvsEU.RData
 ```
 This will load in the Rdata object and run the LeafCutter Visualisation App in your browser. 
 

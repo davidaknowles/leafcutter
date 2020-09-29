@@ -4,10 +4,20 @@
 \alias{differential_splicing}
 \title{Perform pairwise differential splicing analysis.}
 \usage{
-differential_splicing(counts, x, confounders = NULL,
-  max_cluster_size = 10, min_samples_per_intron = 5,
-  min_samples_per_group = 4, min_coverage = 20, timeout = 10,
-  robust = F, debug = F, init = "smart", ...)
+differential_splicing(
+  counts,
+  x,
+  confounders = NULL,
+  max_cluster_size = 10,
+  min_samples_per_intron = 5,
+  min_samples_per_group = 4,
+  min_coverage = 20,
+  timeout = 10,
+  robust = F,
+  debug = F,
+  init = "smart",
+  ...
+)
 }
 \arguments{
 \item{counts}{An [introns] x [samples] matrix of counts. The rownames must be of the form chr:start:end:cluid. If the counts file comes from the leafcutter clustering code this should be the case already.}

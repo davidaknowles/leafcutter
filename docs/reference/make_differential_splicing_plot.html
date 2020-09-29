@@ -126,10 +126,17 @@
     <p>Shows only junction reads and can optionally show splicing variation across groups.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>make_differential_splicing_plot</span>(<span class='no'>y</span>, <span class='kw'>x</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>numeric</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='no'>y</span>)) + <span class='fl'>1</span>,
-  <span class='kw'>exons_table</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>len</span> <span class='kw'>=</span> <span class='fl'>500</span>, <span class='kw'>length_transform</span> <span class='kw'>=</span> <span class='kw'>function</span>(<span class='no'>g</span>) <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>g</span>
-  + <span class='fl'>1</span>), <span class='kw'>main_title</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>snp_pos</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>summary_func</span> <span class='kw'>=</span> <span class='no'>colMeans</span>,
-  <span class='kw'>legend_title</span> <span class='kw'>=</span> <span class='st'>"Mean count"</span>)</pre>
+    <pre class="usage"><span class='fu'>make_differential_splicing_plot</span><span class='op'>(</span>
+  <span class='va'>y</span>,
+  x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>numeric</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>y</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fl'>1</span>,
+  exons_table <span class='op'>=</span> <span class='cn'>NULL</span>,
+  len <span class='op'>=</span> <span class='fl'>500</span>,
+  length_transform <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>g</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>g</span> <span class='op'>+</span> <span class='fl'>1</span><span class='op'>)</span>,
+  main_title <span class='op'>=</span> <span class='cn'>NA</span>,
+  snp_pos <span class='op'>=</span> <span class='cn'>NA</span>,
+  summary_func <span class='op'>=</span> <span class='va'>colMeans</span>,
+  legend_title <span class='op'>=</span> <span class='st'>"Mean count"</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -188,7 +195,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

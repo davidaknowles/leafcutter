@@ -89,76 +89,51 @@
 <p>Written by Jack Humphrey, David Knowles &amp; Yang Li</p>
 <p>To see an example of the <code>leafcutter</code> shiny app in action without installing anything take a look at <a href="https://leafcutter.shinyapps.io/leafviz/" class="uri">https://leafcutter.shinyapps.io/leafviz/</a>. This shows <code>leafcutter</code> differential splicing results for a comparison of 10 brain vs. 10 heart samples (5 male, 5 female in each group) from <a href="https://www.gtexportal.org/home/">GTEx</a>.</p>
 <p>The leafcutter shiny app has been tested on <code>macOS 10.12</code> and <code>Ubuntu 14.04</code>.</p>
-<div id="example" class="section level4">
+<div id="installation" class="section level4">
 <h4 class="hasAnchor">
-<a href="#example" class="anchor"></a>Example</h4>
-<p>If you’ve already installed leafcutter then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the <code>leafviz</code> directory:</p>
-<pre><code>cd leafviz</code></pre>
-<p>and then download the example data using</p>
-<pre><code>./download_example.sh</code></pre>
-<p>This will download and unzip a folder called <code>leafviz_example</code>. Now starting the shiny app should be as easy as</p>
-<pre><code>./run_leafviz.R leafviz_example/Brain_vs_Heart_results.Rdata</code></pre>
+<a href="#installation" class="anchor"></a>Installation</h4>
+<p><strong>UPDATE</strong> As of September 2020, LeafViz is now a standalone app. The original version of the app is still within the Leafcutter repository but will eventually be deprecated as all further maintenance and development will be to the standalone version.</p>
+<pre><code>## in R:
+install.packages("remotes")
+remotes::install_github("jackhump/leafviz")
+
+## on the command line:
+git clone https://github.com/jackhump/leafviz.git</code></pre>
+</div>
+<div id="run-example" class="section level4">
+<h4 class="hasAnchor">
+<a href="#run-example" class="anchor"></a>Run Example</h4>
+<p>Once you’ve installed leafviz and downloaded the github repo then you can easily fire up a local shiny app on the same GTEx example data. Navigate into the <code>leafviz</code> directory:</p>
+<pre><code>cd leafviz/scripts</code></pre>
+<p>Now starting the shiny app should be as easy as</p>
+<pre><code>./run_leafviz.R example/Brain_vs_Heart_results.Rdata</code></pre>
 <p>You can even leave out the <code>leafviz_example/Brain_vs_Heart_results.Rdata</code> part as this is the default dataset <code>run_leafviz.R</code> will try to use.</p>
 </div>
-<div id="annotation-code" class="section level4">
+<div id="prerequisites-annotation-data" class="section level4">
 <h4 class="hasAnchor">
-<a href="#annotation-code" class="anchor"></a>Annotation code</h4>
+<a href="#prerequisites-annotation-data" class="anchor"></a>Prerequisites: Annotation data</h4>
 <p>The Shiny app includes functionality to label detected introns as annotated or cryptic. To do for a new dataset this an “annotation code” is needed, built from a “Gene Transfer Format” file appropriate for your genome. We provide pre-built annotation codes for hg19 and hg38 which can be downloaded by running</p>
 <pre><code>./download_human_annotation_codes.sh</code></pre>
-<p>from the <code>leafvis</code> directory. To build a new annotation code you need:</p>
-<ul>
-<li>
-<a href="http://bedtools.readthedocs.io/en/latest/">bedtools</a> &gt;= v2.17.0</li>
-<li>a GTF transcript file of your choice - we recommend <a href="https://www.gencodegenes.org/">GENCODE</a>.</li>
-<li>GNU Awk (gawk) &gt;= 3.1;</li>
-</ul>
-<p>On Mac you can install <code>bedtools</code> and <code>GNU Awk</code> using <a href="https://brew.sh/">homebrew</a>:</p>
-<p><code>brew install gawk; brew install bedtools</code></p>
-<p>Most Linuxes will have <code>gawk</code> already. On Ubuntu <code>bedtools</code> can be installed using</p>
-<p><code>sudo apt-get install bedtools</code></p>
-</div>
-<div id="required-r-packages" class="section level4">
-<h4 class="hasAnchor">
-<a href="#required-r-packages" class="anchor"></a>Required R packages</h4>
-<p>These should all have been installed when you installed leafcutter:</p>
-<ul>
-<li>data.table</li>
-<li>stringr</li>
-<li>magrittr</li>
-<li>dplyr</li>
-<li>ggplot2</li>
-<li>shiny</li>
-<li>shinyjs</li>
-<li>DT</li>
-<li>intervals</li>
-<li>reshape2</li>
-<li>gridExtra</li>
-<li>foreach</li>
-<li>shinycssloaders</li>
-<li>gtables</li>
-</ul>
-</div>
-<div id="step-0--generate-the-annotation-files" class="section level3">
-<h3 class="hasAnchor">
-<a href="#step-0--generate-the-annotation-files" class="anchor"></a>Step 0. Generate the annotation files</h3>
+<p>from the <code>leafviz</code> directory. To build a new annotation code requires <code>perl</code>.</p>
 <p>This step processes a given GTF to generate lists of exons, introns and splice sites. This step only has to be run once to use a particular GTF file with the app.</p>
 <p>The recommended way to do this is</p>
 <pre><code>./gtf2leafcutter.pl -o &lt;annotation_code&gt; my_transcriptome.gtf[.gz]</code></pre>
 <p><strong>my_transcriptome.gtf</strong> - a gene transfer format file, provided by GENCODE, Ensembl, etc.</p>
 <p><strong>annotation_code</strong> - the path or folder name with a base name, eg <code>/path/to/gencode_hg38</code></p>
-<p><code>gtf2leafcutter.pl</code> can take in a <code>gzip</code>ped <code>gtf</code> file as long as the file name ends with <code>.gz</code>. <code>gtf2leafcutter.pl</code> should be more robust to differences in <code>.gtf</code> formatting than our old script <code>wrangleAnnotation.sh</code> (thanks to <a href="https://pintolab.mssm.edu/">Dalila Pinto</a> for contributing the new script).</p>
+<p><code>gtf2leafcutter.pl</code> can take in a <code>gzip</code>ped <code>gtf</code> file as long as the file name ends with <code>.gz</code>.</p>
+<p>(thanks to <a href="https://pintolab.mssm.edu/">Dalila Pinto</a> for contributing the new script).</p>
 <p>This will create:</p>
 <pre><code>&lt;annotation_code&gt;_all_introns.bed.gz
 &lt;annotation_code&gt;_threeprime.bed.gz
 &lt;annotation_code&gt;_fiveprime.bed.gz
 &lt;annotation_code&gt;_all_exons.txt.gz</code></pre>
-<p>We’ve only tested with the GENCODE V26 human GRCh37/GRCh38 and mouse GRCm38.p5 GTF files. If you have problems with other <code>gtf</code> files please let us know.</p>
+<p>We’ve only tested with the GENCODE human GRCh37/GRCh38 and mouse GTF files. If you have problems with other <code>gtf</code> files please let us know.</p>
 </div>
 <div id="step-1--prepare-the-leafcutter-differential-splicing-results-for-visualisation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-1--prepare-the-leafcutter-differential-splicing-results-for-visualisation" class="anchor"></a>Step 1. Prepare the LeafCutter differential splicing results for visualisation</h3>
 <p>This step annotates each intron in each cluster at a given false discovery rate and generates a single <code>.RData</code> file with everything the shiny app needs to run.</p>
-<pre><code>./prepare_results.R [options] &lt;name&gt;_perind_numers.counts.gz &lt;name&gt;_cluster_significance.txt &lt;name&gt;_effect_sizes.txt annotation_code </code></pre>
+<pre><code>leafcutter/leafviz/prepare_results.R [options] &lt;name&gt;_perind_numers.counts.gz &lt;name&gt;_cluster_significance.txt &lt;name&gt;_effect_sizes.txt annotation_code </code></pre>
 <p>** <name>_perind_numers.counts.gz ** The same counts matrix you gave to <code>leafcutter_ds.R</code>. ** <name>_cluster_significance.txt ** The cluster significant table output by <code>leafcutter_ds.R</code>. ** <name>_effect_sizes.txt ** The per junction effect size table output by <code>leafcutter_ds.R</code>. ** annotation_code ** will be something like <code>annotation_codes/gencode_hg19/gencode_hg19</code> (see above)</name></name></name></p>
 <p>Options:</p>
 <pre><code>    -o OUTPUT, --output=OUTPUT
@@ -176,16 +151,22 @@
     -h, --help
         Show this help message and exit</code></pre>
 <p>This will create the Rdata file wherever <code>--output</code> is pointed. The file ‘prepare_example.sh’ shows how this would be done for the example dataset if you wanted to rebuild ‘Brain_vs_Heart_results.Rdata’.</p>
-<p>As a concrete example, let’s assume you just ran the example at <a href="./Usage.html">Usage</a> and you’re currently in the <code>/example_data</code> subdirectory, then running</p>
-<pre><code>../leafviz/prepare_results.R --meta_data_file example_geuvadis/groups_file.txt --code leafcutter testYRIvsEU_perind_numers.counts.gz leafcutter_ds_cluster_significance.txt leafcutter_ds_effect_sizes.txt ../leafviz/annotation_codes/gencode_hg19/gencode_hg19</code></pre>
-<p>should create an <code>leafviz.RData</code> file.</p>
+<p>As a concrete example, let’s assume you just ran the example at <a href="./Usage.html">Usage</a> and you’re within the <code>leafcutter/</code> top directory .</p>
+<pre><code>cd leafviz/
+./prepare_results.R --meta_data_file ../example_data/example_geuvadis/groups_file.txt \
+  --code leafcutter ../example_data/testYRIvsEU_perind_numers.counts.gz \
+  ../example_data/leafcutter_ds_cluster_significance.txt \
+  ../example_data/leafcutter_ds_effect_sizes.txt \
+  annotation_codes/gencode_hg19/gencode_hg19 \
+  -o testYRIvsEU.RData</code></pre>
+<p>should create an <code>testYRIvsEU.RData</code> file.</p>
 </div>
 <div id="step-2--visualise-the-results" class="section level3">
 <h3 class="hasAnchor">
 <a href="#step-2--visualise-the-results" class="anchor"></a>Step 2. Visualise the results</h3>
 <p>From the <code>example_data</code> directory.</p>
-<pre><code>cd ../leafviz/
-./run_leafviz.R ../example_data/leafviz.Rdata</code></pre>
+<pre><code>cd &lt;leafviz repo&gt;/scripts/
+./run_leafviz.R testYRIvsEU.RData</code></pre>
 <p>This will load in the Rdata object and run the LeafCutter Visualisation App in your browser.</p>
 </div>
 <div id="features" class="section level3">
@@ -223,7 +204,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

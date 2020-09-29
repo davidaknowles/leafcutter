@@ -1,5 +1,5 @@
-pandoc: 1.16.0.2
-pkgdown: 1.5.1
+pandoc: 2.3.1
+pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   Installation: Installation.html
@@ -7,5 +7,5 @@ articles:
   UsageLeafcutterMD: UsageLeafcutterMD.html
   Visualization: Visualization.html
   sQTL: sQTL.html
-last_built: 2020-04-15T23:12Z
+last_built: 2020-09-29T14:49Z
 
