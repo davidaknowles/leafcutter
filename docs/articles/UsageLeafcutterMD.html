@@ -88,19 +88,19 @@
     
 <p>LeafCutterMD has two main components:</p>
 <ol style="list-style-type: decimal">
-<li>Python code to</li>
-</ol>
+<li>Python code to
 <ul>
 <li>generate intron excision counts from <code>junc</code> files (which can be obtained easily from <code>.bam</code> files)</li>
 <li>group introns into clusters</li>
 </ul>
-<ol start="2" style="list-style-type: decimal">
+</li>
 <li>
-<code>R</code> code to</li>
-</ol>
+<code>R</code> code to
 <ul>
 <li>perform outlier splicing (here, outlier intron excision) analysis</li>
 </ul>
+</li>
+</ol>
 <p>Note, for illustrative purposes (and reduced example file sizes) we use the same data as in the <a href="./Usage.html">differential splicing example</a>, but this data is not a rare disease cohort and thus the final results generated in this vignette are not expected to be indicative of disease causality.</p>
 <div id="step-0--alignment" class="section level3">
 <h3 class="hasAnchor">
@@ -108,7 +108,7 @@
 <p>Of course the real “Step 0” is running QC on your RNA-seq samples using e.g. <a href="http://multiqc.info/">MultiQC</a>. Assuming they look good you need to align reads. For the analysis in the LeafCutter paper we used either <a href="https://zhanglab.c2b2.columbia.edu/index.php/OLego">OLego</a>, which is designed to be particularly sensitive for finding de novo junctions, or <a href="https://github.com/alexdobin/STAR">STAR</a>, which is fast as long as you have enough RAM.</p>
 <p>For <code>OLego</code> we used the command</p>
 <pre><code>olego -j hg19.intron.hmr.brainmicro.bed -e 6 hg19.fa</code></pre>
-<p>where <code>-j</code> provides a <a href="https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA">custom junction file</a>, and <code>-e</code> specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see <a href="http://genome.cshlp.org/content/25/1/1.full">Li et al. 2005</a>.</p>
+<p>where <code>-j</code> provides a <a href="https://drive.google.com/open?id=0B_dRjzD1If9mR0Z6Um5LZTYxVjA">custom junction file</a>, and <code>-e</code> specifies the required number of nt the read must extend into the exon to be quantified. For more details on the junction file we used see <a href="http://genome.cshlp.org/content/25/1/1.full">Li et al. 2005</a>.</p>
 <p>The <code>STAR</code> index was generated as</p>
 <pre><code>STAR --runMode genomeGenerate --genomeDir hg19index/ --genomeFastaFiles hg19.fa --sjdbGTFfile gencode_v19.gtf --sjdbOverhang 100</code></pre>
 <p>(alternatively use one of the <a href="http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/">prebuilt indices</a> ) and alignment itself was run (with STAR v2.5.2a) as</p>
@@ -179,7 +179,7 @@ chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31</code></pre>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
