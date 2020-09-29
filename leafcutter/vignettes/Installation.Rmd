@@ -10,8 +10,9 @@ vignette: >
 The prerequisites for LeafCutter are
 
 * [samtools](http://samtools.sourceforge.net/) should be available on your PATH
+* [regtools](https://regtools.readthedocs.io/en/latest/#installation) should be available on your PATH
 * Python 2.7 (earlier versions may be OK)
-* R (version 3.3.3, earlier versions may be OK)
+* R (version 3.6.0, earlier versions may be OK)
 
 To download the code (you'll need this for the leafcutter scripts)
 ```

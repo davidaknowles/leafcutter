@@ -4,8 +4,13 @@
 \alias{dirichlet_multinomial_anova}
 \title{Dirichlet multinomial GLM likelihood ratio test for a single cluster (single overdispersion parameter)}
 \usage{
-dirichlet_multinomial_anova(xFull, xNull, y, concShape = 1.0001,
-  concRate = 1e-04)
+dirichlet_multinomial_anova(
+  xFull,
+  xNull,
+  y,
+  concShape = 1.0001,
+  concRate = 1e-04
+)
 }
 \arguments{
 \item{xFull}{[samples] x [covariates] matrix for the alternative model}

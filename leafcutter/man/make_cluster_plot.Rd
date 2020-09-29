@@ -4,9 +4,16 @@
 \alias{make_cluster_plot}
 \title{Make cluster level plot}
 \usage{
-make_cluster_plot(cluster_to_plot, main_title = NA, exons_table = NULL,
-  meta = NULL, cluster_ids = NULL, counts = NULL, introns = NULL,
-  snp_pos = NA)
+make_cluster_plot(
+  cluster_to_plot,
+  main_title = NA,
+  exons_table = NULL,
+  meta = NULL,
+  cluster_ids = NULL,
+  counts = NULL,
+  introns = NULL,
+  snp_pos = NA
+)
 }
 \description{
 Make cluster level plot

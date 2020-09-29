@@ -16,7 +16,6 @@ example_data/worked_example.sh
 LeafCutter has two main components: 
 
 1. Python code to 
-   - generate intron excision counts from `junc` files (which can be obtained easily from `.bam` files)
    - group introns into clusters
 2. `R` code to 
    * perform differential splicing (here, differential intron excision) analysis
@@ -52,28 +51,33 @@ We chose 6nt as the default overhang required by LeafCutter. By chance we would 
 
 ### Step 1. Converting `bam`s to `junc`s
 
-I'm skipping Step 0 which would be mapping `fastq` files, e.g. using STAR, to obtain `.bam` files. 
+We now advise that users create junction files using the [regtools](https://regtools.readthedocs.io/en/latest/#installation) software as it much faster than our own implementation. 
 
-We provide a helper script `scripts/bam2junc.sh` to (you guessed it) convert `bam` files to `junc` files. This step uses the CIGAR strings in the `bam` to quantify the usage of each intron. LeafCutter considers a read "problematic" if its mapped cigar string does not follow the pattern 'xMyNzM'.
+[regtools junctions extract](https://regtools.readthedocs.io/en/latest/commands/junctions-extract/) uses the CIGAR strings in each `bam` file to quantify the usage of each intron. 
+
+For a discussion of the fine-grained details between regtools and our previous implementation see [here](https://github.com/davidaknowles/leafcutter/issues/127).
 
 `example_data/worked_example.sh` gives you an example of how to do this in batch, assuming your data is in `example_geuvadis/`
+
 ```
-for bamfile in `ls example_geuvadis/*.bam`
-do
+for bamfile in `ls run/geuvadis/*chr1.bam`; do
     echo Converting $bamfile to $bamfile.junc
-    sh ../scripts/bam2junc.sh $bamfile $bamfile.junc
+    samtools index $bamfile
+    regtools junctions extract -a 8 -m 50 -M 500000 $bamfile -o $bamfile.junc
     echo $bamfile.junc >> test_juncfiles.txt
 done
 ```
+
+Here `-a 8` refers to the anchor length and `-m` and `-M` refer to the minimum and maximum intron lengths, respectively.
 
 This step is pretty fast (e.g. a couple of minutes per bam) but if you have samples numbering in the 100s you might want to do this on a cluster. Note that we also make a list of the generated `junc` files in `test_juncfiles.txt`. 
 
 ### Step 2. Intron clustering
 
-Next we need to define intron clusters using the `leafcutter_cluster.py` script. For example: 
+Next we need to define intron clusters using the `leafcutter_cluster_regtools.py` script. For example: 
 
 ```
-python ../clustering/leafcutter_cluster.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000
+python ../clustering/leafcutter_cluster_regtools.py -j test_juncfiles.txt -m 50 -o testYRIvsEU -l 500000
 ```
 
 This will cluster together the introns fond in the `junc` files listed in `test_juncfiles.txt`, requiring 50 split reads supporting each cluster and allowing introns of up to 500kb. The predix `testYRIvsEU` means the output will be called `testYRIvsEU_perind_numers.counts.gz` (perind meaning these are the *per individual* counts). 
@@ -93,6 +97,8 @@ chr1:668593:672093:clu_2 11 16 23 10 3 20 9 6 23 31
 ```
 
 Each column corresponds to a different sample (original bam file) and each row to an intron, which are identified as chromosome:intron_start:intron_end:cluster_id. 
+
+If you find this step is failing it could be due to non-standard chromosome names in your junction files. If this occurs then try adding the --checkchrom flag to the clustering command, which will remove any chromosomes not in the 1,2,3,4 or chr1,chr2,chr3,chr4 form.
 
 ### Step 3. Differential intron excision analysis
 
@@ -114,8 +120,9 @@ RNA.NA06994_CEU.chr1.bam CEU
 
 Having made that file we can run DS (this assumes you have successfully installed the `leafcutter` R package as described under [Installation](./Installation.html) above)
 ```
-../scripts/leafcutter_ds.R --num_threads 4 --exon_file=../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt
+../scripts/leafcutter_ds.R --num_threads 4 ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt
 ```
+
 Running `../scripts/leafcutter_ds.R -h` will give usage info for this script. Here have included an `exon_file`: this is optional but allows LeafCutter to annotate clusters according to which gene they correspond to. An example exon file for `hg19` derived from GENCODE v19 is included with LeafCutter. The exons file should have the following columns: chr, start, end, strand, gene_name. We provide a helper script `gtf_to_exons.R` which will convert a `.gtf` to the required format. I'm also hosting the exon file for `GRCh38` GENCODE v.31 [here](https://www.dropbox.com/s/osmtksukti9gv7o/gencode.v31.exons.txt.gz?dl=0). 
 
 Two tab-separated text files are output:
@@ -155,5 +162,5 @@ This will make a pdf with plots of the differentially spliced clusters detected 
 ../scripts/ds_plots.R -e ../leafcutter/data/gencode19_exons.txt.gz ../example_data/testYRIvsEU_perind_numers.counts.gz example_geuvadis/groups_file.txt leafcutter_ds_cluster_significance.txt -f 0.05
 ```
 
-We have a LeafCutter shiny app called `leafviz` allowing interactive visual interrogation of your results, go to the [Visualization](./Visualization.html) tab to learn how to feed the LeafCutter output into the shiny app. 
+However, we find these plots somewhat hard to interpret. As a solution we provide a LeafCutter shiny app called `leafviz` allowing interactive visual interrogation of your results.  Go to the [Visualization](./Visualization.html) tab to learn how to feed the LeafCutter output into the shiny app. 
 
