@@ -498,7 +498,7 @@ make_gene_plot <- function(gene_name,
                  colour = junction_colour )
 
         allEdges = allEdges %>% left_join(label_df %>% select(clu, FDR), by="clu")
-        allEdges_significant = allEdgesP %>% dplyr::filter(FDR != ".")
+        allEdges_significant = allEdges %>% dplyr::filter(FDR != ".")
 
         if (nrow(allEdges_significant) > 0)
           plots <- plots + geom_curve(data=allEdges_significant,
