@@ -48,7 +48,8 @@ def pool_junc_reads(flist, options):
             if int(blockCount) > 2:
                 print ln
                 continue
-            
+            # regtools -s 0 (unstranded) now puts "?" in strand field when strand is ambiguous  
+            if strand == "?": continue            
             if checkchrom and (chrom not in chromLst): continue
             Aoff, Boff = blockSize.split(",")
             A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
