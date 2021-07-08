@@ -69,6 +69,8 @@ def pool_junc_reads(flist, options):
         read_ks.sort()
         
         sys.stderr.write("%s:%s.."%chrom)
+        if len(read_ks)<1 : continue #empty contig
+        
         clu = cluster_intervals(read_ks)[0]
         for cl in clu:
     
