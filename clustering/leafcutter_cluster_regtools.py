@@ -46,7 +46,7 @@ def pool_junc_reads(flist, options):
                 continue
             chrom, A, B, dot, counts, strand, rA,rb, rgb, blockCount, blockSize, blockStarts = lnsplit
             if int(blockCount) > 2:
-                print ln
+                print(ln)
                 continue
             # regtools -s 0 (unstranded) now puts "?" in strand field when strand is ambiguous
             if strand == "?": continue
@@ -60,14 +60,15 @@ def pool_junc_reads(flist, options):
                 try: by_chrom[(chrom,strand)][(A,B)] = int(counts)
                 except: by_chrom[(chrom,strand)] = {(A,B):int(counts)}
 
-    fout = file(outFile, 'w')
+    fout = open(outFile, 'w')
     Ncluster = 0
     sys.stderr.write("Parsing...\n")
     for chrom in by_chrom:
-        read_ks = [k for k,v in by_chrom[chrom].items() if v >= 3] # a junction must have at least 3 reads
+        read_ks = [k for k,v in list(by_chrom[chrom].items()) if v >= 3] # a junction must have at least 3 reads
         read_ks.sort()
-
         sys.stderr.write("%s:%s.."%chrom)
+        if len(read_ks) == 0:
+             continue # weird test case for toy data with only 1 gene - two chroms but one is empty after filtering
         clu = cluster_intervals(read_ks)[0]
         for cl in clu:
             if len(cl) > 1: # if cluster has more than one intron
@@ -119,7 +120,7 @@ def sort_junctions(libl, options):
             merges[libN] = []
         merges[libN].append(lib)
 
-    fout_runlibs = file(runName+"_sortedlibs",'w')
+    fout_runlibs = open(runName+"_sortedlibs",'w')
 
     for libN in merges:
         libName = "%s/%s"%(rundir,libN.split('/')[-1])
@@ -135,22 +136,22 @@ def sort_junctions(libl, options):
                 sys.stderr.write("merging %s...\n"%(" ".join(merges[libN])))
         else:
             pass
-        fout = gzip.open(foutName,'w')
 
-        fout.write("chrom %s\n"%libN.split("/")[-1].split(".junc")[0])
+        fout = gzip.open(foutName, 'wb')
+        header_string = "chrom %s\n"%libN.split("/")[-1].split(".junc")[0]
+        fout.write(header_string.encode('utf-8'))
 
         for lib in merges[libN]:
-
             for ln in open(lib):
-
                 lnsplit=ln.split()
                 if len(lnsplit)<6:
                     sys.stderr.write("Error in %s \n" % lib)
                     continue
                 chrom, A, B, dot, count, strand, rA,rb, rgb, blockCount, blockSize, blockStarts = lnsplit
                 if int(blockCount) > 2:
-                    print ln
+                    print(ln)
                     continue
+
                 if checkchrom and (chrom not in chromLst): continue
                 Aoff, Boff = blockSize.split(",")
                 A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
@@ -190,7 +191,7 @@ def sort_junctions(libl, options):
                 else:
                     buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu,strand, tot))
 
-            fout.write("".join(buf))
+            fout.write("".join(buf).encode('utf-8'))
         fout.close()
     fout_runlibs.close()
 
@@ -203,7 +204,7 @@ def refine_clusters(options):
 
     inFile = "%s/%s_pooled"%(rundir,outPrefix)
     outFile = "%s/%s_refined"%(rundir,outPrefix)
-    fout = file(outFile,'w')
+    fout = open(outFile,'w')
 
     Ncl = 0
     for ln in open(inFile):
@@ -245,9 +246,7 @@ def merge_junctions(options):
 
     outPrefix = options.outprefix
     rundir = options.rundir
-
     fnameout = "%s/%s"%(rundir,outPrefix)
-
     flist = "%s/%s_sortedlibs"%(rundir, outPrefix)
 
     lsts = []
@@ -263,7 +262,7 @@ def merge_junctions(options):
     while len(lsts) > 1:
         clst = []
 
-        for i in range(0,(len(lsts)/N)+1):
+        for i in range(0,(len(lsts)//N)+1):
             lst = lsts[N*i:N*(i+1)]
             if len(lst) > 0:
                 clst.append(lst)
@@ -286,12 +285,13 @@ def merge_junctions(options):
     else:
         shutil.move(lsts[0], fnameout+"_perind.constcounts.gz")
 
+
 def merge_files(fnames, fout, options):
 
     fopen = []
     for fname in fnames:
         if fname[-3:] == ".gz":
-            fopen.append(gzip.open(fname))
+            fopen.append(gzip.open(fname, "rt"))
         else:
             fopen.append(open(fname))
 
@@ -316,7 +316,9 @@ def merge_files(fnames, fout, options):
             if buf[0] == "chrom":
                 if options.verbose:
                     sys.stderr.write("merging %d files"%(len(buf)-1))
-            fout.write(" ".join(buf)+'\n')
+
+            out_string = " ".join(buf)+'\n'
+            fout.write(out_string.encode('utf-8') )
         else:
             break
 
@@ -448,19 +450,20 @@ def get_numers(options):
         fname = "%s/%s_perind.constcounts.gz"%(rundir,outPrefix)
         fnameout = "%s/%s_perind_numers.constcounts.gz"%(rundir,outPrefix)
 
-    input_file=gzip.open(fname, 'rb')
+    input_file=gzip.open(fname, 'rt')
     fout = gzip.open(fnameout,'w')
     first_line=True
 
     for l in input_file:
         if first_line:
-            fout.write(" ".join(l.strip().split(" ")[1:])+'\n') # print the sample names
+            header_string = " ".join(l.strip().split(" ")[1:])+'\n'
+            fout.write(header_string.encode('utf-8')) # print the sample names
             first_line=False
         else:
             l=l.strip()
             words=l.split(" ")
-
-            fout.write(words[0]+ " "+ " ".join( [ g.split("/")[0] for g in words[1:] ] ) +'\n')
+            words_string = words[0]+ " "+ " ".join( [ g.split("/")[0] for g in words[1:] ] ) +'\n'
+            fout.write(words_string.encode('utf-8'))
 
     input_file.close()
     fout.close()
