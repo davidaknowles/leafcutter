@@ -10,7 +10,7 @@ import shutil
 
 def main(options,libl):
 
-    if options.cluster == None:
+    if options.cluster is None:
         pool_junc_reads(libl, options)
         refine_clusters(options)
 
@@ -23,34 +23,40 @@ def pool_junc_reads(flist, options):
     outPrefix = options.outprefix
     rundir = options.rundir
     maxIntronLen = int(options.maxintronlen)
-    checkchrom = options.checkchrom
+    nochromcheck = options.nochromcheck
 
     outFile = "%s/%s_pooled"%(rundir,outPrefix)
 
     chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
     by_chrom = {}
+
+    # check that all files exist
     for libl in flist:
+        if not os.path.isfile(libl.strip()):
+            raise ValueError("File %s does not exist."%lib)
 
+    for k,libl in enumerate(flist, 1):
         lib = libl.strip()
-        if not os.path.isfile(lib):
-            continue
-
         if options.verbose:
-            sys.stderr.write("scanning %s...\n"%lib)
+            sys.stderr.write("scanning %d/%d: %s ...\n"%(k, len(flist), lib))
 
-        for ln in open(lib):
+        if lib.endswith('.gz'):
+            opener = gzip.open(lib, 'rt')
+        else:
+            opener = open(lib, 'r')
 
-            lnsplit=ln.split()
-            if len(lnsplit)<6:
-                sys.stderr.write("Error in %s \n" % lib)
+        for ln in opener:
+            lnsplit = ln.split()
+            if len(lnsplit) < 6:
+                sys.stderr.write("Error in %s\n" % lib)
                 continue
-            chrom, A, B, dot, counts, strand, rA,rb, rgb, blockCount, blockSize, blockStarts = lnsplit
+            chrom, A, B, dot, counts, strand, rA, rb, rgb, blockCount, blockSize, blockStarts = lnsplit
             if int(blockCount) > 2:
                 print(ln)
                 continue
             # regtools -s 0 (unstranded) now puts "?" in strand field when strand is ambiguous
             if strand == "?": continue
-            if checkchrom and (chrom not in chromLst): continue
+            if not nochromcheck and (chrom not in chromLst): continue  # excludes ALT contigs etc
             Aoff, Boff = blockSize.split(",")
             A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
 
@@ -77,7 +83,7 @@ def pool_junc_reads(flist, options):
                     buf += "%d:%d" % interval + ":%d"%count+ " "
                 fout.write(buf+'\n')
             Ncluster += 1
-    sys.stderr.write("\nWrote %d clusters..\n"%Ncluster)
+    sys.stderr.write("\nWrote %d clusters...\n"%Ncluster)
     fout.close()
 
 
@@ -86,9 +92,9 @@ def sort_junctions(libl, options):
     chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
     outPrefix = options.outprefix
     rundir = options.rundir
-    checkchrom = options.checkchrom
+    nochromcheck = options.nochromcheck
 
-    if options.cluster == None:
+    if options.cluster is None:
         refined_cluster = "%s/%s_refined"%(rundir,outPrefix)
     else:
         refined_cluster = options.cluster
@@ -122,7 +128,7 @@ def sort_junctions(libl, options):
 
     fout_runlibs = open(runName+"_sortedlibs",'w')
 
-    for libN in merges:
+    for k,libN in enumerate(merges, 1):
         libName = "%s/%s"%(rundir,libN.split('/')[-1])
         by_chrom = {}
         foutName = libName+'.%s.sorted.gz'%(runName.split("/")[-1])
@@ -130,7 +136,7 @@ def sort_junctions(libl, options):
         fout_runlibs.write(foutName+'\n')
 
         if options.verbose:
-            sys.stderr.write("Sorting %s..\n"%libN)
+            sys.stderr.write("Sorting %d/%d: %s ...\n"%(k, len(merges), libN))
         if len(merges[libN]) > 1:
             if options.verbose:
                 sys.stderr.write("merging %s...\n"%(" ".join(merges[libN])))
@@ -142,17 +148,22 @@ def sort_junctions(libl, options):
         fout.write(header_string.encode('utf-8'))
 
         for lib in merges[libN]:
-            for ln in open(lib):
-                lnsplit=ln.split()
-                if len(lnsplit)<6:
+            if lib.endswith('.gz'):
+                opener = gzip.open(lib, 'rt')
+            else:
+                opener = open(lib, 'r')
+
+            for ln in opener:
+                lnsplit = ln.split()
+                if len(lnsplit) < 6:
                     sys.stderr.write("Error in %s \n" % lib)
                     continue
-                chrom, A, B, dot, count, strand, rA,rb, rgb, blockCount, blockSize, blockStarts = lnsplit
+                chrom, A, B, dot, count, strand, rA, rb, rgb, blockCount, blockSize, blockStarts = lnsplit
                 if int(blockCount) > 2:
                     print(ln)
                     continue
 
-                if checkchrom and (chrom not in chromLst): continue
+                if not nochromcheck and (chrom not in chromLst): continue
                 Aoff, Boff = blockSize.split(",")
                 A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
                 chrom = (chrom,strand)
@@ -290,7 +301,7 @@ def merge_files(fnames, fout, options):
 
     fopen = []
     for fname in fnames:
-        if fname[-3:] == ".gz":
+        if fname.endswith(".gz"):
             fopen.append(gzip.open(fname, "rt"))
         else:
             fopen.append(open(fname))
@@ -318,7 +329,7 @@ def merge_files(fnames, fout, options):
                     sys.stderr.write("merging %d files"%(len(buf)-1))
 
             out_string = " ".join(buf)+'\n'
-            fout.write(out_string.encode('utf-8') )
+            fout.write(out_string.encode('utf-8'))
         else:
             break
 
@@ -499,15 +510,15 @@ if __name__ == "__main__":
     parser.add_option("-c", "--cluster", dest="cluster", default = None,
                   help="refined cluster file when clusters are already made")
 
-    parser.add_option("-k", "--checkchrom", dest="checkchrom", action="store_true", default = False,
-                  help="check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ...")
+    parser.add_option("-k", "--nochromcheck", dest="nochromcheck", default = False,
+                  help="Don't check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ...")
 
     parser.add_option("-C", "--includeconst", dest="const", action="store_true", default = False,
                   help="also include constitutive introns")
 
     (options, args) = parser.parse_args()
 
-    if options.juncfiles == None:
+    if options.juncfiles is None:
         sys.stderr.write("Error: no junction file provided...\n")
         exit(0)
 
