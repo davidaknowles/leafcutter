@@ -198,7 +198,7 @@ for( clu in clusters ){
   cluster_ensemblIDs <- names(sort(table( c(tprime$gene_id,fprime$gene_id)), decreasing = TRUE ))
   cluster_ensemblID <- cluster_ensemblIDs[ cluster_ensemblIDs != "." ][1]
   if( length( cluster_ensemblID ) == 0 ){
-    cluster_ensemblID == "."
+    cluster_ensemblID <- "."
   }
 
   verdict <- c()
