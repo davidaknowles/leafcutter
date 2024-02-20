@@ -1,10 +1,14 @@
 # leafcutter
 
+[Yang I. Li](https://thelilab.com/)<sup>1</sup>, [David A. Knowles](https://daklab.github.io/)<sup>1</sup>, [Jack Humphrey](https://jackhump.github.io/), Alvaro N. Barbeira, Scott P. Dickinson, Hae Kyung Im, [Jonathan K. Pritchard](http://web.stanford.edu/group/pritchardlab/home.html)
+
 This branch has a Python/pytorch/pyro reimplementation of the LeafCutter differential splicing test. Users (including us!) often had problems installing the RStan based package. 
 
-<img src="./docs/logo.png" width="200"> **Annotation-free quantification of RNA splicing.**
+For now you can install with `pip install .` or `python -m pip install .` if you're in a `conda` environment. 
 
-[Yang I. Li](https://thelilab.com/)<sup>1</sup>, [David A. Knowles](https://daklab.github.io/)<sup>1</sup>, [Jack Humphrey](https://jackhump.github.io/), Alvaro N. Barbeira, Scott P. Dickinson, Hae Kyung Im, [Jonathan K. Pritchard](http://web.stanford.edu/group/pritchardlab/home.html)
+The installation process will install `leafcutter-cluster` and `leafcutter-ds` as command line tools. 
+
+<img src="./docs/logo.png" width="200"> **Annotation-free quantification of RNA splicing.**
 
 Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The core idea is to leverage spliced reads (reads that span an intron) to quantify (differential) intron usage across samples. The advantages of this approach include
 * easy detection of novel introns

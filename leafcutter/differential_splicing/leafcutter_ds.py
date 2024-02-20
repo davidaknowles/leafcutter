@@ -1,14 +1,5 @@
-import leafcutter
-import leafcutter.differential_splicing
-import leafcutter.utils
-import pandas as pd
+# putting other imports later so help prints quickly
 import argparse
-import os
-import sys
-import numpy as np
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, scale
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 
 # Create a parser
 parser = argparse.ArgumentParser(description="LeafCutter differential splicing command line tool. Required inputs:\n <counts_file>: Intron usage counts file. Must be .txt or .txt.gz, output from clustering pipeline.\n <groups_file>: Two+K column file: 1. sample names (must match column names in counts_file), 2. groups. Some samples in counts_file can be missing from this file, in which case they will not be included in the analysis. Additional columns can be used to specify confounders, e.g. batch/sex/age/RIN. Numeric columns will be treated as continuous, so use e.g. batch1, batch2, batch3 rather than 1, 2, 3 if you have a categorical variable.")
@@ -29,10 +20,21 @@ parser.add_argument("-u", "--min_unique_vals", default=10, type=int, help="Only 
 parser.add_argument("-e", "--exon_file", default=None, help="File defining known exons, example in data/gencode19_exons.txt.gz. Columns should be chr, start, end, strand, gene_name. Optional, only just to label the clusters.")
 parser.add_argument("--init", default="brr", help="One of One of brr (Bayesian ridge regression), rr (ridge regression), mult (multinomial logistic regression) or `0` (set to 0).")
 
-print(sys.argv)
-
 # Parse the command-line arguments
 args = parser.parse_args()
+
+import leafcutter
+from leafcutter.differential_splicing.differential_splicing import differential_splicing
+import leafcutter.utils
+
+import pandas as pd
+
+import os
+import sys
+import numpy as np
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, scale
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 # Access the parsed arguments
 print(f"Loading counts from {args.counts_file}")
@@ -97,11 +99,11 @@ else: # continuous
     scale_factor = np.std(meta["group"], ddof=0)
     meta["group"] = scale(meta["group"])
 
-print("Settings:" + args)
+print("Settings:" + str(args))
 
 print("Running differential splicing analysis...")
 
-cluster_table, junc_table, status_df = leafcutter.differential_splicing.differential_splicing(counts, meta["group"], confounders = confounders, max_cluster_size = args.max_cluster_size, min_samples_per_intron = args.min_samples_per_intron, min_samples_per_group = args.min_samples_per_group, min_coverage = args.min_coverage, init = args.init, device = "cpu" )
+cluster_table, junc_table, status_df = differential_splicing(counts, meta["group"], confounders = confounders, max_cluster_size = args.max_cluster_size, min_samples_per_intron = args.min_samples_per_intron, min_samples_per_group = args.min_samples_per_group, min_coverage = args.min_coverage, init = args.init, device = "cpu" )
 
 cluster_table['cluster'] = cluster_table.index
 

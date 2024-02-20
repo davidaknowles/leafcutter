@@ -9,7 +9,7 @@ import scipy.stats
 import time
 from sklearn import linear_model
 
-from .optim import fit_with_lbfgs
+from leafcutter.differential_splicing.optim import fit_with_lbfgs
 
 from dataclasses import dataclass
 

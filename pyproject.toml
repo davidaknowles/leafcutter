@@ -5,10 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "leafcutter"
 description='Leafcutter python implementation'
-authors = [{name="David A Knowles"}, {name = "Scott Adamson"}]
-version = "0.0.1"
+authors = [{name = "Scott Adamson"}, {name = "Jack Humphrey"}, {name = "Yang I Li"}, {name="David A Knowles"}]
+version = "2.0"
 #license='MIT'
 # dependencies = [ ]
 
 [project.scripts]
 leafcutter-ds = 'leafcutter.__main__:leafcutter_ds'
+leafcutter-cluster = 'leafcutter.__main__:leafcutter_cluster'

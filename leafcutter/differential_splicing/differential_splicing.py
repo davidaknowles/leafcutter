@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import torch
 from collections import defaultdict, OrderedDict
-from leafcutter.dm_glm import dirichlet_multinomial_anova, SimpleGuide, CleverGuide
+
+from leafcutter.differential_splicing.dm_glm import dirichlet_multinomial_anova, SimpleGuide, CleverGuide
 
 try: 
     from scipy.stats import false_discovery_control
