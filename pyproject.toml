@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0"] # to support project.scripts
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leafcutter"
+description='Leafcutter python implementation'
+authors = [{name="David A Knowles"}, {name = "Scott Adamson"}]
+version = "0.0.1"
+#license='MIT'
+# dependencies = [ ]
+
+[project.scripts]
+leafcutter-ds = 'leafcutter.__main__:leafcutter_ds'

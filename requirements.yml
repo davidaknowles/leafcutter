@@ -1,0 +1,21 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+name: leafcutter-py_env
+channels:
+  - pytorch
+  - anaconda
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - pytorch
+  - scipy>=1.11
+  - pandas
+  - matplotlib
+  - seaborn
+  - pip
+  - scikit-learn
+  - jupyterlab
+  - pip:
+    - pyro-ppl
+  
