@@ -3,7 +3,6 @@
 import gzip
 import sys
 
-
 def getmean(lst):
     return sum(lst)/float(len(lst))
 

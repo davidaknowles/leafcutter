@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # https://github.com/griffithlab/regtools
-# /home/yangili1/tools/regtools/build/regtools junctions extract -a 8 -i 50 -I 500000 bamfile.bam -o outfile.junc
+# e.g. regtools junctions extract -a 8 -i 50 -I 500000 bamfile.bam -o outfile.junc
 # Using regtools speeds up the junction extraction step by an order of magnitude or more
 
 import sys
