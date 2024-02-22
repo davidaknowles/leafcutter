@@ -6,9 +6,15 @@ build-backend = "setuptools.build_meta"
 name = "leafcutter"
 description='Leafcutter python implementation'
 authors = [{name = "Scott Adamson"}, {name = "Jack Humphrey"}, {name = "Yang I Li"}, {name="David A Knowles"}]
-version = "2.0"
-#license='MIT'
-# dependencies = [ ]
+version = "2.0.2"
+readme = "README.md"
+dependencies = [
+    "torch",
+    "pyro-ppl",
+    "scipy>=1.11", 
+    "pandas", 
+    "scikit-learn"
+]
 
 [project.scripts]
 leafcutter-ds = 'leafcutter.__main__:leafcutter_ds'

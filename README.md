@@ -4,11 +4,11 @@
 
 This branch has a Python/pytorch/pyro reimplementation of the LeafCutter differential splicing test. Users (including us!) often had problems installing the RStan based package. 
 
-For now you can install with `pip install .` or `python -m pip install .` if you're in a `conda` environment. 
+You should be able to install with `python -m pip install leafcutter`. 
 
 The installation process will install `leafcutter-cluster` and `leafcutter-ds` as command line tools. 
 
-<img src="./docs/logo.png" width="200"> **Annotation-free quantification of RNA splicing.**
+<img src="https://github.com/davidaknowles/leafcutter/blob/master/docs/logo.png" width="200"> **Annotation-free quantification of RNA splicing.**
 
 Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The core idea is to leverage spliced reads (reads that span an intron) to quantify (differential) intron usage across samples. The advantages of this approach include
 * easy detection of novel introns
