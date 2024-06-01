@@ -50,6 +50,7 @@ meta = pd.read_table(args.groups_file, header=None, sep = '\s+')
 meta = meta.rename(dict(zip([0, 1], ["sample", "group"])), axis = 1)
 
 # Check if there are more than 2 columns in the metadata DataFrame
+confounders = None
 if len(meta.columns) > 2:
     # Extract the confounders (columns 3 and onwards)
     confounders = meta.iloc[:, 2:]
@@ -71,17 +72,18 @@ if len(meta.columns) > 2:
     #remove samples with missing data (not in origial leafcutter as far as I can tell).
     confounders = pd.DataFrame(confounders, index = meta['sample']).dropna()
 
-all_samples = set(meta.loc[:,'sample'])
-removed_samples = all_samples - set(confounders.index)
-if len(removed_samples) != 0:
-    print('Samples removed due to missing values in covariates...')
-    print(','.join(list(removed_samples)))
-
-# Encode the "group" column as numeric (0 and 1)
-meta = meta[meta['sample'].isin(confounders.index)]
-
-#if permute: numeric_x = np.random.permutation(numeric_x)
-counts = counts[confounders.index]
+    # indented to here to fix confounders
+    all_samples = set(meta.loc[:,'sample'])
+    removed_samples = all_samples - set(confounders.index)
+    if len(removed_samples) != 0:
+        print('Samples removed due to missing values in covariates...')
+        print(','.join(list(removed_samples)))
+    # Encode the "group" column as numeric (0 and 1)
+    meta = meta[meta['sample'].isin(confounders.index)]
+    #if permute: numeric_x = np.random.permutation(numeric_x)
+    counts = counts[confounders.index]
+else:
+    counts = counts[meta["sample"].tolist()]
 
 scale_factor = 1.
 
