@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4bb_glm_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4bb_glm_fix_conc_mod();
