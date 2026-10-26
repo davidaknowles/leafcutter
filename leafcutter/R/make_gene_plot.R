@@ -403,14 +403,14 @@ make_gene_plot <- function(gene_name,
         # take first exon
         strand_df <- strand_df[ 1, ]
         # melt down into coordinates linked by id - the same exon
-        strand_df <- melt( strand_df[, c("x","xend", "id")], "id")
+        strand_df <- reshape2::melt( strand_df[, c("x","xend", "id")], "id")
 
       }
       if( gene_strand == "-" ){
         strand_pos <- "first"
         strand_df <- strand_df[ nrow(strand_df), ]
         # melt down into coordinates linked by id - the same exon
-        strand_df <- melt( strand_df[, c("x","xend", "id")], "id")
+        strand_df <- reshape2::melt( strand_df[, c("x","xend", "id")], "id")
 
       }
     }else{
@@ -418,7 +418,7 @@ make_gene_plot <- function(gene_name,
     }
 
     # use intervals package to compute the correct placement of stranding arrows
-    exon_intervals <- Intervals( matrix(data = c(exon_df$x, exon_df$xend), ncol = 2) )
+    exon_intervals <- intervals::Intervals( matrix(data = c(exon_df$x, exon_df$xend), ncol = 2) )
     #exon_intervals <- intervals::interval_union( exon_intervals )
     intron_intervals <- intervals::interval_complement( exon_intervals )
     intron_intervals <- intron_intervals[ 2:(nrow(intron_intervals)-1),]

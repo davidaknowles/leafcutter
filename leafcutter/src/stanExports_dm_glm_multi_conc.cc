@@ -29,3 +29,5 @@ RCPP_MODULE(stan_fit4dm_glm_multi_conc_mod) {
     .method("constrained_param_names", &rstan::stan_fit<stan_model, boost::random::ecuyer1988> ::constrained_param_names)
     ;
 }
+
+#include "dm_glm_multi_conc_optimizing.h"  // hand-added, see that file

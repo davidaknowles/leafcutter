@@ -15,8 +15,6 @@
 #' @import ggplot2
 #' @import foreach
 #' @importFrom gridExtra grid.arrange
-#' @importFrom Hmisc bezier
-#' @importFrom reshape2 melt
 #' @export
 make_differential_splicing_plot=function(y, x=numeric(nrow(y))+1, exons_table=NULL, len=500, length_transform=function(g) log(g+1), main_title=NA, snp_pos=NA, summary_func=colMeans, legend_title="Mean count") {
 

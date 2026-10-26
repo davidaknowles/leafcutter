@@ -15,13 +15,33 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
   make_option(c("--seed"), default=12345, help="Random seed if using random initialization."))),
   positional_arguments = 2)
 
+# read.table() of the counts with every count column read as integer, which
+# saves read.table() guessing the column types. Anything the typed read does
+# not turn into the table the plain read would give goes to the plain read,
+# as does a stream that cannot be read twice.
+read_counts=function(counts_file) {
+  counts=NULL
+  if (counts_file != "stdin" && !startsWith(counts_file, "/dev/") && !startsWith(counts_file, "/proc/"))
+    counts=tryCatch(read_integer_counts(counts_file), error=function(e) NULL, warning=function(w) NULL)
+  if (is.null(counts)) read.table(counts_file, header=T, check.names = F) else counts
+}
+
+read_integer_counts=function(counts_file) {
+  # scan()'s comment.char defaults to "", read.table()'s to "#"
+  n=length(scan(counts_file, what="", nlines=1, quiet=TRUE, comment.char="#"))
+  counts=read.table(counts_file, header=T, check.names = F, colClasses=c("character", rep("integer", n)))
+  # the plain read makes an empty or all-NA column logical
+  integer_columns=vapply(counts, function(column) is.integer(column) && length(column) > 0 && !all(is.na(column)), logical(1))
+  if (ncol(counts) == n && is.character(attr(counts, "row.names")) && all(integer_columns)) counts else NULL
+}
+
 opt=arguments$opt
 counts_file=arguments$args[1]
 groups_file=arguments$args[2]
 
 cat("Loading counts from",counts_file,"\n")
 if (!file.exists(counts_file)) stop("File ",counts_file," does not exist")
-counts=read.table(counts_file, header=T, check.names = F)
+counts=read_counts(counts_file)
 
 cat("Loading metadata from",groups_file,"\n")
 if (!file.exists(groups_file)) stop("File ",groups_file," does not exist")

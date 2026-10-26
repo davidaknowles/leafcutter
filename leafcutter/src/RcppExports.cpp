@@ -12,6 +12,7 @@ RcppExport SEXP _rcpp_module_boot_stan_fit4bb_glm_fix_conc_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4dm_glm_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4dm_glm_multi_conc_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4dm_glm_robust_mod();
+RcppExport SEXP _leafcutter_dm_glm_multi_conc_optimizing(SEXP, SEXP, SEXP, SEXP);  // hand-added
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4bb_glm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4bb_glm_mod, 0},
@@ -19,6 +20,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4dm_glm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dm_glm_mod, 0},
     {"_rcpp_module_boot_stan_fit4dm_glm_multi_conc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dm_glm_multi_conc_mod, 0},
     {"_rcpp_module_boot_stan_fit4dm_glm_robust_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4dm_glm_robust_mod, 0},
+    {"_leafcutter_dm_glm_multi_conc_optimizing", (DL_FUNC) &_leafcutter_dm_glm_multi_conc_optimizing, 4},  // hand-added
     {NULL, NULL, 0}
 };
 

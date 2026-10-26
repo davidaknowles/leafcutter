@@ -3,7 +3,6 @@
 #'
 #' @import ggplot2
 #' @importFrom gridExtra grid.arrange
-#' @import intervals
 #' @export
 make_cluster_plot <- function(
   cluster_to_plot,
@@ -347,7 +346,7 @@ make_cluster_plot <- function(
         gene_strand <- NULL
       }else{
         # assign strand arrows based on lengths of intron
-        exon_intervals <- Intervals( matrix(data = c(exon_df$x, exon_df$xend), ncol = 2) )
+        exon_intervals <- intervals::Intervals( matrix(data = c(exon_df$x, exon_df$xend), ncol = 2) )
         #exon_intervals <- intervals::interval_union( exon_intervals )
         intron_intervals <- intervals::interval_complement( exon_intervals )
         intron_intervals <- intron_intervals[ 2:(nrow(intron_intervals)-1),]

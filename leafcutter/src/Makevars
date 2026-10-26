@@ -6,6 +6,10 @@ PKG_CPPFLAGS = -I"../inst/include" -I"$(STANHEADERS_SRC)" -DBOOST_DISABLE_ASSERT
 
 CXX_STD = CXX14
 
+# -O3 for the model leafcutter_ds.R fits. Appended after R's CXX14FLAGS,
+# which carry -O2: gcc and clang take the last -O. Needs GNU make.
+stanExports_dm_glm_multi_conc.o: ALL_CXXFLAGS += -O3
+
 all: $(SHLIB)
 		@if test -e "/usr/bin/install_name_tool" && test -e "/usr/local/clang4/lib/libc++.1.dylib" && test -e "/usr/lib/libc++.1.dylib"; then /usr/bin/install_name_tool -change /usr/local/clang4/lib/libc++.1.dylib /usr/lib/libc++.1.dylib $(SHLIB); fi
 
